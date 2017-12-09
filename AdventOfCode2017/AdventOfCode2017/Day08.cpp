@@ -1,9 +1,13 @@
 #include "Problems.h"
-
 /*
-You receive a signal directly from the CPU.Because of your recent assistance with jump instructions, it would like you to compute the result of a series of unusual register instructions.
+--- Day 8: I Heard You Like Registers ---
+You receive a signal directly from the CPU. Because of your recent assistance with jump instructions, 
+it would like you to compute the result of a series of unusual register instructions.
 
-Each instruction consists of several parts : the register to modify, whether to increase or decrease that register's value, the amount by which to increase or decrease it, and a condition. If the condition fails, skip the instruction without modifying the register. The registers all start at 0. The instructions look like this:
+Each instruction consists of several parts : the register to modify, whether to increase or decrease 
+that register's value, the amount by which to increase or decrease it, and a condition. If the 
+condition fails, skip the instruction without modifying the register. The registers all start at 0. 
+The instructions look like this:
 
 b inc 5 if a > 1
 a inc 1 if b < 5
@@ -19,14 +23,20 @@ c is increased by - 20 (to - 10) because c is equal to 10.
 
 After this process, the largest value in any register is 1.
 
-You might also encounter <= (less than or equal to) or != (not equal to).However, the CPU doesn't have the bandwidth to tell you what all the registers are named, and leaves that to you to determine.
+You might also encounter <= (less than or equal to) or != (not equal to).  However, the CPU doesn't have the 
+bandwidth to tell you what all the registers are named, and leaves that to you to determine.
 
 What is the largest value in any register after completing the instructions in your puzzle input ?
+
+--- Part Two ---
+
+To be safe, the CPU also needs to know the highest value held in any register during this process so that it 
+can decide how much memory to allocate to these operations. For example, in the above instructions, the 
+highest value ever held was 10 (in register c after the third instruction was evaluated).
+
 */
 
-constexpr char MAX_AT_ANY_TIME[] = "__MaxSeenAtAnyTime";
-
-std::map<std::string, int> ComputeRegisters(const std::vector<std::string>& commands)
+std::pair<std::map<std::string, int>, int> ComputeRegisters(const std::vector<std::string>& commands)
 {
     enum TokenName {
         TARGET = 0, // The register we're acting on
@@ -90,33 +100,29 @@ std::map<std::string, int> ComputeRegisters(const std::vector<std::string>& comm
         }
     }
 
-    registers[MAX_AT_ANY_TIME] = maxSeenAtAnyTime;
-
-    return registers;
+    return std::make_pair(registers, maxSeenAtAnyTime);
 }
 
 std::pair<int, int> MaxRegister(const std::vector<std::string>& commands)
 {
     auto registers = ComputeRegisters(commands);
     int maxValueSeen = INT_MIN;
-    for (auto& reg : registers) {
-        if (reg.first != MAX_AT_ANY_TIME) {
-            maxValueSeen = std::max(reg.second, maxValueSeen);
-        }
+    for (auto& reg : registers.first) {
+        maxValueSeen = std::max(reg.second, maxValueSeen);
     }
-    return std::make_pair(maxValueSeen, registers[MAX_AT_ANY_TIME]);
+    return std::make_pair(maxValueSeen, registers.second);
 }
 
 void Day8Tests()
 {
-    std::vector<std::string> testInput = {
+    const std::vector<std::string> testInput = {
         "b inc 5 if a > 1",
         "a inc 1 if b < 5",
         "c dec -10 if a >= 1",
         "c inc -20 if c == 10"
     };
 
-    auto maxValue = MaxRegister(testInput);
+    const auto maxValue = MaxRegister(testInput);
     if (maxValue.first != 1) std::cerr << "Test 8A Error: Got " << maxValue.first << ", Expected 1" << std::endl;
     if (maxValue.second != 10) std::cerr << "Test 8B Error: Got " << maxValue.second << ", Expected 10" << std::endl;
 }
@@ -125,7 +131,7 @@ void Day8()
 {
     std::cout << "Day 8:\n";
     Day8Tests();
-    auto input = ReadFileLines("input_day8.txt");
-    auto maxRegister = MaxRegister(input);
+    const auto input = ReadFileLines("input_day8.txt");
+    const auto maxRegister = MaxRegister(input);
     std::cout << maxRegister.first << std::endl << maxRegister.second << std::endl << std::endl;
 }

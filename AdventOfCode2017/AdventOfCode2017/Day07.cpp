@@ -1,5 +1,4 @@
 #include "Problems.h"
-
 /*
 Wandering further through the circuits of the computer, you come upon a tower of programs 
 that have gotten themselves into a bit of trouble. A recursive algorithm has gotten out 
@@ -89,8 +88,6 @@ If this change were made, its weight would be 60.
 Given that exactly one program is the wrong weight, what would its weight need to be to balance the entire tower?
 */
 
-// Topological Sort!
-
 struct Node
 {
     // Hold a weak ref to the parent node to avoid a circular dependency
@@ -144,7 +141,7 @@ private:
     }
 };
 
-std::shared_ptr<Node> BuildTree(std::vector<std::string>& input)
+std::shared_ptr<Node> BuildTree(const std::vector<std::string>& input)
 {
     std::map<std::string, std::shared_ptr<Node>> entry;
 
@@ -278,6 +275,7 @@ void PrintNode(std::shared_ptr<Node> node, std::ostream& out, bool children = tr
     }
 }
 
+// Outputs a basic visual representation of the tree that was built for debugging purposes
 void PrintTree(std::shared_ptr<Node> root, std::ostream& out) {
     std::queue<std::shared_ptr<Node>> toPrint;
     toPrint.push(root);
@@ -294,7 +292,7 @@ void PrintTree(std::shared_ptr<Node> root, std::ostream& out) {
 
 void Day7Tests()
 {
-    std::vector<std::string> input = {
+    const std::vector<std::string> input = {
     "pbga (66)", "xhth (57)", "ebii (61)", "havc (66)", "ktlj (57)", "fwft (72) -> ktlj, cntj, xhth",
     "qoyq (66)", "padx (45) -> pbga, havc, qoyq", "tknk (41) -> ugml, padx, fwft", "jptl (61)",
     "ugml (68) -> gyxo, ebii, jptl", "gyxo (61)", "cntj (57)" };
@@ -308,7 +306,7 @@ void Day7Tests()
 void Day7()
 {
     Day7Tests();
-    auto input = ReadFileLines("input_day7.txt");
+    const auto input = ReadFileLines("input_day7.txt");
     auto root = BuildTree(input);
     std::cout << "Day 7:\n";
     std::cout << root->name << std::endl;

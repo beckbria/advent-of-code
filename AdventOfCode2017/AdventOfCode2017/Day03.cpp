@@ -1,5 +1,4 @@
 #include "Problems.h"
-
 /*
 You come across an experimental new kind of memory stored on an infinite two-dimensional grid.
 
@@ -23,6 +22,28 @@ Data from square 1024 must be carried 31 steps.
 How many steps are required to carry the data from the square identified in your puzzle input all the way to the access port?
 
 Your puzzle input is 347991.
+
+--- Part Two ---
+
+As a stress test on the system, the programs here clear the grid and then store the value 1 in square 1. Then, in the same allocation order as shown above, they store the sum of the values in all adjacent squares, including diagonals.
+
+So, the first few squares' values are chosen as follows:
+
+Square 1 starts with the value 1.
+Square 2 has only one adjacent filled square (with value 1), so it also stores 1.
+Square 3 has both of the above squares as neighbors and stores the sum of their values, 2.
+Square 4 has all three of the aforementioned squares as neighbors and stores the sum of their values, 4.
+Square 5 only has the first and fourth squares as neighbors, so it gets the value 5.
+
+Once a square is written, its value does not change. Therefore, the first few squares would receive the following values:
+
+147  142  133  122   59
+304    5    4    2   57
+330   10    1    1   54
+351   11   23   25   26
+362  747  806--->   ...
+
+What is the first value written that is larger than your puzzle input?
 */
 
 int SpiralDistance(int target)
@@ -96,37 +117,15 @@ int SpiralDistance(int target)
     return abs(currentX) + abs(currentY);
 }
 
-/*
-As a stress test on the system, the programs here clear the grid and then store the value 1 in square 1. Then, in the same allocation order as shown above, they store the sum of the values in all adjacent squares, including diagonals.
-
-So, the first few squares' values are chosen as follows:
-
-Square 1 starts with the value 1.
-Square 2 has only one adjacent filled square (with value 1), so it also stores 1.
-Square 3 has both of the above squares as neighbors and stores the sum of their values, 2.
-Square 4 has all three of the aforementioned squares as neighbors and stores the sum of their values, 4.
-Square 5 only has the first and fourth squares as neighbors, so it gets the value 5.
-
-Once a square is written, its value does not change. Therefore, the first few squares would receive the following values:
-
-147  142  133  122   59
-304    5    4    2   57
-330   10    1    1   54
-351   11   23   25   26
-362  747  806--->   ...
-
-What is the first value written that is larger than your puzzle input?
-
-Your puzzle input is still 347991.
-*/
-
 enum class Direction {
     Up, Left, Right, Down
 };
 
 int FirstHigherSpiral(int target)
 {
-    // We use a grid where the "center" is at 126,126 to give us a range from (-125,-125) through (125,125)
+    // We use a grid where the "center" is at 126,126 to give us a range from (-125,-125) through (125,125).
+    // To truly scale, we could keep around only the preceding outer rectangle and the one we're currently computing,
+    // but for this test input we've got more than enough memory to just use a grid
     int constexpr centerOffset = 126;
     int grid[(2 * centerOffset) - 1][(2 * centerOffset - 1)] = {};
     grid[centerOffset][centerOffset] = 1;
@@ -186,7 +185,7 @@ int FirstHigherSpiral(int target)
 
 void Day3Tests()
 {
-    struct {
+    const struct {
         int input;
         int answer;
     } testCaseA[] = { {1,0}, {12,3}, {23,2}, {1024,31} };
@@ -198,7 +197,7 @@ void Day3Tests()
         }
     }
 
-    struct {
+    const struct {
         int input;
         int answer;
     } testCaseB[] = { { 4,5 },{ 20,23 },{ 100,122 },{ 200,304 },{500,747} };
