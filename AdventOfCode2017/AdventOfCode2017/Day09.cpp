@@ -53,12 +53,19 @@ struct Group
     Group(int start) : beginPosition(start) {}
     int beginPosition;
     int endPosition = -1;
+    int garbageCharacters = 0;
 
-    int Score(int parentScore = 0) {
+    int Score(int parentScore = 0) const {
         int currentScore = parentScore + 1;
         int totalScore = currentScore;
         for (auto &c : children) totalScore += c->Score(currentScore);
         return totalScore;
+    }
+
+    int TotalGarbageCharacters() const {
+        int totalGarbage = garbageCharacters;
+        for (auto &c : children) totalGarbage += c->TotalGarbageCharacters();
+        return totalGarbage;
     }
 
     std::vector<std::shared_ptr<Group>> children;
@@ -97,6 +104,9 @@ std::shared_ptr<Group> Parse(const std::string& input)
             if (current == GarbageEnd) {
                 inGarbage = false;
             }
+            else {
+                groups.top()->garbageCharacters++;
+            }
             continue;
         }
 
@@ -130,10 +140,10 @@ std::shared_ptr<Group> Parse(const std::string& input)
     return firstGroup;
 }
 
-int Score(const std::string& input)
+std::pair<int, int> Score(const std::string& input)
 {
     auto group = Parse(input);
-    return group->Score();
+    return std::make_pair(group->Score(), group->TotalGarbageCharacters());
 }
 
 void Day9Tests()
@@ -153,9 +163,29 @@ void Day9Tests()
     };
 
     for (auto& test : testCases) {
-        int result = Score(test.input);
-        if (result != test.score) {
-            std::cerr << "Test 9A Failed: Got " << result << ", expected " << test.score << std::endl;
+        auto result = Score(test.input);
+        if (result.first != test.score) {
+            std::cerr << "Test 9A Failed: Got " << result.first << ", expected " << test.score << std::endl;
+        }
+    }
+
+    const struct {
+        std::string input;
+        int score;
+    } testCasesB[] = {
+        { "{<>}", 0 },
+        { "{<random characters>}", 17 },
+        { "{<<<<>}", 3 },
+        { "{<{!>}>}", 2 },
+        { "{<!!>}", 0 },
+        { "{<!!!>>}", 0 },
+        { "{<{o\"i!a,<{i<a>}", 10},
+    };
+
+    for (auto& test : testCasesB) {
+        auto result = Score(test.input);
+        if (result.second != test.score) {
+            std::cerr << "Test 9B Failed: Got " << result.second << ", expected " << test.score << std::endl;
         }
     }
 }
@@ -167,5 +197,6 @@ void Day9()
     auto input = ReadFileLines("input_day9.txt");
     std::cout << "Day 9:\n";
     if (input.size() != 1) std::cerr << "Day 9: Malformed input" << std::endl;
-    std::cout << Score(input[0]) << std::endl;
+    auto score = Score(input[0]);
+    std::cout << score.first << std::endl << std::endl << score.second;
 }
