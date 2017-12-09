@@ -45,6 +45,9 @@
     <ClCompile Include="Day08.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Day09.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Problems.h">

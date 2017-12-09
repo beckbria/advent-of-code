@@ -93,11 +93,15 @@ Given that exactly one program is the wrong weight, what would its weight need t
 
 struct Node
 {
-    std::shared_ptr<Node> parent = nullptr;
-
-    // A true implementation would encapsulate children so that we could call InvalidateTowerWeight every time a child is added
-    std::vector<std::shared_ptr<Node>> children;
+    // Hold a weak ref to the parent node to avoid a circular dependency
+    std::weak_ptr<Node> parent;
     std::string name;
+
+    // A true implementation should encapsulate children so that we could call InvalidateTowerWeight every time a child is added
+    // I'm skipping that here due to time constraints since this is a single use case where we build only before we calculate and
+    // never add/remove children once we've successfully built the tree
+    std::vector<std::shared_ptr<Node>> children;
+
     int GetWeight() { return m_weight; }
     void SetWeight(int weight) {
         m_weight = weight;
@@ -134,7 +138,9 @@ private:
     void InvalidateTowerWeight()
     {
         m_towerWeight = -1;
-        if (parent != nullptr) parent->InvalidateTowerWeight();
+        if (auto p = parent.lock()) {
+            p->InvalidateTowerWeight();
+        }
     }
 };
 
@@ -186,7 +192,7 @@ std::shared_ptr<Node> BuildTree(std::vector<std::string>& input)
     // Since we're told that everything is connected, we should be able to take any node and walk its
     // ancestry to get the root
     auto root = entry.begin()->second;
-    while (root->parent != nullptr) root = root->parent;
+    while (auto p = root->parent.lock()) root = p;
 
     return root;
 }
