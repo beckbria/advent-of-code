@@ -36,7 +36,7 @@ highest value ever held was 10 (in register c after the third instruction was ev
 
 */
 
-std::pair<std::map<std::string, int>, int> ComputeRegisters(const std::vector<std::string>& commands)
+std::pair<std::map<std::string, int>, int> ComputeRegisters(const std::vector<std::string>& commands) 
 {
     enum TokenName {
         TARGET = 0, // The register we're acting on
@@ -65,23 +65,17 @@ std::pair<std::map<std::string, int>, int> ComputeRegisters(const std::vector<st
         bool doAction = false;
         if (tokens[COMPARISON] == ">=") {
             doAction = registers[tokens[DEPENDENT]] >= reference;
-        }
-        else if (tokens[COMPARISON] == "<=") {
+        } else if (tokens[COMPARISON] == "<=") {
             doAction = registers[tokens[DEPENDENT]] <= reference;
-        }
-        else if (tokens[COMPARISON] == "<") {
+        } else if (tokens[COMPARISON] == "<") {
             doAction = registers[tokens[DEPENDENT]] < reference;
-        }
-        else if (tokens[COMPARISON] == ">") {
+        } else if (tokens[COMPARISON] == ">") {
             doAction = registers[tokens[DEPENDENT]] > reference;
-        }
-        else if (tokens[COMPARISON] == "==") {
+        } else if (tokens[COMPARISON] == "==") {
             doAction = registers[tokens[DEPENDENT]] == reference;
-        }
-        else if (tokens[COMPARISON] == "!=") {
+        } else if (tokens[COMPARISON] == "!=") {
             doAction = registers[tokens[DEPENDENT]] != reference;
-        }
-        else {
+        } else {
             std::cerr << "Unexpected comparison operator: " << line << std::endl;
         }
 
@@ -95,7 +89,6 @@ std::pair<std::map<std::string, int>, int> ComputeRegisters(const std::vector<st
             } else {
                 std::cerr << "Unexpected action operator: " << line << std::endl;
             }
-
             maxSeenAtAnyTime = std::max(maxSeenAtAnyTime, registers[tokens[TARGET]]);
         }
     }

@@ -84,12 +84,9 @@ std::pair<int, int> IterationsUntilInfiniteLoop(std::vector<int> bankSizes)
         std::string hash = concatenation.str();
 
         auto it = seenArrangements.find(hash);
-        if (it == seenArrangements.end())
-        {
+        if (it == seenArrangements.end()) {
             seenArrangements[hash] = iteration;
-        }
-        else
-        {
+        } else {
             // This is a duplicate
             return std::make_pair(iteration, iteration - it->second);
         }

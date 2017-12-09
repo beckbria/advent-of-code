@@ -97,7 +97,7 @@ int SpiralDistance(int target)
                 }
                 else {
                     // Step down the right edge
-                    currentX += delta;
+                    currentY += delta;
                 }
             }
             else {

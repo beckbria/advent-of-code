@@ -35,7 +35,6 @@ bool AllWordsUnique(const std::vector<std::string>& words)
         if (seen.count(word) == 1) return false;
         seen.emplace(word);
     }
-
     return true;
 }
 
@@ -50,8 +49,7 @@ bool IsValidAnagramPassphrase(const std::string& line)
 {
     auto words = Tokenize(line);
     // Sort the characters in each word to detect anagrams
-    for (auto& word : words)
-    {
+    for (auto& word : words) {
         std::sort(word.begin(), word.end());
     }
     return AllWordsUnique(words);
@@ -80,8 +78,7 @@ void Day4()
 
     int validPassphrases = 0;
     int anagramPassphrases = 0;
-    for (auto &line : input)
-    {
+    for (auto &line : input) {
         if (IsValidPassphrase(line)) ++validPassphrases;
         if (IsValidAnagramPassphrase(line)) ++anagramPassphrases;
     }

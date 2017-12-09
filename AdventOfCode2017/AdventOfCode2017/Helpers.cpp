@@ -15,8 +15,7 @@ std::vector<std::string> ReadFileLines(const std::string& fileName)
     // Read the Input
     std::ifstream inputFile(fileName);
     std::vector<std::string> input;
-    for (std::string line; std::getline(inputFile, line); )
-    {
+    for (std::string line; std::getline(inputFile, line); ) {
         input.emplace_back(std::move(line));
     }
     inputFile.close();

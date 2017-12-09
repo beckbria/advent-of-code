@@ -155,13 +155,13 @@ std::shared_ptr<Group> Parse(const std::string& input)
     return firstGroup;
 }
 
-std::pair<int, int> Score(const std::string& input)
+std::pair<int, int> Score(const std::string& input) 
 {
     auto group = Parse(input);
     return std::make_pair(group->Score(), group->TotalGarbageCharacters());
 }
 
-void Day9Tests()
+void Day9Tests() 
 {
     const struct {
         std::string input;
@@ -205,7 +205,7 @@ void Day9Tests()
     }
 }
 
-void Day9()
+void Day9() 
 {
     Day9Tests();
 
@@ -213,5 +213,5 @@ void Day9()
     std::cout << "Day 9:\n";
     if (input.size() != 1) std::cerr << "Day 9: Malformed input" << std::endl;
     auto score = Score(input[0]);
-    std::cout << score.first << std::endl << std::endl << score.second;
+    std::cout << score.first << std::endl << score.second << std::endl;
 }

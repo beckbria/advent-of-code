@@ -100,7 +100,8 @@ struct Node
     std::vector<std::shared_ptr<Node>> children;
 
     int GetWeight() { return m_weight; }
-    void SetWeight(int weight) {
+    void SetWeight(int weight)
+    {
         m_weight = weight;
         InvalidateTowerWeight();
     }
@@ -108,8 +109,7 @@ struct Node
     int TowerWeight()
     {
         // Cache this calculation so we don't have to do it repeatedly
-        if (m_towerWeight < 0)
-        {
+        if (m_towerWeight < 0) {
             int tower = m_weight;
             m_balancedChildren = true;
             int const childWeight = (children.size() > 0) ? children[0]->TowerWeight() : 0;
@@ -146,9 +146,6 @@ std::shared_ptr<Node> BuildTree(const std::vector<std::string>& input)
     std::map<std::string, std::shared_ptr<Node>> entry;
 
     for (auto &line : input) {
-        // Assume well formed input.  If this was a real program, write a better parser.
-        // If you have to write a better parser, use a better language
-
         auto tokens = Tokenize(line);
 
         // The first token is the name
@@ -231,11 +228,9 @@ int BalanceTree(std::shared_ptr<Node> root, int desiredShift)
         // Our children have unequal weights, and yet none of them reported having unbalanced children.  Thus, one of them is the problem
         if (root->children.size() == 0) {
             return root->GetWeight() + desiredShift;
-        }
-        else if (root->children.size() == 1) {
+        } else if (root->children.size() == 1) {
             return root->children[0]->GetWeight() + desiredShift;
-        }
-        else {
+        } else {
             auto child0Weight = root->children[0]->TowerWeight();
 
             if (desiredShift != 0) {
@@ -268,7 +263,8 @@ int BalanceTree(std::shared_ptr<Node> root, int desiredShift)
     return newWeight;
 }
 
-void PrintNode(std::shared_ptr<Node> node, std::ostream& out, bool children = true) {
+void PrintNode(std::shared_ptr<Node> node, std::ostream& out, bool children = true)
+{
     out << node->name << "(" << node->GetWeight() << ", " << node->TowerWeight() << ") ";
     if (children) {
         for (auto &child : node->children) PrintNode(child, out, false);
@@ -276,7 +272,8 @@ void PrintNode(std::shared_ptr<Node> node, std::ostream& out, bool children = tr
 }
 
 // Outputs a basic visual representation of the tree that was built for debugging purposes
-void PrintTree(std::shared_ptr<Node> root, std::ostream& out) {
+void PrintTree(std::shared_ptr<Node> root, std::ostream& out)
+{
     std::queue<std::shared_ptr<Node>> toPrint;
     toPrint.push(root);
     while (!toPrint.empty()) {
