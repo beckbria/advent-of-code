@@ -150,7 +150,7 @@ std::string KnotHash(std::string plainText, unsigned int listSize)
     std::vector<int> lengths(plainText.begin(), plainText.end());
 
     // Per problem instructions, append a few values to the end
-    for (auto i : { 17,31,73,47,23 }) lengths.push_back(i);
+    for (auto i : { 17, 31, 73, 47, 23 }) lengths.push_back(i);
     auto sparseHash = InitializeHash(listSize);
 
     // Do 64 rounds of the hash function to obtain a permutation of the initial list
@@ -162,13 +162,13 @@ std::string KnotHash(std::string plainText, unsigned int listSize)
     // Compute the Dense Hash by XORing each 16 characters together
     std::vector<int> denseHash;
     int current = sparseHash[0];
-    for (int i = 0; i < sparseHash.size(); ++i) {
+    for (int i = 1; i < sparseHash.size(); ++i) {
         if (i % 16 == 0) {
             // We've filled in a block
             denseHash.push_back(current);
             current = sparseHash[i];
         } else {
-            current ^ sparseHash[i];
+            current ^= sparseHash[i];
         }
     }
     // Add the last element
