@@ -213,5 +213,5 @@ void Day9()
     std::cout << "Day 9:\n";
     if (input.size() != 1) std::cerr << "Day 9: Malformed input" << std::endl;
     auto score = Score(input[0]);
-    std::cout << score.first << std::endl << score.second << std::endl;
+    std::cout << score.first << std::endl << score.second << std::endl << std::endl;
 }

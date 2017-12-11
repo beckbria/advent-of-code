@@ -10,7 +10,8 @@ int main() {
     Day7();
     Day8();
     Day9();*/
-    Day11();
+    Day10();
+    //Day11();
 
     // Wait for keyboard input
     std::cout << std::endl << "Done (press Enter)";

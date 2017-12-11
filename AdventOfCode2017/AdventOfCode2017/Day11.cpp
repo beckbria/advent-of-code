@@ -151,5 +151,5 @@ void Day11()
     auto input = Tokenize(source[0], ',');
     std::cout << "Day 11:\n";
     Day11Tests();
-    std::cout << StepsAway(input) << std::endl << MaxStepsEverAway(input) << std::endl;
+    std::cout << StepsAway(input) << std::endl << MaxStepsEverAway(input) << std::endl << std::endl;
 }

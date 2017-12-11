@@ -1,20 +1,20 @@
 #pragma once
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <iterator>
-#include <string>
-#include <vector>
-#include <cmath>
-#include <set>
 #include <algorithm>
-#include <sstream>
-#include <utility>
+#include <array>
+#include <cmath>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <iterator>
 #include <map>
 #include <memory>
-#include <cstdlib>
 #include <queue>
+#include <set>
+#include <sstream>
 #include <stack>
+#include <string>
+#include <utility>
+#include <vector>
 
 #define ARRAYSIZE(a) (sizeof(a) / sizeof(a[0]))
 
