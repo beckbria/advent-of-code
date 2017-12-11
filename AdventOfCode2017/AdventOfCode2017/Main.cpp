@@ -1,7 +1,7 @@
 #include "Problems.h"
 
 int main() {
-    Day1();
+    /*Day1();
     Day2();
     Day3();
     Day4();
@@ -9,7 +9,8 @@ int main() {
     Day6();
     Day7();
     Day8();
-    Day9();
+    Day9();*/
+    Day11();
 
     // Wait for keyboard input
     std::cout << std::endl << "Done (press Enter)";

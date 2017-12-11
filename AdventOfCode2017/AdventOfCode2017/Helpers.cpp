@@ -1,12 +1,40 @@
 #include "Problems.h"
 
-std::vector<std::string> Tokenize(const std::string& line)
-{
-    std::istringstream ss(line);
-    std::istream_iterator<std::string> begin(ss), end;
+inline bool IsWhitespace(char c) {
+    switch (c) {
+    case ' ':
+    case '\t':
+    case '\r':
+    case '\n':
+        return true;
+    }
+    return false;
+}
 
-    //putting all the tokens in the vector
-    std::vector<std::string> tokens(begin, end);
+std::vector<std::string> Tokenize(const std::string& line, char delimiter/* = ' '*/, bool splitWhitespace/* = true*/)
+{
+    std::vector<std::string> tokens;
+
+    bool parsingToken = false;
+    int start = 0;
+    for (int pos = 0; pos < line.size(); ++pos) {
+        const bool partOfToken = (line[pos] != delimiter) && !(splitWhitespace && IsWhitespace(line[pos]));
+        if (partOfToken && !parsingToken) {
+            // This is the beginning of a word
+            start = pos;
+            parsingToken = true;
+        } else if (!partOfToken && parsingToken) {
+            // The end of the word was the previous character
+            tokens.emplace_back(std::move(line.substr(start, pos - start)));
+            parsingToken = false;
+        }
+    }
+
+    // If we hit the end of the string while parsing a token, we should include it
+    if (parsingToken) {
+        tokens.emplace_back(std::move(line.substr(start)));
+    }
+
     return tokens;
 }
 

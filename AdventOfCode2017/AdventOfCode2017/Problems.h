@@ -20,7 +20,7 @@
 
 // Helper Functions
 std::vector<std::string> ReadFileLines(const std::string& fileName);
-std::vector<std::string> Tokenize(const std::string& line);
+std::vector<std::string> Tokenize(const std::string& line, char delimiter = ' ', bool splitWhitespace = true);
 
 template<class T>
 std::vector<T> ReadFile(const std::string& fileName)
@@ -50,3 +50,5 @@ void Day6();
 void Day7();
 void Day8();
 void Day9();
+void Day10();
+void Day11();
