@@ -88,6 +88,9 @@ If this change were made, its weight would be 60.
 Given that exactly one program is the wrong weight, what would its weight need to be to balance the entire tower?
 */
 
+namespace Day7
+{
+
 struct Node
 {
     // Hold a weak ref to the parent node to avoid a circular dependency
@@ -164,11 +167,9 @@ std::shared_ptr<Node> BuildTree(const std::vector<std::string>& input)
                 std::cerr << "Bad Children Token - Got " << tokens[2] << std::endl;
             }
 
-            for (int i = 3; i < tokens.size(); ++i) {
+            for (size_t i = 3; i < tokens.size(); ++i) {
                 std::string name = std::move(tokens[i]);
-                if (name[name.size() - 1] == ',') {
-                    name.resize(name.size() - 1);
-                }
+                RemoveTrailingCharacter(name, ',');
 
                 auto child = entry[name];
                 if (child == nullptr) {
@@ -286,6 +287,7 @@ void PrintTree(std::shared_ptr<Node> root, std::ostream& out)
         for (auto &child : node->children) toPrint.push(child);
     }
 }
+} // namespace Day7
 
 void Day7Tests()
 {
@@ -294,18 +296,18 @@ void Day7Tests()
     "qoyq (66)", "padx (45) -> pbga, havc, qoyq", "tknk (41) -> ugml, padx, fwft", "jptl (61)",
     "ugml (68) -> gyxo, ebii, jptl", "gyxo (61)", "cntj (57)" };
 
-    auto root = BuildTree(input);
+    auto root = Day7::BuildTree(input);
     if (root->name != "tknk") std::cout << "Test 7A Failure: Got " << root->name << ", Expected tknk" << std::endl;
-    auto newWeight = BalanceTree(root, 0);
+    auto newWeight = Day7::BalanceTree(root, 0);
     if (newWeight != 60) std::cout << "Test 7B Failure: Got " << newWeight << ", Expected 60" << std::endl;
 }
 
-void Day7()
+void Day7Problems()
 {
     Day7Tests();
     const auto input = ReadFileLines("input_day7.txt");
-    auto root = BuildTree(input);
+    auto root = Day7::BuildTree(input);
     std::cout << "Day 7:\n";
     std::cout << root->name << std::endl;
-    std::cout << BalanceTree(root, 0) << std::endl << std::endl;
+    std::cout << Day7::BalanceTree(root, 0) << std::endl << std::endl;
 }

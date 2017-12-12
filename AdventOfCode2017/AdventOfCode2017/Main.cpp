@@ -1,17 +1,18 @@
 #include "Problems.h"
 
 int main() {
-    Day1();
-    Day2();
-    Day3();
-    Day4();
-    Day5();
-    Day6();
-    Day7();
-    Day8();
-    Day9();
-    Day10();
-    Day11();
+    Day1Problems();
+    Day2Problems();
+    Day3Problems();
+    Day4Problems();
+    Day5Problems();
+    Day6Problems();
+    Day7Problems();
+    Day8Problems();
+    Day9Problems();
+    Day10Problems();
+    Day11Problems();
+    Day12Problems();
 
     // Wait for keyboard input
     std::cout << std::endl << "Done (press Enter)";

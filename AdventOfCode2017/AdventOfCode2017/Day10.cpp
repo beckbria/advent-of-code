@@ -98,9 +98,8 @@ AoC 2017 becomes 33efeb34ea91902bb2f59c9920caa6cd.
 1,2,4 becomes 63960835bcdc130f0b66d7ff4f6a5a8e.
 
 Treating your puzzle input as a string of ASCII characters, what is the Knot Hash of your puzzle input? Ignore any leading or trailing whitespace you might encounter.
-
 */
-
+namespace Day10 {
 void ReverseSegment(std::vector<int>& hash, int startPosition, int length)
 {
     int start = startPosition % hash.size();
@@ -162,7 +161,7 @@ std::string KnotHash(std::string plainText, unsigned int listSize)
     // Compute the Dense Hash by XORing each 16 characters together
     std::vector<int> denseHash;
     int current = sparseHash[0];
-    for (int i = 1; i < sparseHash.size(); ++i) {
+    for (size_t i = 1; i < sparseHash.size(); ++i) {
         if (i % 16 == 0) {
             // We've filled in a block
             denseHash.push_back(current);
@@ -176,7 +175,7 @@ std::string KnotHash(std::string plainText, unsigned int listSize)
 
     // Convert the dense hash to a hexadecimal string
     std::string output(denseHash.size() * 2, ' ');
-    for (int i = 0; i < denseHash.size(); ++i) {
+    for (size_t i = 0; i < denseHash.size(); ++i) {
         auto current = denseHash[i];
         output[2 * i] = HexDigit(current / 16);
         output[(2 * i) + 1] = HexDigit(current % 16);
@@ -184,14 +183,15 @@ std::string KnotHash(std::string plainText, unsigned int listSize)
 
     return output;
 }
+} // namespace Day10
 
 void Day10Tests()
 {
-    auto hashA = InitializeHash(5);
+    auto hashA = Day10::InitializeHash(5);
     int skip = 0, currentPosition = 0;
-    ComputeHash({ 3,4,1,5 }, hashA, skip, currentPosition);
+    Day10::ComputeHash({ 3,4,1,5 }, hashA, skip, currentPosition);
     std::array<int, 5> answerA = { 3, 4, 2, 1, 0 };
-    for (int i = 0; i < answerA.size(); ++i) {
+    for (size_t i = 0; i < answerA.size(); ++i) {
         if (hashA[i] != answerA[i]) {
             std::cerr << "Test 10A Error: Got {";
             for (auto h : hashA) std::cerr << h << ", ";
@@ -212,12 +212,12 @@ void Day10Tests()
         { "1,2,4", "63960835bcdc130f0b66d7ff4f6a5a8e" }
     };
     for (auto &test : testCases) {
-        auto hash = KnotHash(test.plainText, 256);
+        auto hash = Day10::KnotHash(test.plainText, 256);
         if (hash != test.hash) std::cerr << "Test 10B Error: Got " << hash << ", expected " << test.hash << std::endl;
     }
 }
 
-void Day10()
+void Day10Problems()
 {
     const std::string input = "31,2,85,1,80,109,35,63,98,255,0,13,105,254,128,33";
     const auto tokens = Tokenize(input, ',');
@@ -229,7 +229,7 @@ void Day10()
     std::cout << "Day 10:\n";
     Day10Tests();
     int skip = 0, currentPosition = 0;
-    auto hash = InitializeHash(256);
-    ComputeHash(lengths, hash, skip, currentPosition);
-    std::cout << hash[0] * hash[1] << std::endl << KnotHash(input, 256) << std::endl << std::endl;
+    auto hash = Day10::InitializeHash(256);
+    Day10::ComputeHash(lengths, hash, skip, currentPosition);
+    std::cout << hash[0] * hash[1] << std::endl << Day10::KnotHash(input, 256) << std::endl << std::endl;
 }

@@ -45,12 +45,12 @@ offset values after finding the exit are left as 2 3 2 3 -1.
 
 How many steps does it now take to reach the exit?
 */
-
+namespace Day5 {
 long MoveCount(std::vector<int> maze, bool partTwoHeuristic)
 {
     long moves = 0;
     int currentPosition = 0;
-    while ((currentPosition >= 0) && (currentPosition < maze.size())) {
+    while ((currentPosition >= 0) && (currentPosition < static_cast<int>(maze.size()))) {
         int oldPosition = currentPosition;
         currentPosition += maze[currentPosition];
         
@@ -64,22 +64,23 @@ long MoveCount(std::vector<int> maze, bool partTwoHeuristic)
 
     return moves;
 }
+} // namespace Day5
 
 void Day5Tests()
 {
     std::vector<int> maze = { 0, 3, 0, 1, -3 };
-    int countA = MoveCount(maze, false);
+    int countA = Day5::MoveCount(maze, false);
     if (countA != 5) std::cerr << "Test 5A error: Got " << countA << std::endl;
-    int countB = MoveCount(maze, true);
+    int countB = Day5::MoveCount(maze, true);
     if (countB != 10) std::cerr << "Test 5B error: Got " << countB << std::endl;
 }
 
-void Day5()
+void Day5Problems()
 {
     Day5Tests();
 
     auto maze = ReadFile<int>("input_day5.txt");
     std::cout << "Day 5:\n";
-    std::cout << MoveCount(maze, false) << std::endl;
-    std::cout << MoveCount(maze, true) << std::endl << std::endl;
+    std::cout << Day5::MoveCount(maze, false) << std::endl;
+    std::cout << Day5::MoveCount(maze, true) << std::endl << std::endl;
 }

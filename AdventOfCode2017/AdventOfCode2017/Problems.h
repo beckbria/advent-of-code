@@ -21,6 +21,8 @@
 // Helper Functions
 std::vector<std::string> ReadFileLines(const std::string& fileName);
 std::vector<std::string> Tokenize(const std::string& line, char delimiter = ' ', bool splitWhitespace = true);
+// Removes all instances of the specified character at the end of a string.  Used for removing commas, etc.
+void RemoveTrailingCharacter(std::string& toBeModified, char toBeRemoved);
 
 template<class T>
 std::vector<T> ReadFile(const std::string& fileName)
@@ -41,14 +43,15 @@ struct IntDefaultToZero {
 };
 
 // Daily Functions
-void Day1();
-void Day2();
-void Day3();
-void Day4();
-void Day5();
-void Day6();
-void Day7();
-void Day8();
-void Day9();
-void Day10();
-void Day11();
+void Day1Problems();
+void Day2Problems();
+void Day3Problems();
+void Day4Problems();
+void Day5Problems();
+void Day6Problems();
+void Day7Problems();
+void Day8Problems();
+void Day9Problems();
+void Day10Problems();
+void Day11Problems();
+void Day12Problems();

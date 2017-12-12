@@ -44,9 +44,8 @@ already been seen, how many block redistribution cycles must be performed before
 In the example above, 2 4 1 2 is seen again after four cycles, and so the answer in that example would be 4.
 
 How many cycles are in the infinite loop that arises from the configuration in your puzzle input?
-
 */
-
+namespace Day6 {
 std::pair<int, int> IterationsUntilInfiniteLoop(std::vector<int> bankSizes)
 {
     if (bankSizes.size() < 1) return std::make_pair(0, 0);
@@ -58,7 +57,7 @@ std::pair<int, int> IterationsUntilInfiniteLoop(std::vector<int> bankSizes)
         // Find the largest bank
         int largest = bankSizes[0];
         int largestIndex = 0;
-        for (int i = 0; i < bankSizes.size(); ++i) {
+        for (size_t i = 0; i < bankSizes.size(); ++i) {
             if (bankSizes[i] > largest) {
                 largest = bankSizes[i];
                 largestIndex = i;
@@ -94,20 +93,21 @@ std::pair<int, int> IterationsUntilInfiniteLoop(std::vector<int> bankSizes)
 
     return std::make_pair(-1, -1);
 }
+} // namespace Day6
 
 void Day6Tests()
 {
     std::vector<int> bankSizes = { 0,2,7,0 };
-    auto answer = IterationsUntilInfiniteLoop(bankSizes);
+    auto answer = Day6::IterationsUntilInfiniteLoop(bankSizes);
     if (answer.first != 5) std::cerr << "Test 6A Error: Got " << answer.first << " expected 5" << std::endl;
     if (answer.second != 4) std::cerr << "Test 6B Error: Got " << answer.second << " expected 4" << std::endl;
 }
 
-void Day6() {
+void Day6Problems() {
     Day6Tests();
 
     std::vector<int> bankSizes = { 2,8,8,5,4,2,3,1,5,5,1,2,15,13,5,14 };
-    auto answer = IterationsUntilInfiniteLoop(bankSizes);
+    auto answer = Day6::IterationsUntilInfiniteLoop(bankSizes);
     std::cout << "Day 6:\n";
     std::cout << answer.first << std::endl << answer.second << std::endl << std::endl;
 }

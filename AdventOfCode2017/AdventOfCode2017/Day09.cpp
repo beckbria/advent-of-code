@@ -62,7 +62,7 @@ To prove you've removed it, you need to count all of the characters within the g
 
 How many non-canceled characters are within the garbage in your puzzle input?
 */
-
+namespace Day9 {
 struct Group
 {
     Group(int start) : beginPosition(start) {}
@@ -100,7 +100,7 @@ std::shared_ptr<Group> Parse(const std::string& input)
     
     bool inGarbage = false;
     bool negateNextInput = false;
-    for (int pos = 0; pos < input.size(); ++pos) {
+    for (size_t pos = 0; pos < input.size(); ++pos) {
         // If the previous character was ! we should ignore the next one regardless of what it is
         if (negateNextInput) {
             negateNextInput = false;
@@ -160,6 +160,7 @@ std::pair<int, int> Score(const std::string& input)
     auto group = Parse(input);
     return std::make_pair(group->Score(), group->TotalGarbageCharacters());
 }
+} // namespace Day9
 
 void Day9Tests() 
 {
@@ -178,7 +179,7 @@ void Day9Tests()
     };
 
     for (auto& test : testCases) {
-        auto result = Score(test.input);
+        auto result = Day9::Score(test.input);
         if (result.first != test.score) {
             std::cerr << "Test 9A Failed: Got " << result.first << ", expected " << test.score << std::endl;
         }
@@ -198,20 +199,20 @@ void Day9Tests()
     };
 
     for (auto& test : testCasesB) {
-        auto result = Score(test.input);
+        auto result = Day9::Score(test.input);
         if (result.second != test.score) {
             std::cerr << "Test 9B Failed: Got " << result.second << ", expected " << test.score << std::endl;
         }
     }
 }
 
-void Day9() 
+void Day9Problems()
 {
     Day9Tests();
 
     auto input = ReadFileLines("input_day9.txt");
     std::cout << "Day 9:\n";
     if (input.size() != 1) std::cerr << "Day 9: Malformed input" << std::endl;
-    auto score = Score(input[0]);
+    auto score = Day9::Score(input[0]);
     std::cout << score.first << std::endl << score.second << std::endl << std::endl;
 }

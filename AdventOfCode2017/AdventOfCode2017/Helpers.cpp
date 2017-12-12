@@ -17,13 +17,14 @@ std::vector<std::string> Tokenize(const std::string& line, char delimiter/* = ' 
 
     bool parsingToken = false;
     int start = 0;
-    for (int pos = 0; pos < line.size(); ++pos) {
+    for (size_t pos = 0; pos < line.size(); ++pos) {
         const bool partOfToken = (line[pos] != delimiter) && !(splitWhitespace && IsWhitespace(line[pos]));
         if (partOfToken && !parsingToken) {
             // This is the beginning of a word
             start = pos;
             parsingToken = true;
-        } else if (!partOfToken && parsingToken) {
+        }
+        else if (!partOfToken && parsingToken) {
             // The end of the word was the previous character
             tokens.emplace_back(std::move(line.substr(start, pos - start)));
             parsingToken = false;
@@ -48,4 +49,13 @@ std::vector<std::string> ReadFileLines(const std::string& fileName)
     }
     inputFile.close();
     return input;
+}
+
+void RemoveTrailingCharacter(std::string& toBeModified, char toBeRemoved)
+{
+    int removalCount = 0;
+    for (int pos = toBeModified.size() - 1; (pos >= 0) && (toBeModified[pos] == toBeRemoved); --pos) {
+        ++removalCount;
+    }
+    toBeModified.resize(toBeModified.size() - removalCount);
 }

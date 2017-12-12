@@ -33,9 +33,8 @@ What is the largest value in any register after completing the instructions in y
 To be safe, the CPU also needs to know the highest value held in any register during this process so that it 
 can decide how much memory to allocate to these operations. For example, in the above instructions, the 
 highest value ever held was 10 (in register c after the third instruction was evaluated).
-
 */
-
+namespace Day8 {
 std::pair<std::map<std::string, int>, int> ComputeRegisters(const std::vector<std::string>& commands) 
 {
     enum TokenName {
@@ -105,6 +104,7 @@ std::pair<int, int> MaxRegister(const std::vector<std::string>& commands)
     }
     return std::make_pair(maxValueSeen, registers.second);
 }
+} // namespace Day8
 
 void Day8Tests()
 {
@@ -115,16 +115,16 @@ void Day8Tests()
         "c inc -20 if c == 10"
     };
 
-    const auto maxValue = MaxRegister(testInput);
+    const auto maxValue = Day8::MaxRegister(testInput);
     if (maxValue.first != 1) std::cerr << "Test 8A Error: Got " << maxValue.first << ", Expected 1" << std::endl;
     if (maxValue.second != 10) std::cerr << "Test 8B Error: Got " << maxValue.second << ", Expected 10" << std::endl;
 }
 
-void Day8()
+void Day8Problems()
 {
     std::cout << "Day 8:\n";
     Day8Tests();
     const auto input = ReadFileLines("input_day8.txt");
-    const auto maxRegister = MaxRegister(input);
+    const auto maxRegister = Day8::MaxRegister(input);
     std::cout << maxRegister.first << std::endl << maxRegister.second << std::endl << std::endl;
 }

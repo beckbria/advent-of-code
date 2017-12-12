@@ -27,7 +27,7 @@ oiii ioii iioi iiio is not valid - any of these words can be rearranged to form 
 
 Under this new system policy, how many passphrases are valid?
 */
-
+namespace Day4 {
 bool AllWordsUnique(const std::vector<std::string>& words)
 {
     std::set<std::string> seen;
@@ -54,6 +54,7 @@ bool IsValidAnagramPassphrase(const std::string& line)
     }
     return AllWordsUnique(words);
 }
+} // namespace Day4
 
 void Day4Tests()
 {
@@ -63,26 +64,25 @@ void Day4Tests()
     } testCaseA[] = { {"aa bb cc dd ee", true}, { "aa bb cc dd aa", false }, { "aa bb cc dd aaa", true } };
 
     for (auto &t : testCaseA) {
-        bool result = IsValidPassphrase(t.input);
+        bool result = Day4::IsValidPassphrase(t.input);
         if (result != t.answer) {
             std::cerr << "Test 4A failed: " << t.input << " => " << result << " (expected " << t.answer << ")" << std::endl;
         }
     }
 }
 
-void Day4()
+void Day4Problems()
 {
+    std::cout << "Day 4:\n";
     Day4Tests();
 
     const auto input = ReadFileLines("input_day4.txt");
-
     int validPassphrases = 0;
     int anagramPassphrases = 0;
     for (auto &line : input) {
-        if (IsValidPassphrase(line)) ++validPassphrases;
-        if (IsValidAnagramPassphrase(line)) ++anagramPassphrases;
+        if (Day4::IsValidPassphrase(line)) ++validPassphrases;
+        if (Day4::IsValidAnagramPassphrase(line)) ++anagramPassphrases;
     }
-    std::cout << "Day 4:\n";
     std::cout << validPassphrases << std::endl;
     std::cout << anagramPassphrases << std::endl << std::endl;
 }

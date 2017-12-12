@@ -51,6 +51,7 @@ In this example, the sum of the results would be 4 + 3 + 2 = 9.
 
 What is the sum of each row's result in your puzzle input?
 */
+namespace Day2 {
 int checksum(const std::vector<std::vector<int>>& spreadsheet)
 {
     int checksum = 0;
@@ -76,8 +77,8 @@ int divisorChecksum(const std::vector<std::vector<int>>& spreadsheet)
 
     for (auto &v : spreadsheet) {
         bool found = false;
-        for (int i = 1; (i < v.size()) && !found; ++i) {
-            for (int j = 0; (j < i) && !found; ++j) {
+        for (size_t i = 1; (i < v.size()) && !found; ++i) {
+            for (size_t j = 0; (j < i) && !found; ++j) {
                 bool const iLarger = (v[i] > v[j]);
                 int larger = iLarger ? v[i] : v[j];
                 int smaller = iLarger ? v[j] : v[i];
@@ -92,22 +93,21 @@ int divisorChecksum(const std::vector<std::vector<int>>& spreadsheet)
 
     return checksum;
 }
+} // namespace Day2
 
 void Day2Tests()
 {
     std::vector<std::vector<int>> testA = { { 5,1,9,5 },{ 7,5,3 },{ 2,4,6,8 } };
-    int A = checksum(testA);
+    int A = Day2::checksum(testA);
     if (A != 18) std::cerr << "TestA failed: " << A << " (expected 18)" << std::endl;
 
     std::vector<std::vector<int>> testB = { { 5,9,2,8 }, { 9,4,7,3 }, { 3,8,6,5 } };
-    int B = divisorChecksum(testB);
+    int B = Day2::divisorChecksum(testB);
     if (B != 9) std::cerr << "TestA failed: " << B << " (expected 9)" << std::endl;
 }
 
-void Day2()
+void Day2Problems()
 {
-    Day2Tests();
-
     const std::vector<std::vector<int>> spreadsheet = { 
         {116, 1470, 2610, 179, 2161, 2690, 831, 1824, 2361, 1050, 2201, 118, 145, 2275, 2625, 2333},
         { 976,220,1129,553,422,950,332,204,1247,1092,1091,159,174,182,984,713 },
@@ -126,5 +126,7 @@ void Day2()
         { 73,1620,81,1137,812,75,1326,1355,1545,1666,1356,1681,1732,85,128,902},
         { 571,547,160,237,256,30,496,592,385,576,183,692,192,387,647,233 } };
 
-    std::cout << "Day 2:\n" << checksum(spreadsheet) << std::endl << divisorChecksum(spreadsheet) << std::endl << std::endl;
+    std::cout << "Day 2:\n";
+    Day2Tests();
+    std::cout << Day2::checksum(spreadsheet) << std::endl << Day2::divisorChecksum(spreadsheet) << std::endl << std::endl;
 }

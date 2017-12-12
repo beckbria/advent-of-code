@@ -34,7 +34,7 @@ For example:
 
 How many steps away is the furthest he ever got from his starting position?
 */
-
+namespace Day11 {
 std::map<std::string, int> Count(const std::vector<std::string>& directions)
 {
     std::map<std::string, int> wordCount;
@@ -127,6 +127,7 @@ int MaxStepsEverAway(const std::vector<std::string>& directions)
     }
     return furthestAway;
 }
+} // namespace Day11
 
 void Day11Tests()
 {
@@ -140,16 +141,16 @@ void Day11Tests()
         { { "se","sw","se","sw","sw" }, 3 },
     };
     for (auto &test : testCasesA) {
-        int result = StepsAway(test.input);
+        int result = Day11::StepsAway(test.input);
         if (result != test.answer) std::cerr << "Test 11A Failed: Got " << result << ", Expected " << test.answer << std::endl;
     }
 }
 
-void Day11()
+void Day11Problems()
 {
     auto source = ReadFileLines("input_day11.txt");
     auto input = Tokenize(source[0], ',');
     std::cout << "Day 11:\n";
     Day11Tests();
-    std::cout << StepsAway(input) << std::endl << MaxStepsEverAway(input) << std::endl << std::endl;
+    std::cout << Day11::StepsAway(input) << std::endl << Day11::MaxStepsEverAway(input) << std::endl << std::endl;
 }

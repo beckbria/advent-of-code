@@ -45,7 +45,7 @@ Once a square is written, its value does not change. Therefore, the first few sq
 
 What is the first value written that is larger than your puzzle input?
 */
-
+namespace Day3 {
 int SpiralDistance(int target)
 {
     if (target < 1) return -1;
@@ -136,7 +136,7 @@ int FirstHigherSpiral(int target)
     Direction currentDirection = Direction::Up;
     int lastValueWritten = 1;
 
-    while (lastValueWritten < target) {
+    while (lastValueWritten <= target) {
         // Fill in the current grid cell
         int X = currentX + centerOffset;
         int Y = currentY + centerOffset;
@@ -182,6 +182,7 @@ int FirstHigherSpiral(int target)
 
     return lastValueWritten;
 }
+} // namespace Day3
 
 void Day3Tests()
 {
@@ -191,7 +192,7 @@ void Day3Tests()
     } testCaseA[] = { {1,0}, {12,3}, {23,2}, {1024,31} };
 
     for (auto &t : testCaseA) {
-        int result = SpiralDistance(t.input);
+        int result = Day3::SpiralDistance(t.input);
         if (result != t.answer) {
             std::cerr << "Test 3A failed: " << t.input << " => " << result << " (expected " << t.answer << ")" << std::endl;
         }
@@ -202,18 +203,19 @@ void Day3Tests()
         int answer;
     } testCaseB[] = { { 4,5 },{ 20,23 },{ 100,122 },{ 200,304 },{500,747} };
 
-    for (auto &t : testCaseA) {
-        int result = FirstHigherSpiral(t.input);
+    for (auto &t : testCaseB) {
+        int result = Day3::FirstHigherSpiral(t.input);
         if (result != t.answer) {
             std::cerr << "Test 3B failed: " << t.input << " => " << result << " (expected " << t.answer << ")" << std::endl;
         }
     }
 }
 
-void Day3()
+void Day3Problems()
 {
     int const target = 347991;
     std::cout << "Day 3:\n";
-    std::cout << SpiralDistance(target) << std::endl;
-    std::cout << FirstHigherSpiral(target) << std::endl << std::endl;
+    Day3Tests();
+    std::cout << Day3::SpiralDistance(target) << std::endl;
+    std::cout << Day3::FirstHigherSpiral(target) << std::endl << std::endl;
 }
