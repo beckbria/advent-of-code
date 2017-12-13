@@ -305,8 +305,16 @@ struct FirewallLayer {
     FirewallLayer(int depth, int range) : Depth(depth), Range(range) {}
     int Depth;
     int Range;
-    int Severity() const { return Depth * Range;  }
+    int Severity() const { return Depth * Range; }
+    bool Caught(int time) const;
 };
+
+bool FirewallLayer::Caught(int time) const
+{
+    // The scanner takes (Range - 1) turns to get to the bottom and then (Range - 1) steps to get back to the top
+    const int fullTrip = 2 * (Range - 1);
+    return (time % fullTrip) == 0;
+}
 
 typedef std::vector<FirewallLayer> Firewall;
 
@@ -321,32 +329,30 @@ Firewall ReadFirewall(const std::vector<std::string>& input)
     return firewall;
 }
 
-int FirewallSeverity(const Firewall& firewall, int delay = 0)
+int FirewallSeverity(const Firewall& firewall)
 {
     int severity = 0;
     for (auto &level : firewall) {
-        // The scanner takes (Range - 1) turns to get to the bottom and then (Range - 1) steps to get back to the top
-        const int fullTrip = 2 * (level.Range - 1);
-        // To move to a depth requires level.Depth picoseconds, so the scanner will have moved that many times.
-        // When we delay, we simply allow the scanners to have moved that many more times.
-        int ScannerPositionWhenDepthReached = (level.Depth + delay);
-        // Avoid any nastiness with negative modulo operations
-        while (ScannerPositionWhenDepthReached < 0) ScannerPositionWhenDepthReached += fullTrip;
-        const bool caught = (ScannerPositionWhenDepthReached % fullTrip) == 0;
-        if (caught) severity += level.Severity();
+        if (level.Caught(level.Depth)) severity += level.Severity();
     }
     return severity;
 }
 
 int SmallestDelayToAvoidBeingCaught(const Firewall& firewall) {
-    // Initial attempt: Brute Force
-    for (int delay = 0; true; ++delay) {
-        if (FirewallSeverity(firewall, delay) == 0) return delay;
+    int delay = -1;
+    bool caught = true;
+    while (caught) {
+        ++delay;
+        caught = false;
+        for (auto &level : firewall) {
+            if (level.Caught(level.Depth + delay)) {
+                caught = true;
+                break;
+            }
+        }
     }
+    return delay;
 }
-
-// 129680 is too low
-
 } // namespace Day13
 
 void Day13Tests()
