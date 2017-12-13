@@ -59,7 +59,7 @@ std::pair<std::map<std::string, int>, int> ComputeRegisters(const std::vector<st
         if (registers.find(tokens[DEPENDENT]) == registers.end()) registers[tokens[DEPENDENT]] = 0;
 
         if (tokens[IF_TOKEN] != "if") std::cerr << "Unexpected if token: " << line << std::endl;
-        int reference = atoi(tokens[REFERENCE].c_str());
+        int reference = std::stoi(tokens[REFERENCE]);
 
         bool doAction = false;
         if (tokens[COMPARISON] == ">=") {
@@ -79,7 +79,7 @@ std::pair<std::map<std::string, int>, int> ComputeRegisters(const std::vector<st
         }
 
         if (doAction) {
-            int delta = atoi(tokens[AMOUNT].c_str());
+            int delta = std::stoi(tokens[AMOUNT]);
 
             if (tokens[ACTION] == "inc") {
                 registers[tokens[TARGET]] += delta;

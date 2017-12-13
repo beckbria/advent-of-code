@@ -64,14 +64,14 @@ std::map<int, std::shared_ptr<Node>> BuildGraph(const std::vector<std::string>& 
     std::map<int, std::shared_ptr<Node>> nodes;
     for (auto &line : input) {
         auto tokens = Tokenize(line);
-        int originValue = atoi(tokens[0].c_str());
+        int originValue = std::stoi(tokens[0]);
         if (nodes.count(originValue) == 0) nodes[originValue] = std::make_shared<Node>(originValue);
         auto origin = nodes[originValue];
 
         // Skip the <==> token
         for (size_t i = 2; i < tokens.size(); ++i) {
             RemoveTrailingCharacter(tokens[i], ',');
-            auto neighborValue = atoi(tokens[i].c_str());
+            auto neighborValue = std::stoi(tokens[i]);
             if (nodes.count(neighborValue) == 0) nodes[neighborValue] = std::make_shared<Node>(neighborValue);
             origin->neighbors.push_back(nodes[neighborValue]);
         }

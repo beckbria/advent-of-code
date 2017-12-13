@@ -160,7 +160,7 @@ std::shared_ptr<Node> BuildTree(const std::vector<std::string>& input)
         }
 
         // The second is the weight in parenthesis
-        parent->SetWeight(atoi(tokens[1].substr(1, tokens[1].size() - 2).c_str()));
+        parent->SetWeight(std::stoi(tokens[1].substr(1, tokens[1].size() - 2)));
 
         if (tokens.size() > 2) {
             if (tokens[2] != "->") {

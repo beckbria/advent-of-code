@@ -223,7 +223,7 @@ void Day10Problems()
     const auto tokens = Tokenize(input, ',');
     std::vector<int> lengths;
     for (auto &t : tokens) {
-        lengths.push_back(atoi(t.c_str()));
+        lengths.push_back(std::stoi(t));
     }
 
     std::cout << "Day 10:\n";
