@@ -180,6 +180,124 @@ which you do not get caught.) The severity of the whole trip is the sum of these
 above, the trip severity is 0*3 + 6*4 = 24.
 
 Given the details of the firewall you've recorded, if you leave immediately, what is the severity of your whole trip?
+
+--- Part Two ---
+
+Now, you need to pass through the firewall without being caught - easier said than done.
+
+You can't control the speed of the packet, but you can delay it any number of picoseconds. For each picosecond you 
+delay the packet before beginning your trip, all security scanners move one step. You're not in the firewall during 
+this time; you don't enter layer 0 until you stop delaying the packet.
+
+In the example above, if you delay 10 picoseconds (picoseconds 0 - 9), you won't get caught:
+
+State after delaying:
+ 0   1   2   3   4   5   6
+[ ] [S] ... ... [ ] ... [ ]
+[ ] [ ]         [ ]     [ ]
+[S]             [S]     [S]
+                [ ]     [ ]
+
+Picosecond 10:
+ 0   1   2   3   4   5   6
+( ) [S] ... ... [ ] ... [ ]
+[ ] [ ]         [ ]     [ ]
+[S]             [S]     [S]
+                [ ]     [ ]
+
+ 0   1   2   3   4   5   6
+( ) [ ] ... ... [ ] ... [ ]
+[S] [S]         [S]     [S]
+[ ]             [ ]     [ ]
+                [ ]     [ ]
+
+
+Picosecond 11:
+ 0   1   2   3   4   5   6
+[ ] ( ) ... ... [ ] ... [ ]
+[S] [S]         [S]     [S]
+[ ]             [ ]     [ ]
+                [ ]     [ ]
+
+ 0   1   2   3   4   5   6
+[S] (S) ... ... [S] ... [S]
+[ ] [ ]         [ ]     [ ]
+[ ]             [ ]     [ ]
+                [ ]     [ ]
+
+
+Picosecond 12:
+ 0   1   2   3   4   5   6
+[S] [S] (.) ... [S] ... [S]
+[ ] [ ]         [ ]     [ ]
+[ ]             [ ]     [ ]
+                [ ]     [ ]
+
+ 0   1   2   3   4   5   6
+[ ] [ ] (.) ... [ ] ... [ ]
+[S] [S]         [S]     [S]
+[ ]             [ ]     [ ]
+                [ ]     [ ]
+
+
+Picosecond 13:
+ 0   1   2   3   4   5   6
+[ ] [ ] ... (.) [ ] ... [ ]
+[S] [S]         [S]     [S]
+[ ]             [ ]     [ ]
+                [ ]     [ ]
+
+ 0   1   2   3   4   5   6
+[ ] [S] ... (.) [ ] ... [ ]
+[ ] [ ]         [ ]     [ ]
+[S]             [S]     [S]
+                [ ]     [ ]
+
+
+Picosecond 14:
+ 0   1   2   3   4   5   6
+[ ] [S] ... ... ( ) ... [ ]
+[ ] [ ]         [ ]     [ ]
+[S]             [S]     [S]
+                [ ]     [ ]
+
+ 0   1   2   3   4   5   6
+[ ] [ ] ... ... ( ) ... [ ]
+[S] [S]         [ ]     [ ]
+[ ]             [ ]     [ ]
+                [S]     [S]
+
+
+Picosecond 15:
+ 0   1   2   3   4   5   6
+[ ] [ ] ... ... [ ] (.) [ ]
+[S] [S]         [ ]     [ ]
+[ ]             [ ]     [ ]
+                [S]     [S]
+
+ 0   1   2   3   4   5   6
+[S] [S] ... ... [ ] (.) [ ]
+[ ] [ ]         [ ]     [ ]
+[ ]             [S]     [S]
+                [ ]     [ ]
+
+
+Picosecond 16:
+ 0   1   2   3   4   5   6
+[S] [S] ... ... [ ] ... ( )
+[ ] [ ]         [ ]     [ ]
+[ ]             [S]     [S]
+                [ ]     [ ]
+
+ 0   1   2   3   4   5   6
+[ ] [ ] ... ... [ ] ... ( )
+[S] [S]         [S]     [S]
+[ ]             [ ]     [ ]
+                [ ]     [ ]
+
+Because all smaller delays would get you caught, the fewest number of picoseconds you would need to delay to get through safely is 10.
+
+What is the fewest number of picoseconds that you need to delay the packet to pass through the firewall without being caught?
 */
 namespace Day13 {
 
@@ -187,12 +305,14 @@ struct FirewallLayer {
     FirewallLayer(int depth, int range) : Depth(depth), Range(range) {}
     int Depth;
     int Range;
-    int ScannerPosition = 0;
+    int Severity() const { return Depth * Range;  }
 };
 
-std::vector<FirewallLayer> ReadFirewall(const std::vector<std::string> input)
+typedef std::vector<FirewallLayer> Firewall;
+
+Firewall ReadFirewall(const std::vector<std::string>& input)
 {
-    std::vector<FirewallLayer> firewall;
+    Firewall firewall;
     for (auto &line : input) {
         auto tokens = Tokenize(line);
         RemoveTrailingCharacter(tokens[0], ':');
@@ -201,17 +321,31 @@ std::vector<FirewallLayer> ReadFirewall(const std::vector<std::string> input)
     return firewall;
 }
 
-int FirewallSeverity(const std::vector<std::string> input)
+int FirewallSeverity(const Firewall& firewall, int delay = 0)
 {
-    auto firewall = ReadFirewall(input);
     int severity = 0;
     for (auto &level : firewall) {
         // The scanner takes (Range - 1) turns to get to the bottom and then (Range - 1) steps to get back to the top
-        const bool caught = (level.Depth % (2 * (level.Range - 1))) == 0;
-        if (caught) severity += (level.Depth * level.Range);
+        const int fullTrip = 2 * (level.Range - 1);
+        // To move to a depth requires level.Depth picoseconds, so the scanner will have moved that many times.
+        // When we delay, we simply allow the scanners to have moved that many more times.
+        int ScannerPositionWhenDepthReached = (level.Depth + delay);
+        // Avoid any nastiness with negative modulo operations
+        while (ScannerPositionWhenDepthReached < 0) ScannerPositionWhenDepthReached += fullTrip;
+        const bool caught = (ScannerPositionWhenDepthReached % fullTrip) == 0;
+        if (caught) severity += level.Severity();
     }
     return severity;
 }
+
+int SmallestDelayToAvoidBeingCaught(const Firewall& firewall) {
+    // Initial attempt: Brute Force
+    for (int delay = 0; true; ++delay) {
+        if (FirewallSeverity(firewall, delay) == 0) return delay;
+    }
+}
+
+// 129680 is too low
 
 } // namespace Day13
 
@@ -223,14 +357,18 @@ void Day13Tests()
         "4: 4",
         "6: 4",
     };
-    auto severity = Day13::FirewallSeverity(input);
+    const auto firewall = Day13::ReadFirewall(input);
+    auto severity = Day13::FirewallSeverity(firewall);
     if (severity != 24) std::cerr << "Test 13A error: Got " << severity << ", Expected 24\n";
+    auto delay = Day13::SmallestDelayToAvoidBeingCaught(firewall);
+    if (delay != 10) std::cerr << "Test 13B error: Got " << delay << ", Expected 10\n";
 }
 
 void Day13Problems()
 {
     std::cout << "Day 13:\n";
     Day13Tests();
-    auto input = ReadFileLines("input_day13.txt");
-    std::cout << Day13::FirewallSeverity(input) << std::endl;
+    const auto input = ReadFileLines("input_day13.txt");
+    const auto firewall = Day13::ReadFirewall(input);
+    std::cout << Day13::FirewallSeverity(firewall) << std::endl << Day13::SmallestDelayToAvoidBeingCaught(firewall) << std::endl << std::endl;
 }
