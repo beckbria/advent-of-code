@@ -148,8 +148,8 @@ void Day11Tests()
 
 void Day11Problems()
 {
-    auto source = ReadFileLines("input_day11.txt");
-    auto input = Tokenize(source[0], ',');
+    auto source = Helpers::ReadFileLines("input_day11.txt");
+    auto input = Helpers::Tokenize(source[0], ',');
     std::cout << "Day 11:\n";
     Day11Tests();
     std::cout << Day11::StepsAway(input) << std::endl << Day11::MaxStepsEverAway(input) << std::endl << std::endl;

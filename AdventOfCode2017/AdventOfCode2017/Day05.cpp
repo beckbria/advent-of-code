@@ -79,7 +79,7 @@ void Day5Problems()
 {
     Day5Tests();
 
-    auto maze = ReadFile<int>("input_day5.txt");
+    auto maze = Helpers::ReadFile<int>("input_day5.txt");
     std::cout << "Day 5:\n";
     std::cout << Day5::MoveCount(maze, false) << std::endl;
     std::cout << Day5::MoveCount(maze, true) << std::endl << std::endl;

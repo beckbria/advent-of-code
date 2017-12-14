@@ -12,8 +12,9 @@ int main() {
     Day9Problems();
     Day10Problems();
     Day11Problems();
-    Day12Problems();*/
-    Day13Problems();
+    Day12Problems();
+    Day13Problems();*/
+    Day14Problems();
 
     // Wait for keyboard input
     std::cout << std::endl << "Done (press Enter)";

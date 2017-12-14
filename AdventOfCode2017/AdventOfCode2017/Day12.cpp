@@ -63,14 +63,14 @@ std::map<int, std::shared_ptr<Node>> BuildGraph(const std::vector<std::string>& 
 {
     std::map<int, std::shared_ptr<Node>> nodes;
     for (auto &line : input) {
-        auto tokens = Tokenize(line);
+        auto tokens = Helpers::Tokenize(line);
         int originValue = std::stoi(tokens[0]);
         if (nodes.count(originValue) == 0) nodes[originValue] = std::make_shared<Node>(originValue);
         auto origin = nodes[originValue];
 
         // Skip the <==> token
         for (size_t i = 2; i < tokens.size(); ++i) {
-            RemoveTrailingCharacter(tokens[i], ',');
+            Helpers::RemoveTrailingCharacter(tokens[i], ',');
             auto neighborValue = std::stoi(tokens[i]);
             if (nodes.count(neighborValue) == 0) nodes[neighborValue] = std::make_shared<Node>(neighborValue);
             origin->neighbors.push_back(nodes[neighborValue]);
@@ -151,7 +151,7 @@ void Day12Problems()
 {
     std::cout << "Day 12:\n";
     Day12Tests();
-    auto input = ReadFileLines("input_day12.txt");
+    auto input = Helpers::ReadFileLines("input_day12.txt");
     auto nodes = Day12::BuildGraph(input);
     std::cout << Day12::ConnectedNodeCount(nodes[0]) << std::endl;
     std::cout << Day12::TotalGroups(nodes) << std::endl << std::endl;

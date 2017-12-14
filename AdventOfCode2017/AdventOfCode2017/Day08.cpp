@@ -51,7 +51,7 @@ std::pair<std::map<std::string, int>, int> ComputeRegisters(const std::vector<st
     int maxSeenAtAnyTime = INT_MIN;
 
     for (auto &line : commands) {
-        auto tokens = Tokenize(line);
+        auto tokens = Helpers::Tokenize(line);
         if (tokens.size() != 7) std::cerr << "Unexpected token count: " << line << std::endl;
 
         // Ensure that we have registers for the names
@@ -124,7 +124,7 @@ void Day8Problems()
 {
     std::cout << "Day 8:\n";
     Day8Tests();
-    const auto input = ReadFileLines("input_day8.txt");
+    const auto input = Helpers::ReadFileLines("input_day8.txt");
     const auto maxRegister = Day8::MaxRegister(input);
     std::cout << maxRegister.first << std::endl << maxRegister.second << std::endl << std::endl;
 }

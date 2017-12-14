@@ -41,13 +41,13 @@ bool AllWordsUnique(const std::vector<std::string>& words)
 bool IsValidPassphrase(const std::string& line)
 {
     // This is where C++ starts to fall apart.  Oh for a language with a standard string.split function.......
-    auto words = Tokenize(line);
+    auto words = Helpers::Tokenize(line);
     return AllWordsUnique(words);
 }
 
 bool IsValidAnagramPassphrase(const std::string& line)
 {
-    auto words = Tokenize(line);
+    auto words = Helpers::Tokenize(line);
     // Sort the characters in each word to detect anagrams
     for (auto& word : words) {
         std::sort(word.begin(), word.end());
@@ -76,7 +76,7 @@ void Day4Problems()
     std::cout << "Day 4:\n";
     Day4Tests();
 
-    const auto input = ReadFileLines("input_day4.txt");
+    const auto input = Helpers::ReadFileLines("input_day4.txt");
     int validPassphrases = 0;
     int anagramPassphrases = 0;
     for (auto &line : input) {

@@ -322,8 +322,8 @@ Firewall ReadFirewall(const std::vector<std::string>& input)
 {
     Firewall firewall;
     for (auto &line : input) {
-        auto tokens = Tokenize(line);
-        RemoveTrailingCharacter(tokens[0], ':');
+        auto tokens = Helpers::Tokenize(line);
+        Helpers::RemoveTrailingCharacter(tokens[0], ':');
         firewall.emplace_back(std::stoi(tokens[0]), std::stoi(tokens[1]));
     }
     return firewall;
@@ -374,7 +374,7 @@ void Day13Problems()
 {
     std::cout << "Day 13:\n";
     Day13Tests();
-    const auto input = ReadFileLines("input_day13.txt");
+    const auto input = Helpers::ReadFileLines("input_day13.txt");
     const auto firewall = Day13::ReadFirewall(input);
     std::cout << Day13::FirewallSeverity(firewall) << std::endl << Day13::SmallestDelayToAvoidBeingCaught(firewall) << std::endl << std::endl;
 }

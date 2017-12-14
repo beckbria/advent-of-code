@@ -149,7 +149,7 @@ std::shared_ptr<Node> BuildTree(const std::vector<std::string>& input)
     std::map<std::string, std::shared_ptr<Node>> entry;
 
     for (auto &line : input) {
-        auto tokens = Tokenize(line);
+        auto tokens = Helpers::Tokenize(line);
 
         // The first token is the name
         auto parent = entry[tokens[0]];
@@ -169,7 +169,7 @@ std::shared_ptr<Node> BuildTree(const std::vector<std::string>& input)
 
             for (size_t i = 3; i < tokens.size(); ++i) {
                 std::string name = std::move(tokens[i]);
-                RemoveTrailingCharacter(name, ',');
+                Helpers::RemoveTrailingCharacter(name, ',');
 
                 auto child = entry[name];
                 if (child == nullptr) {
@@ -305,7 +305,7 @@ void Day7Tests()
 void Day7Problems()
 {
     Day7Tests();
-    const auto input = ReadFileLines("input_day7.txt");
+    const auto input = Helpers::ReadFileLines("input_day7.txt");
     auto root = Day7::BuildTree(input);
     std::cout << "Day 7:\n";
     std::cout << root->name << std::endl;

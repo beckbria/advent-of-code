@@ -1,5 +1,7 @@
 #include "Problems.h"
 
+namespace Helpers
+{
 inline bool IsWhitespace(char c) {
     switch (c) {
     case ' ':
@@ -59,3 +61,26 @@ void RemoveTrailingCharacter(std::string& toBeModified, char toBeRemoved)
     }
     toBeModified.resize(toBeModified.size() - removalCount);
 }
+
+// Assumes well-formed input
+inline char HexDigit(int i) {
+    if (i < 10) {
+        return ('0' + i);
+    }
+    else {
+        return 'a' + (i - 10);
+    }
+}
+
+std::string ByteArrayToHex(const std::vector<int>& bytes)
+{
+    std::string output(bytes.size() * 2, ' ');
+    for (size_t i = 0; i < bytes.size(); ++i) {
+        auto current = bytes[i];
+        output[2 * i] = HexDigit(current / 16);
+        output[(2 * i) + 1] = HexDigit(current % 16);
+    }
+    return output;
+}
+
+} // namespace Helpers

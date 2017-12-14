@@ -210,7 +210,7 @@ void Day9Problems()
 {
     Day9Tests();
 
-    auto input = ReadFileLines("input_day9.txt");
+    auto input = Helpers::ReadFileLines("input_day9.txt");
     std::cout << "Day 9:\n";
     if (input.size() != 1) std::cerr << "Day 9: Malformed input" << std::endl;
     auto score = Day9::Score(input[0]);

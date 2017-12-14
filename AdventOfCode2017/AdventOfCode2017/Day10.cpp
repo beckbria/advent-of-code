@@ -131,16 +131,7 @@ void ComputeHash(const std::vector<int>& lengths, std::vector<int>& hash, int& s
     }
 }
 
-// Assumes well-formed input
-inline char HexDigit(int i) {
-    if (i < 10) {
-        return ('0' + i);
-    } else {
-        return 'a' + (i - 10);
-    }
-}
-
-std::string KnotHash(std::string plainText, unsigned int listSize)
+std::vector<int> KnotHash(std::string plainText)
 {
     // For readability, we're going to explicitly convert the input string to a vector of integers.  Yes, it's true 
     // that a std::string is array-like behind the scenes, and if we were dealing with megabyte-scale input avoiding
@@ -150,7 +141,7 @@ std::string KnotHash(std::string plainText, unsigned int listSize)
 
     // Per problem instructions, append a few values to the end
     for (auto i : { 17, 31, 73, 47, 23 }) lengths.push_back(i);
-    auto sparseHash = InitializeHash(listSize);
+    auto sparseHash = InitializeHash(256);
 
     // Do 64 rounds of the hash function to obtain a permutation of the initial list
     int skip = 0, currentPosition = 0;
@@ -172,16 +163,7 @@ std::string KnotHash(std::string plainText, unsigned int listSize)
     }
     // Add the last element
     denseHash.push_back(current);
-
-    // Convert the dense hash to a hexadecimal string
-    std::string output(denseHash.size() * 2, ' ');
-    for (size_t i = 0; i < denseHash.size(); ++i) {
-        auto current = denseHash[i];
-        output[2 * i] = HexDigit(current / 16);
-        output[(2 * i) + 1] = HexDigit(current % 16);
-    }
-
-    return output;
+    return denseHash;
 }
 } // namespace Day10
 
@@ -212,7 +194,7 @@ void Day10Tests()
         { "1,2,4", "63960835bcdc130f0b66d7ff4f6a5a8e" }
     };
     for (auto &test : testCases) {
-        auto hash = Day10::KnotHash(test.plainText, 256);
+        auto hash = Helpers::ByteArrayToHex(Day10::KnotHash(test.plainText));
         if (hash != test.hash) std::cerr << "Test 10B Error: Got " << hash << ", expected " << test.hash << std::endl;
     }
 }
@@ -220,7 +202,7 @@ void Day10Tests()
 void Day10Problems()
 {
     const std::string input = "31,2,85,1,80,109,35,63,98,255,0,13,105,254,128,33";
-    const auto tokens = Tokenize(input, ',');
+    const auto tokens = Helpers::Tokenize(input, ',');
     std::vector<int> lengths;
     for (auto &t : tokens) {
         lengths.push_back(std::stoi(t));
@@ -231,5 +213,5 @@ void Day10Problems()
     int skip = 0, currentPosition = 0;
     auto hash = Day10::InitializeHash(256);
     Day10::ComputeHash(lengths, hash, skip, currentPosition);
-    std::cout << hash[0] * hash[1] << std::endl << Day10::KnotHash(input, 256) << std::endl << std::endl;
+    std::cout << hash[0] * hash[1] << std::endl << Helpers::ByteArrayToHex(Day10::KnotHash(input)) << std::endl << std::endl;
 }
