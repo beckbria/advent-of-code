@@ -28,7 +28,7 @@ std::vector<std::string> ReadFileLines(const std::string& fileName);
 std::vector<std::string> Tokenize(const std::string& line, char delimiter = ' ', bool splitWhitespace = true);
 // Removes all instances of the specified character at the end of a string.  Used for removing commas, etc.
 void RemoveTrailingCharacter(std::string& toBeModified, char toBeRemoved);
-std::string ByteArrayToHex(const std::vector<int>& bytes);
+std::string ByteArrayToHex(const std::vector<unsigned int>& bytes);
 
 inline int CountBits(int i)
 {

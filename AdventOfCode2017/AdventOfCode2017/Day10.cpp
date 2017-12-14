@@ -100,7 +100,7 @@ AoC 2017 becomes 33efeb34ea91902bb2f59c9920caa6cd.
 Treating your puzzle input as a string of ASCII characters, what is the Knot Hash of your puzzle input? Ignore any leading or trailing whitespace you might encounter.
 */
 namespace Day10 {
-void ReverseSegment(std::vector<int>& hash, int startPosition, int length)
+void ReverseSegment(std::vector<unsigned int>& hash, int startPosition, int length)
 {
     int start = startPosition % hash.size();
     int end = startPosition + (length - 1);
@@ -111,9 +111,9 @@ void ReverseSegment(std::vector<int>& hash, int startPosition, int length)
     }
 }
 
-std::vector<int> InitializeHash(unsigned int listSize)
+std::vector<unsigned int> InitializeHash(unsigned int listSize)
 {
-    std::vector<int> hash;
+    std::vector<unsigned int> hash;
     hash.resize(listSize);
     // Initialize the list to 0....listSize-1
     for (unsigned int i = 0; i < listSize; ++i) {
@@ -122,7 +122,7 @@ std::vector<int> InitializeHash(unsigned int listSize)
     return hash;
 }
 
-void ComputeHash(const std::vector<int>& lengths, std::vector<int>& hash, int& skip, int& currentPosition)
+void ComputeHash(const std::vector<unsigned int>& lengths, std::vector<unsigned int>& hash, int& skip, int& currentPosition)
 {
     for (auto len : lengths) {
         ReverseSegment(hash, currentPosition, len);
@@ -131,13 +131,13 @@ void ComputeHash(const std::vector<int>& lengths, std::vector<int>& hash, int& s
     }
 }
 
-std::vector<int> KnotHash(std::string plainText)
+std::vector<unsigned int> KnotHash(std::string plainText)
 {
     // For readability, we're going to explicitly convert the input string to a vector of integers.  Yes, it's true 
     // that a std::string is array-like behind the scenes, and if we were dealing with megabyte-scale input avoiding
     // the copy would be nice, but here's it's a trivial amount of work/memory, so just copy rather than genericizing
     // the function further
-    std::vector<int> lengths(plainText.begin(), plainText.end());
+    std::vector<unsigned int> lengths(plainText.begin(), plainText.end());
 
     // Per problem instructions, append a few values to the end
     for (auto i : { 17, 31, 73, 47, 23 }) lengths.push_back(i);
@@ -145,13 +145,13 @@ std::vector<int> KnotHash(std::string plainText)
 
     // Do 64 rounds of the hash function to obtain a permutation of the initial list
     int skip = 0, currentPosition = 0;
-    for (int i = 0; i < 64; ++i) {
+    for (unsigned int i = 0; i < 64; ++i) {
         ComputeHash(lengths, sparseHash, skip, currentPosition);
     }
 
     // Compute the Dense Hash by XORing each 16 characters together
-    std::vector<int> denseHash;
-    int current = sparseHash[0];
+    std::vector<unsigned int> denseHash;
+    unsigned int current = sparseHash[0];
     for (size_t i = 1; i < sparseHash.size(); ++i) {
         if (i % 16 == 0) {
             // We've filled in a block
@@ -172,7 +172,7 @@ void Day10Tests()
     auto hashA = Day10::InitializeHash(5);
     int skip = 0, currentPosition = 0;
     Day10::ComputeHash({ 3,4,1,5 }, hashA, skip, currentPosition);
-    std::array<int, 5> answerA = { 3, 4, 2, 1, 0 };
+    std::array<unsigned int, 5> answerA = { 3, 4, 2, 1, 0 };
     for (size_t i = 0; i < answerA.size(); ++i) {
         if (hashA[i] != answerA[i]) {
             std::cerr << "Test 10A Error: Got {";
@@ -203,7 +203,7 @@ void Day10Problems()
 {
     const std::string input = "31,2,85,1,80,109,35,63,98,255,0,13,105,254,128,33";
     const auto tokens = Helpers::Tokenize(input, ',');
-    std::vector<int> lengths;
+    std::vector<unsigned> lengths;
     for (auto &t : tokens) {
         lengths.push_back(std::stoi(t));
     }

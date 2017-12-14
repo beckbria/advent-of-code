@@ -72,7 +72,7 @@ inline char HexDigit(int i) {
     }
 }
 
-std::string ByteArrayToHex(const std::vector<int>& bytes)
+std::string ByteArrayToHex(const std::vector<unsigned int>& bytes)
 {
     std::string output(bytes.size() * 2, ' ');
     for (size_t i = 0; i < bytes.size(); ++i) {

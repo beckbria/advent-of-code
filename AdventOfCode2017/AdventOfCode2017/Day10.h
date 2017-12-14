@@ -4,5 +4,5 @@
 
 namespace Day10
 {
-    std::vector<int> KnotHash(std::string plainText);
+    std::vector<unsigned int> KnotHash(std::string plainText);
 }

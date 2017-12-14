@@ -39,37 +39,186 @@ In this example, 8108 squares are used across the entire 128x128 grid.
 
 Given your actual key string, how many squares are used?
 
+--- Part Two ---
+
+Now, all the defragmenter needs to know is the number of regions. A region is a group of used squares that are all adjacent, not including diagonals. Every used square is in exactly one region: lone used squares form their own isolated regions, while several adjacent squares all count as a single region.
+
+In the example above, the following nine regions are visible, each marked with a distinct digit:
+
+11.2.3..-->
+.1.2.3.4
+....5.6.
+7.8.55.9
+.88.5...
+88..5..8
+.8...8..
+88.8.88.-->
+|      |
+V      V
+
+Of particular interest is the region marked 8; while it does not appear contiguous in this small view, all of the squares marked 8 are connected when considering the whole 128x128 grid. In total, in this example, 1242 regions are present.
+
+How many regions are present given your key string?
+
 */
 namespace Day14 {
-std::vector<std::vector<int>> BuildGrid(const std::string& seed)
+
+class Grid
 {
-    std::vector<std::vector<int>> grid;
+public:
+    Grid(const std::string& seed);
+    int UsedSquares();
+    int Regions();
+    int Rows() const;
+    int Columns() const;
+
+private:
+    // Grid storage is a vector of vector of bytes.  Its dimensions should be 128x16.
+    typedef std::vector<std::vector<unsigned int>> GridStorage;
+    GridStorage m_grid;
+    static constexpr int BitsPerByte = 8;
+
+    struct Point {
+        Point(int X, int Y) : x(X), y(Y) {}
+        int x;
+        int y;
+    };
+
+    // This checks the current value of a bit in the 128x128 array
+    inline bool IsCellUsed(const GridStorage& grid, const Point& pt) {
+        // xCell is the index into the x array that contains the bit we're interested in.
+        const unsigned int xCell = pt.x / BitsPerByte;
+        const unsigned int bit = pt.x % BitsPerByte;
+        // If we want the 0th bit, we want the most significant bit.  Use masks to extract the desired result
+        static constexpr unsigned int bitMask[BitsPerByte] = { 0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01 };
+        return (grid[pt.y][xCell] & bitMask[bit]);
+    }
+
+    inline void ClearCell(GridStorage& grid, const Point& pt) {
+        // xCell is the index into the x array that contains the bit we're interested in.
+        const unsigned int xCell = pt.x / BitsPerByte;
+        const unsigned int bit = pt.x % BitsPerByte;
+
+        // If we want the 0th bit, we want to clear the most significant bit.  Use masks to extract the desired result
+        static constexpr unsigned int bitMask[BitsPerByte] = { 
+            0xff - 0x80, 
+            0xff - 0x40, 
+            0xff - 0x20, 
+            0xff - 0x10, 
+            0xff - 0x08, 
+            0xff - 0x04, 
+            0xff - 0x02, 
+            0xff - 0x01 };
+
+        grid[pt.y][xCell] &= bitMask[bit];
+    }
+
+    // Clears all of the bits in a region (a region is a set of bits connected horizontally or vertically)
+    void ClearRegion(GridStorage& grid, const Point& pt);
+};
+
+Grid::Grid(const std::string& seed)
+{
     for (int i = 0; i < 128; ++i) {
         std::stringstream rowSeed;
         rowSeed << seed << '-' << i;
-        grid.emplace_back(std::move(Day10::KnotHash(rowSeed.str())));
+        m_grid.emplace_back(std::move(Day10::KnotHash(rowSeed.str())));
     }
-    return grid;
 }
 
-int UsedSquares(const std::string& seed)
+int Grid::Rows() const
 {
-    auto grid = BuildGrid(seed);
+    return m_grid.size();
+}
+
+int Grid::Columns() const
+{
+    if (m_grid.size() < 1) {
+        return 0;
+    } else {
+        return m_grid[0].size() * BitsPerByte;
+    }
+}
+
+int Grid::UsedSquares()
+{
     int used = 0;
-    for (const auto &row : grid) {
+    for (const auto &row : m_grid) {
         for (const auto &cell : row) {
             used += Helpers::CountBits(cell);
         }
     }
     return used;
 }
+
+int Grid::Regions()
+{
+    // Create a copy of the grid so that we can mark where we've been
+    auto grid = m_grid;
+    int regions = 0;
+
+    const auto rows = Rows();
+    const auto cols = Columns();
+    for (int x = 0; x < cols; ++x) {
+        for (int y = 0; y < rows; ++y) {
+            Point here(x, y);
+            if (IsCellUsed(grid, here)) {
+                ++regions;
+                ClearRegion(grid, here);
+            }
+        }
+    }
+
+    return regions;
+}
+
+void Grid::ClearRegion(GridStorage& grid, const Point& pt)
+{
+    // Depth first preorder traversal to clear any bits in the region
+    std::stack<Point> region;
+    region.push(pt);
+    const auto lastRow = Rows() - 1;
+    const auto lastColumn = Columns() - 1;
+    while (!region.empty()) {
+        auto current = region.top();
+        region.pop();
+
+        if (IsCellUsed(grid, current))
+        {
+            ClearCell(grid, current);
+
+            if (current.x > 0) {
+                Point left(current.x - 1, current.y);
+                if (IsCellUsed(grid, left)) region.push(left);
+            }
+
+            if (current.x < lastColumn) {
+                Point right(current.x + 1, current.y);
+                if (IsCellUsed(grid, right)) region.push(right);
+            }
+
+            if (current.y > 0) {
+                Point up(current.x, current.y - 1);
+                if (IsCellUsed(grid, up)) region.push(up);
+            }
+
+            if (current.y < lastRow) {
+                Point down(current.x, current.y + 1);
+                if (IsCellUsed(grid, down)) region.push(down);
+            }
+        }
+    }
+}
 } // namespace Day14
 
 void Day14Tests()
 {
     const std::string input = "flqrgnkx";
-    const auto used = Day14::UsedSquares(input);
-    if (used != 8108) std::cerr << "Test 14A Error: Got " << used << ", Expected 8108";
+    Day14::Grid grid(input);
+    const auto used = grid.UsedSquares();
+    if (used != 8108) std::cerr << "Test 14A Error: Got " << used << ", Expected 8108\n";
+    const auto regions = grid.Regions();
+    if (regions != 1242) std::cerr << "Test 14B Error: Got " << regions << ", Expected 1242\n";
 }
 
 void Day14Problems()
@@ -77,5 +226,7 @@ void Day14Problems()
     std::cout << "Day 14:\n";
     Day14Tests();
     const std::string input = "uugsqrei";
-    std::cout << Day14::UsedSquares(input) << std::endl;
+    Day14::Grid grid(input);
+    std::cout << grid.UsedSquares() << std::endl;
+    std::cout << grid.Regions() << std::endl << std::endl;
 }
