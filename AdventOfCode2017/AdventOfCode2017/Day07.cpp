@@ -304,10 +304,14 @@ void Day7Tests()
 
 void Day7Problems()
 {
+    std::cout << "Day 7:\n";
     Day7Tests();
+    const auto start = std::chrono::steady_clock::now();
     const auto input = Helpers::ReadFileLines("input_day7.txt");
     auto root = Day7::BuildTree(input);
-    std::cout << "Day 7:\n";
+    const auto balanced = Day7::BalanceTree(root, 0);
+    const auto end = std::chrono::steady_clock::now();
     std::cout << root->name << std::endl;
-    std::cout << Day7::BalanceTree(root, 0) << std::endl << std::endl;
+    std::cout << balanced << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
 }

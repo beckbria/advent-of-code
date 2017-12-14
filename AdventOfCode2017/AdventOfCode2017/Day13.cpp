@@ -374,7 +374,12 @@ void Day13Problems()
 {
     std::cout << "Day 13:\n";
     Day13Tests();
+    const auto start = std::chrono::steady_clock::now();
     const auto input = Helpers::ReadFileLines("input_day13.txt");
     const auto firewall = Day13::ReadFirewall(input);
-    std::cout << Day13::FirewallSeverity(firewall) << std::endl << Day13::SmallestDelayToAvoidBeingCaught(firewall) << std::endl << std::endl;
+    const auto severity = Day13::FirewallSeverity(firewall);
+    const auto smallestDelay = Day13::SmallestDelayToAvoidBeingCaught(firewall);
+    const auto end = std::chrono::steady_clock::now();
+    std::cout << severity << std::endl << smallestDelay << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
 }

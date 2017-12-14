@@ -213,9 +213,14 @@ void Day3Tests()
 
 void Day3Problems()
 {
-    int const target = 347991;
     std::cout << "Day 3:\n";
     Day3Tests();
-    std::cout << Day3::SpiralDistance(target) << std::endl;
-    std::cout << Day3::FirstHigherSpiral(target) << std::endl << std::endl;
+    const auto start = std::chrono::steady_clock::now();
+    int const target = 347991;
+    auto const spiralDistance = Day3::SpiralDistance(target);
+    auto const higherSpiral = Day3::FirstHigherSpiral(target);
+    const auto end = std::chrono::steady_clock::now();
+    std::cout << spiralDistance << std::endl;
+    std::cout << higherSpiral << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
 }

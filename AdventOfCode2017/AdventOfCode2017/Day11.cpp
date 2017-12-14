@@ -152,5 +152,10 @@ void Day11Problems()
     auto input = Helpers::Tokenize(source[0], ',');
     std::cout << "Day 11:\n";
     Day11Tests();
-    std::cout << Day11::StepsAway(input) << std::endl << Day11::MaxStepsEverAway(input) << std::endl << std::endl;
+    const auto start = std::chrono::steady_clock::now();
+    const auto stepsAway = Day11::StepsAway(input);
+    const auto maxSteps = Day11::MaxStepsEverAway(input);
+    const auto end = std::chrono::steady_clock::now();
+    std::cout << stepsAway << std::endl << maxSteps << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
 }

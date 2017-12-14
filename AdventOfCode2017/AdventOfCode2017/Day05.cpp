@@ -77,10 +77,12 @@ void Day5Tests()
 
 void Day5Problems()
 {
-    Day5Tests();
-
-    auto maze = Helpers::ReadFile<int>("input_day5.txt");
     std::cout << "Day 5:\n";
+    Day5Tests();
+    const auto start = std::chrono::steady_clock::now();
+    auto maze = Helpers::ReadFile<int>("input_day5.txt");
     std::cout << Day5::MoveCount(maze, false) << std::endl;
-    std::cout << Day5::MoveCount(maze, true) << std::endl << std::endl;
+    std::cout << Day5::MoveCount(maze, true) << std::endl;
+    const auto end = std::chrono::steady_clock::now();
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
 }

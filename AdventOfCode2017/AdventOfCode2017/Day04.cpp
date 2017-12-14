@@ -75,7 +75,7 @@ void Day4Problems()
 {
     std::cout << "Day 4:\n";
     Day4Tests();
-
+    const auto start = std::chrono::steady_clock::now();
     const auto input = Helpers::ReadFileLines("input_day4.txt");
     int validPassphrases = 0;
     int anagramPassphrases = 0;
@@ -83,6 +83,8 @@ void Day4Problems()
         if (Day4::IsValidPassphrase(line)) ++validPassphrases;
         if (Day4::IsValidAnagramPassphrase(line)) ++anagramPassphrases;
     }
+    const auto end = std::chrono::steady_clock::now();
     std::cout << validPassphrases << std::endl;
     std::cout << anagramPassphrases << std::endl << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
 }

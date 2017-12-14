@@ -104,10 +104,12 @@ void Day6Tests()
 }
 
 void Day6Problems() {
-    Day6Tests();
-
-    std::vector<int> bankSizes = { 2,8,8,5,4,2,3,1,5,5,1,2,15,13,5,14 };
-    auto answer = Day6::IterationsUntilInfiniteLoop(bankSizes);
     std::cout << "Day 6:\n";
-    std::cout << answer.first << std::endl << answer.second << std::endl << std::endl;
+    Day6Tests();
+    const auto start = std::chrono::steady_clock::now();
+    std::vector<int> bankSizes = { 2,8,8,5,4,2,3,1,5,5,1,2,15,13,5,14 };
+    const auto answer = Day6::IterationsUntilInfiniteLoop(bankSizes);
+    const auto end = std::chrono::steady_clock::now();
+    std::cout << answer.first << std::endl << answer.second << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
 }

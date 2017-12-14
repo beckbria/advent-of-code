@@ -151,8 +151,13 @@ void Day12Problems()
 {
     std::cout << "Day 12:\n";
     Day12Tests();
+    const auto start = std::chrono::steady_clock::now();
     auto input = Helpers::ReadFileLines("input_day12.txt");
     auto nodes = Day12::BuildGraph(input);
-    std::cout << Day12::ConnectedNodeCount(nodes[0]) << std::endl;
-    std::cout << Day12::TotalGroups(nodes) << std::endl << std::endl;
+    const auto connected = Day12::ConnectedNodeCount(nodes[0]);
+    const auto groups = Day12::TotalGroups(nodes);
+    const auto end = std::chrono::steady_clock::now();
+    std::cout << connected << std::endl;
+    std::cout << groups << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
 }

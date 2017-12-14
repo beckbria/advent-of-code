@@ -225,8 +225,13 @@ void Day14Problems()
 {
     std::cout << "Day 14:\n";
     Day14Tests();
+    const auto start = std::chrono::steady_clock::now();
     const std::string input = "uugsqrei";
     Day14::Grid grid(input);
-    std::cout << grid.UsedSquares() << std::endl;
-    std::cout << grid.Regions() << std::endl << std::endl;
+    const auto usedSquares = grid.UsedSquares();
+    const auto regions = grid.Regions();
+    const auto end = std::chrono::steady_clock::now();
+    std::cout << usedSquares << std::endl;
+    std::cout << regions << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
 }

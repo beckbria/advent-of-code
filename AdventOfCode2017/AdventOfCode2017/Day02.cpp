@@ -108,6 +108,9 @@ void Day2Tests()
 
 void Day2Problems()
 {
+    std::cout << "Day 2:\n";
+    Day2Tests();
+    const auto start = std::chrono::steady_clock::now();
     const std::vector<std::vector<int>> spreadsheet = { 
         {116, 1470, 2610, 179, 2161, 2690, 831, 1824, 2361, 1050, 2201, 118, 145, 2275, 2625, 2333},
         { 976,220,1129,553,422,950,332,204,1247,1092,1091,159,174,182,984,713 },
@@ -125,8 +128,9 @@ void Day2Problems()
         { 1176,112,1407,136,1482,1534,1384,1202,604,851,190,284,1226,113,114,687 },
         { 73,1620,81,1137,812,75,1326,1355,1545,1666,1356,1681,1732,85,128,902},
         { 571,547,160,237,256,30,496,592,385,576,183,692,192,387,647,233 } };
-
-    std::cout << "Day 2:\n";
-    Day2Tests();
-    std::cout << Day2::checksum(spreadsheet) << std::endl << Day2::divisorChecksum(spreadsheet) << std::endl << std::endl;
+    const auto check = Day2::checksum(spreadsheet);
+    const auto divisorCheck = Day2::divisorChecksum(spreadsheet);
+    const auto end = std::chrono::steady_clock::now();
+    std::cout << check << std::endl << divisorCheck << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
 }

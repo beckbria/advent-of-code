@@ -210,8 +210,13 @@ void Day10Problems()
 
     std::cout << "Day 10:\n";
     Day10Tests();
+    const auto start = std::chrono::steady_clock::now();
     int skip = 0, currentPosition = 0;
     auto hash = Day10::InitializeHash(256);
     Day10::ComputeHash(lengths, hash, skip, currentPosition);
-    std::cout << hash[0] * hash[1] << std::endl << Helpers::ByteArrayToHex(Day10::KnotHash(input)) << std::endl << std::endl;
+    const auto parityCheck = hash[0] * hash[1];
+    const auto hexString = Helpers::ByteArrayToHex(Day10::KnotHash(input));
+    const auto end = std::chrono::steady_clock::now();
+    std::cout << parityCheck << std::endl << hexString << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
 }

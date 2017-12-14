@@ -124,7 +124,10 @@ void Day8Problems()
 {
     std::cout << "Day 8:\n";
     Day8Tests();
+    const auto start = std::chrono::steady_clock::now();
     const auto input = Helpers::ReadFileLines("input_day8.txt");
     const auto maxRegister = Day8::MaxRegister(input);
-    std::cout << maxRegister.first << std::endl << maxRegister.second << std::endl << std::endl;
+    const auto end = std::chrono::steady_clock::now();
+    std::cout << maxRegister.first << std::endl << maxRegister.second << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
 }

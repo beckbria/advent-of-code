@@ -208,11 +208,13 @@ void Day9Tests()
 
 void Day9Problems()
 {
-    Day9Tests();
-
-    auto input = Helpers::ReadFileLines("input_day9.txt");
     std::cout << "Day 9:\n";
+    Day9Tests();
+    const auto start = std::chrono::steady_clock::now();
+    auto input = Helpers::ReadFileLines("input_day9.txt");
     if (input.size() != 1) std::cerr << "Day 9: Malformed input" << std::endl;
-    auto score = Day9::Score(input[0]);
-    std::cout << score.first << std::endl << score.second << std::endl << std::endl;
+    const auto score = Day9::Score(input[0]);
+    const auto end = std::chrono::steady_clock::now();
+    std::cout << score.first << std::endl << score.second << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
 }
