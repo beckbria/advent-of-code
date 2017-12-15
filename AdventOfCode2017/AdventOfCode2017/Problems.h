@@ -5,6 +5,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <fstream>
+#include <functional>
 #include <iostream>
 #include <iterator>
 #include <map>
@@ -59,6 +60,7 @@ std::vector<T> ReadFile(const std::string& fileName)
 struct IntDefaultToZero {
     int val = 0;
 };
+
 // Daily Functions
 void Day1Problems();
 void Day2Problems();
@@ -74,3 +76,4 @@ void Day11Problems();
 void Day12Problems();
 void Day13Problems();
 void Day14Problems();
+void Day15Problems();
