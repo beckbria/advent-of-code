@@ -148,14 +148,8 @@ namespace Day15 {
 
 } // namespace Day15
 
-template<uint64_t multiplier>
+template<uint64_t multiplier, uint64_t divisorRequirement = 1>
 uint64_t MultiplyGenerator(uint64_t previous)
-{
-    return (previous * multiplier) % 2147483647;
-}
-
-template<uint64_t multiplier, uint64_t divisorRequirement>
-uint64_t DivisibleMultiplyGenerator(uint64_t previous)
 {
     uint64_t current = previous;
     do {
@@ -171,8 +165,8 @@ void Day15Tests()
     const auto matched = MatchedPairs(A, B, 5);
     if (matched != 1) std::cerr << "Test 15A Error: Got " << matched << ", expected 1\n";
 
-    Day15::Generator C(65, DivisibleMultiplyGenerator<16807, 4>);
-    Day15::Generator D(8921, DivisibleMultiplyGenerator<48271, 8>);
+    Day15::Generator C(65, MultiplyGenerator<16807, 4>);
+    Day15::Generator D(8921, MultiplyGenerator<48271, 8>);
     const auto matched2 = MatchedPairs(C, D, 5000000);
     if (matched2 != 309) std::cerr << "Test 15B Error: Got " << matched2 << ", expected 309\n";
 }
@@ -185,8 +179,8 @@ void Day15Problems()
     Day15::Generator A(722, MultiplyGenerator<16807>);
     Day15::Generator B(354, MultiplyGenerator<48271>);
     const auto matched1 = MatchedPairs(A, B, 40000000);
-    Day15::Generator C(722, DivisibleMultiplyGenerator<16807, 4>);
-    Day15::Generator D(354, DivisibleMultiplyGenerator<48271, 8>);
+    Day15::Generator C(722, MultiplyGenerator<16807, 4>);
+    Day15::Generator D(354, MultiplyGenerator<48271, 8>);
     const auto matched2 = MatchedPairs(C, D, 5000000);
     const auto end = std::chrono::steady_clock::now();
     std::cout << matched1 << std::endl << matched2 << std::endl;
