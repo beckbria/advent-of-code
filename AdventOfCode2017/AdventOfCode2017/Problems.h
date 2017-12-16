@@ -15,6 +15,7 @@
 #include <sstream>
 #include <stack>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -77,3 +78,4 @@ void Day12Problems();
 void Day13Problems();
 void Day14Problems();
 void Day15Problems();
+void Day16Problems();

@@ -110,41 +110,41 @@ After 5 million pairs, but using this new generator logic, what is the judge's f
 */
 namespace Day15 {
 
-    class Generator {
-    public:
-        Generator(uint64_t seed, std::function<uint64_t(uint64_t)> advanceFunction)
-            : m_advanceFunction(advanceFunction)
-        {
-            m_value = seed;
-            Advance();  // The first value is computed but using the provided seed as the "previous Value"
-        }
-
-        uint64_t Advance() // Returns the new value
-        {
-            m_value = m_advanceFunction(m_value);
-            return m_value;
-        }
-
-        uint64_t CurrentValue() { return m_value; }
-
-    private:
-        uint64_t m_value;
-        std::function<uint64_t(uint64_t)> m_advanceFunction;
-    };
-
-    uint64_t MatchedPairs(Generator& A, Generator& B, unsigned int rounds)
+class Generator {
+public:
+    Generator(uint64_t seed, std::function<uint64_t(uint64_t)> advanceFunction)
+        : m_advanceFunction(advanceFunction)
     {
-        constexpr uint64_t bitMask = 0xffff;
-        uint64_t first = A.CurrentValue() & bitMask;
-        uint64_t second = B.CurrentValue() & bitMask;
-        uint64_t matches = 0;
-        for (unsigned int i = 0; i < rounds; ++i) {
-            if (first == second) ++matches;
-            first = A.Advance() & bitMask;
-            second = B.Advance() & bitMask;
-        }
-        return matches;
+        m_value = seed;
+        Advance();  // The first value is computed but using the provided seed as the "previous Value"
     }
+
+    uint64_t Advance() // Returns the new value
+    {
+        m_value = m_advanceFunction(m_value);
+        return m_value;
+    }
+
+    uint64_t CurrentValue() { return m_value; }
+
+private:
+    uint64_t m_value;
+    std::function<uint64_t(uint64_t)> m_advanceFunction;
+};
+
+uint64_t MatchedPairs(Generator& A, Generator& B, unsigned int rounds)
+{
+    constexpr uint64_t bitMask = 0xffff;
+    uint64_t first = A.CurrentValue() & bitMask;
+    uint64_t second = B.CurrentValue() & bitMask;
+    uint64_t matches = 0;
+    for (unsigned int i = 0; i < rounds; ++i) {
+        if (first == second) ++matches;
+        first = A.Advance() & bitMask;
+        second = B.Advance() & bitMask;
+    }
+    return matches;
+}
 
 } // namespace Day15
 
