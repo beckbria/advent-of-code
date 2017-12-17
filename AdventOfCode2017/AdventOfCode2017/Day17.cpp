@@ -53,12 +53,32 @@ you can short-circuit the spinlock. In this example, that would be 638.
 What is the value after 2017 in your completed circular buffer?
 
 Your puzzle input is 328.
+
+--- Part Two ---
+
+The spinlock does not short-circuit. Instead, it gets more angry. At least, you assume that's what 
+happened; it's spinning significantly faster than it was a moment ago.
+
+You have good news and bad news.
+
+The good news is that you have improved calculations for how to stop the spinlock. They indicate that 
+you actually need to identify the value after 0 in the current state of the circular buffer.
+
+The bad news is that while you were determining this, the spinlock has just finished inserting its 
+fifty millionth value (50000000).
+
+What is the value after 0 the moment 50000000 is inserted?
 */
 namespace Day17 {
     class Spinlock : public std::list<unsigned int> {
     public:
         Spinlock(unsigned int advance, unsigned int elementsToInsert);
         const_iterator CurrentPosition() const { return m_currentPosition; }
+        
+        // Ensure that the specified number of elements have been inserted into the array.
+        // If the specified size is smaller than the number that have already been inserted,
+        // this is a no-op.
+        void IncreaseSizeTo(unsigned int elementsToInsert);
 
     private:
         inline void AdvanceCurrentPosition()
@@ -76,7 +96,14 @@ namespace Day17 {
     {
         // Insert the initial value
         m_currentPosition = insert(begin(), 0);
-        for (unsigned int i = 1; i <= elementsToInsert; ++i) {
+        IncreaseSizeTo(elementsToInsert);
+    }
+
+    void Spinlock::IncreaseSizeTo(unsigned int elementsToInsert)
+    {
+        // Our size includes 0, so size is one more than the number of elements that have been
+        // inserted already.  Conveniently, this is where we need to start inserting
+        for (unsigned int i = size(); i <= elementsToInsert; ++i) {
             unsigned int positionsToAdvance = m_advance % size();
             for (unsigned int i = 0; i < positionsToAdvance; ++i) AdvanceCurrentPosition();
             // We want to insert after the selected element
@@ -84,6 +111,24 @@ namespace Day17 {
             ++insertPos;
             m_currentPosition = insert(insertPos, i);
         }
+    }
+
+    int SpinlockAfterZero(unsigned int advance, unsigned int elementsToInsert)
+    {
+        // We always insert after another element, so 0 will always be at the start of
+        // the array.  Thus, nothing matters except what element is in position 1.  Thus,
+        // rather than storing the entire spinlock we can just keep track of that element
+        int indexOne = 0;
+
+        int size = 1;
+        int position = 0;
+        for (unsigned int i = 1; i <= elementsToInsert; ++i) {
+            position = ((position + advance) % size) + 1;
+            if (position == 1) indexOne = i;
+            ++size;
+        }
+
+        return indexOne;
     }
 } // namespace Day17
 
@@ -110,7 +155,10 @@ void Day17Tests()
 
     auto spinlock2017 = Day17::Spinlock(3, 2017);
     auto pos = ++spinlock2017.CurrentPosition();
-    if (*pos != 638) std::cerr << "Test 17A2 Error: Got " << *pos << ", Expected 638\n";    
+    if (*pos != 638) std::cerr << "Test 17A2 Error: Got " << *pos << ", Expected 638\n";
+
+    const auto afterZero = Day17::SpinlockAfterZero(3, 9);
+    if (afterZero != 9) std::cerr << "Test 17B Error: Got " << afterZero << ", Expected 9\n";
 }
 
 void Day17Problems()
@@ -119,8 +167,10 @@ void Day17Problems()
     Day17Tests();
     const auto start = std::chrono::steady_clock::now();
     auto spinlock = Day17::Spinlock(328, 2017);
-    auto nextValue = ++spinlock.CurrentPosition();
+    spinlock.IncreaseSizeTo(2017);
+    const auto nextValue = ++spinlock.CurrentPosition();
+    const auto afterZeroValue = Day17::SpinlockAfterZero(328, 50000000);
     const auto end = std::chrono::steady_clock::now();
-    std::cout << *nextValue << std::endl;
+    std::cout << *nextValue << std::endl << afterZeroValue << std::endl;
     std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
 }
