@@ -106,7 +106,6 @@ This change makes the generators much slower, and the judge is getting impatient
 in their lowest 16 bits.)
 
 After 5 million pairs, but using this new generator logic, what is the judge's final count?
-
 */
 namespace Day15 {
 
