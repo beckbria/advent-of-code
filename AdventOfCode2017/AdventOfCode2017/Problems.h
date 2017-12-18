@@ -81,3 +81,4 @@ void Day14Problems();
 void Day15Problems();
 void Day16Problems();
 void Day17Problems();
+void Day18Problems();
