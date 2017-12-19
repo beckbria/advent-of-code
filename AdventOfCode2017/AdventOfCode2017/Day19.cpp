@@ -40,7 +40,7 @@ namespace Day19 {
     public:
         Maze(std::vector<std::string> input);
         void SetDataHandler(std::function<void(char)> handler) { m_dataHandler = handler; } 
-        void Solve();   // Tries to walk a solution to the maze, calling the data handler as nodes are visited
+        int Solve();   // Tries to walk a solution to the maze, calling the data handler as nodes are visited
 
     protected:
         // Each character in the input represents either a path, a line, or a letter that we should record (data).
@@ -135,9 +135,13 @@ namespace Day19 {
         return m_maze[cell.row][cell.col];
     }
 
-    void Maze::Solve()
+    int Maze::Solve()
     {
-        while (true) {
+        int totalDistance = 0;
+        bool solved = false;
+        while (!solved) {
+            ++totalDistance;
+
             // If our current cell has data, we should read it
             char current = ReadCell(m_position);
             if (m_dataHandler && (Classify(current) == Block::Data)) {
@@ -160,24 +164,26 @@ namespace Day19 {
                     newPosition.Move(newDirection);
                     if (OutOfBounds(newPosition) || (Classify(ReadCell(newPosition)) == Block::Empty)) {
                         // We have nowhere else to go.  We must be at the end.
-                        return;
+                        solved = true;
                     }
                 }
             }
             m_position = newPosition;
             m_direction = newDirection;
         }
+
+        return totalDistance;
     }
 
-    std::string PathText(const std::vector<std::string>& input)
+    std::pair<std::string, int> PathText(const std::vector<std::string>& input)
     {
         std::stringstream path;
         Maze maze(input);
         maze.SetDataHandler([&path](char c) {
             path << c;
         });
-        maze.Solve();
-        return path.str();
+        auto distance = maze.Solve();
+        return std::make_pair(path.str(), distance);
     }
 } // namespace Day19
 
@@ -193,8 +199,10 @@ void Day19Tests()
         "                "
     };
     const auto pathText = Day19::PathText(input);
-    const std::string expectedA = "ABCDEF";
-    if (pathText != expectedA) std::cerr << "Test 19A Error: Got " << pathText << ", expected " << expectedA << std::endl;
+    const std::string text = "ABCDEF";
+    const int distance = 38;
+    if (pathText.first != text) std::cerr << "Test 19A Error: Got " << pathText.first << ", expected " << text << std::endl;
+    if (pathText.second != distance) std::cerr << "Test 19A Error: Got " << pathText.second << ", expected " << distance << std::endl;
 }
 
 void Day19Problems()
@@ -205,6 +213,6 @@ void Day19Problems()
     const auto input = Helpers::ReadFileLines("input_day19.txt");
     const auto pathText = Day19::PathText(input);
     const auto end = std::chrono::steady_clock::now();
-    std::cout << pathText << std::endl;
+    std::cout << pathText.first << std::endl << pathText.second << std::endl;
     std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
 }
