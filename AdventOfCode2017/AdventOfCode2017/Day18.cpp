@@ -323,8 +323,7 @@ namespace Day18 {
         // If we have no input, wait until we do
         std::lock_guard<std::mutex> lock(m_receivedLock);
         if (m_received.empty()) return true;
-        m_registers[static_cast<int>(inst.operand[0].Value())]
-            = m_received.front();
+        m_registers[static_cast<int>(inst.operand[0].Value())] = m_received.front();
         m_received.pop();
         return false;
     }
