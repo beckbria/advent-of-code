@@ -132,6 +132,7 @@
     <ClCompile Include="Day17.cpp" />
     <ClCompile Include="Day18.cpp" />
     <ClCompile Include="Day19.cpp" />
+    <ClCompile Include="Day20.cpp" />
     <ClCompile Include="Helpers.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Problems.h</PrecompiledHeaderFile>
