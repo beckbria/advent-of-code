@@ -11,7 +11,7 @@ reaches the end (located somewhere within the diagram) and stop there.
 
 Sometimes, the lines cross over each other; in these cases, it needs to continue going the same direction, 
 and only turn left or right when there's no other option. In addition, someone has left letters on the line; 
-these also don't change its direction, but it can use them to keep track of where it's been. For example:
+these also don't change its direction, but it can use them to keep track of where it's been. For example: 
 
      |          
      |  +--+    
@@ -144,7 +144,7 @@ Maze::Cell Maze::FindStart() const
 {
     if (m_maze.size() >= 1) {
         // The starting point is guaranteed to be in the first row
-        for (int column = 0; column < m_maze[0].size(); ++column) {
+        for (unsigned int column = 0; column < m_maze[0].size(); ++column) {
             if (Classify(m_maze[0][column]) != Block::Empty) return Cell(0, column);
         }
     }
@@ -154,7 +154,7 @@ Maze::Cell Maze::FindStart() const
 
 bool Maze::OutOfBounds(const Cell& cell) const
 {
-    return (cell.col < 0) || (cell.row < 0) || (cell.row >= m_maze.size()) || (cell.col >= m_maze[0].size());
+    return (cell.col < 0) || (cell.row < 0) || (cell.row >= (int)m_maze.size()) || (cell.col >= (int)m_maze[0].size());
 }
 
 inline char Maze::ReadCell(const Maze::Cell& cell) const

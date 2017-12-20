@@ -83,4 +83,24 @@ std::string ByteArrayToHex(const std::vector<unsigned int>& bytes)
     return output;
 }
 
+void HelpersTests()
+{
+    // Next available Helper Test #: 2
+
+    std::vector<char> removeIndexInput = { 'a', 'b', 'c', 'd', 'e', 'f', 'g' };
+    std::vector<unsigned int> toRemove = { 3, 0, 0, 2, 3 };
+    const std::vector<char> expectedRemoveIndexOutput = { 'b', 'e', 'f', 'g' };
+    RemoveIndexes(removeIndexInput, toRemove);
+    for (unsigned int i = 0; i < removeIndexInput.size(); ++i) {
+        if (removeIndexInput[i] != expectedRemoveIndexOutput[i]) {
+            std::cerr << "Helpers Test 1 Error: Got ";
+            for (auto c : removeIndexInput) std::cerr << c;
+            std::cerr << ", Expected ";
+            for (auto c : expectedRemoveIndexOutput) std::cerr << c;
+            std::cerr << std::endl;
+            break;
+        }
+    }
+}
+
 } // namespace Helpers

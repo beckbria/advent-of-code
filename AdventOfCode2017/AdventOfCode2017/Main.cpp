@@ -1,7 +1,8 @@
 #include "Problems.h"
 
 int main() {
-    Day1Problems();
+    Helpers::HelpersTests();
+    /*Day1Problems();
     Day2Problems();
     Day3Problems();
     Day4Problems();
@@ -19,7 +20,7 @@ int main() {
     Day16Problems(); 
     Day17Problems();
     Day18Problems();
-    Day19Problems();
+    Day19Problems();*/
     Day20Problems();
 
     // Wait for keyboard input
