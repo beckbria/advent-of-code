@@ -147,13 +147,18 @@ uint64_t MatchedPairs(Generator& A, Generator& B, unsigned int rounds)
 
 } // namespace Day15
 
-template<uint64_t multiplier, uint64_t divisorRequirement = 1>
+template<uint64_t multiplier, uint64_t divisor = 1>
 uint64_t MultiplyGenerator(uint64_t previous)
 {
+    static_assert(Helpers::IsSingleBitSet(divisor), "Divisor should be a power of 2");
+
     uint64_t current = previous;
     do {
-        current = (current * multiplier) % 2147483647;
-    } while (current % divisorRequirement);
+        // 2147483647 == 2^31-1 is a Mersenne prime.  The following computes the same as (current * multiplier) % 2147483647
+        const uint64_t product = (current * multiplier);
+        current = (product & 0x7fffffff) + (product >> 31);
+        current = (current >> 31) ? current - 0x7fffffff : current;
+    } while (current & (divisor - 1));
     return current;
 }
 

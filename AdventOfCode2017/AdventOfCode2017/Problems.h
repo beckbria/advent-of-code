@@ -36,6 +36,9 @@ std::vector<std::string> Tokenize(const std::string& line, char delimiter = ' ',
 void RemoveTrailingCharacter(std::string& toBeModified, char toBeRemoved);
 std::string ByteArrayToHex(const std::vector<unsigned int>& bytes);
 
+template<typename T>
+constexpr bool IsSingleBitSet(T value) { return (value > 0) && ((value & (value - 1)) == 0); }
+
 inline int CountBits(int i)
 {
     int bits = 0;
