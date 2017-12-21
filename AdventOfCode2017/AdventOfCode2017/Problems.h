@@ -114,3 +114,4 @@ void Day17Problems();
 void Day18Problems();
 void Day19Problems();
 void Day20Problems();
+void Day21Problems();

@@ -198,8 +198,8 @@ public:
     bool Blocked() const { return m_blocked; }
     int64_t Evaluate(const Operand& op) const { return m_registers.Evaluate(op); }
     void RunInstruction();
-    void SetSndHandler(std::function<void(int)> handler) { m_sndHandler = handler; }
-    void SetRcvHandler(std::function<void(int)> handler) { m_rcvHandler = handler; }
+    void SetSndHandler(std::function<void(int64_t)> handler) { m_sndHandler = handler; }
+    void SetRcvHandler(std::function<void(int64_t)> handler) { m_rcvHandler = handler; }
 
 protected:
     void Snd(const Instruction& inst);
