@@ -167,7 +167,7 @@ namespace Day21 {
     protected:
         std::vector<Rule> m_rules;
         // Store a copy of all the transformed versions of each rule for quick lookup
-        std::map<std::string, int> m_ruleTransforms;
+        std::unordered_map<std::string, int> m_ruleTransforms;
     };
 
     class Grid {
