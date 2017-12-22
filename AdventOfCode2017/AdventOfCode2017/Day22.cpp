@@ -133,7 +133,8 @@ The virus carrier moves forward one node in the direction it is facing.
 
 Start with the same map (still using . for clean and # for infected) and still with the virus carrier starting in the middle and facing up.
 
-Using the same initial state as the previous example, and drawing weakened as W and flagged as F, the middle of the infinite grid looks like this, with the virus carrier's position again marked with [ ]:
+Using the same initial state as the previous example, and drawing weakened as W and flagged as F, the middle of the 
+infinite grid looks like this, with the virus carrier's position again marked with [ ]:
 
 . . . . . . . . .
 . . . . . . . . .
@@ -144,7 +145,8 @@ Using the same initial state as the previous example, and drawing weakened as W 
 . . . . . . . . .
 . . . . . . . . .
 
-This is the same as before, since no initial nodes are weakened or flagged. The virus carrier is on a clean node, so it still turns left, instead weakens the node, and moves left:
+This is the same as before, since no initial nodes are weakened or flagged. The virus carrier is on a clean node, 
+so it still turns left, instead weakens the node, and moves left:
 
 . . . . . . . . .
 . . . . . . . . .
@@ -199,10 +201,11 @@ The weakened node becomes infected, and it continues in the same direction:
 . . . . . . . . .
 . . . . . . . . .
 
-Of the first 100 bursts, 26 will result in infection. Unfortunately, another feature of this evolved virus is speed; of the first 10000000 bursts, 2511944 will result in infection.
+Of the first 100 bursts, 26 will result in infection. Unfortunately, another feature of this evolved virus is speed; 
+of the first 10000000 bursts, 2511944 will result in infection.
 
-Given your actual map, after 10000000 bursts of activity, how many bursts cause a node to become infected? (Do not count nodes that begin infected.)
-
+Given your actual map, after 10000000 bursts of activity, how many bursts cause a node to become infected? 
+(Do not count nodes that begin infected.)
 */
 namespace Day22 {
 
@@ -245,7 +248,6 @@ private:
     Direction m_direction = Direction::Up;
 };
 
-// Plan: Store the infected nodes in a hash table.  Don't store the entire grid.  This lets us scale indefinitely
 class VirusGrid {
 public:
     VirusGrid(const std::vector<std::string>& input);
@@ -254,23 +256,20 @@ public:
     friend std::ostream& operator<<(std::ostream& out, const VirusGrid& grid);
 
 protected:
-    enum class NodeState {
-        Clean,
-        Weakened,
-        Infected,
-        Flagged
+    enum class NodeState : char {
+        Clean = '.',
+        Weakened = 'W',
+        Infected = '#',
+        Flagged = 'F'
     };
     NodeState ClassifyPoint(const Point& pt) const;
     virtual void AdvanceTurn();
 
+    // There's an infinite grid of clean nodes.  We don't need to store them - only keep track of the unclean ones.
     std::unordered_map<Point, NodeState, PointHash> m_unclean;
     VirusCarrier m_carrier;
     uint64_t m_infectedTurns = 0;
     uint64_t m_currentTurn = 0;
-    static constexpr char InfectedNode = '#';
-    static constexpr char CleanNode = '.';
-    static constexpr char WeakenedNode = 'W';
-    static constexpr char FlaggedNode = 'F';
 };
 
 class EvolvedVirusGrid : public VirusGrid {
@@ -318,8 +317,9 @@ VirusGrid::VirusGrid(const std::vector<std::string>& input)
         Point middle((input[0].size() / 2), (input.size() / 2));    // The +1 to get to the center of odd shapes is implied by 0 indexing
         for (int y = 0; y < (int)input.size(); ++y) {
             for (int x = 0; x < (int)input[0].size(); ++x) {
-                if (input[y][x] == InfectedNode) {
-                    m_unclean[Point(x - middle.x, y - middle.y)] = NodeState::Infected;
+                const NodeState state = static_cast<NodeState>(input[y][x]);
+                if (state != NodeState::Clean) {
+                    m_unclean[Point(x - middle.x, y - middle.y)] = state;
                 }
             }
         }
@@ -400,21 +400,7 @@ std::ostream& operator<<(std::ostream& out, const VirusGrid& grid)
             pt.y = y;
             for (int64_t x = minX; x <= maxX; ++x) {
                 pt.x = x;
-                switch (grid.ClassifyPoint(pt)) {
-                case VirusGrid::NodeState::Clean:
-                    out << grid.CleanNode;
-                    break;
-                case VirusGrid::NodeState::Infected:
-                    out << grid.InfectedNode;
-                    break;
-                case VirusGrid::NodeState::Flagged:
-                    out << grid.FlaggedNode;
-                    break;
-                case VirusGrid::NodeState::Weakened:
-                    out << grid.WeakenedNode;
-                    break;
-                }
-
+                out << static_cast<char>(grid.ClassifyPoint(pt));
                 if (pt == carrierPos) {
                     out << ']';
                 } else if (pt == leftOfCarrier) {
