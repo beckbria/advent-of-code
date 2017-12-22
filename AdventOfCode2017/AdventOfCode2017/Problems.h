@@ -18,6 +18,7 @@
 #include <stack>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -115,3 +116,4 @@ void Day18Problems();
 void Day19Problems();
 void Day20Problems();
 void Day21Problems();
+void Day22Problems();
