@@ -40,56 +40,6 @@ program completes. Technically, if it had that... it wouldn't even need to run t
 After setting register a to 1, if the program were to run to completion, what value would be 
 left in register h?
 
-////////////////////////////
-Initial translation of assembly:
-
-B = 57
-C = B
-if (A != 0) GOTO label1
-GOTO label2
-
-label1:
-B *= 100
-B += 100000
-C + B
-C += 17000
-
-label2:
-F = 1
-D = 2
-
-label5:
-E = 2
-
-label4:
-G = D
-G *= E
-G -= B
-IF (G != 0) GOTO label3
-F = 0
-
-label3:
-E++
-G = E
-G -= B
-IF (G != 0) GOTO label4
-D++
-G = D
-G -= B
-IF (G != 0) GOTO label5
-IF (F != 0) GOTO label6
-H++
-
-label6:
-G = B
-G -= C
-IF (G != 0) GOTO label7
-TERMINATE
-
-label7:
-B += 17
-GOTO label2
-
 */
 namespace Day23 {
 
@@ -348,18 +298,19 @@ int64_t MultiplyCount(const std::vector<std::string>& input)
     return program.MulInstructionCount();
 }
 
-int64_t FinalValue(const std::vector<std::string>& input)
+int64_t FinalValue()
 {
-    std::vector<Instruction> instructions;
-    for (auto &line : input) {
-        instructions.emplace_back(line);
+    // The program was counting modulo operations in a very inefficient way.  To see disassembly/processing, see Day23.asm
+    int64_t h = 0;
+    for (unsigned int b = 105700; b <= 122700; b += 17) {
+        for (unsigned int d = 2; d < b; d++) {
+            if (b % d == 0) {
+                h++;
+                break;
+            }
+        }
     }
-    Program program(instructions);
-    program.SetRegister('a', 1);
-    while (!program.Complete()) {
-        program.RunInstruction();
-    }
-    return program.GetRegister('h');
+    return h;
 }
 
 } // namespace Day23
@@ -370,7 +321,7 @@ void Day23Problems()
     const auto start = std::chrono::steady_clock::now();
     const auto input = Helpers::ReadFileLines("input_day23.txt");
     const auto mulCount = Day23::MultiplyCount(input);
-    const auto finalValue = Day23::FinalValue(input);
+    const auto finalValue = Day23::FinalValue();
     const auto end = std::chrono::steady_clock::now();
     std::cout << mulCount << std::endl << finalValue << std::endl;
     std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
