@@ -3,7 +3,8 @@
 --- Day 23: Coprocessor Conflagration ---
 
 You decide to head directly to the CPU and fix the printer from there. As you get close, 
-you find an experimental coprocessor doing so much work that the local programs are afraid it will halt and catch fire. This would cause serious issues for the rest of the computer, so you head in and see what you can do.
+you find an experimental coprocessor doing so much work that the local programs are afraid it will halt and catch fire. 
+This would cause serious issues for the rest of the computer, so you head in and see what you can do.
 
 The code it's running seems to be a variant of the kind you saw recently on that tablet. 
 The general functionality seems very similar, but some of the instructions are different:
@@ -96,14 +97,9 @@ int64_t RegisterBank::Evaluate(const Operand& op) const
 
 enum class OpCode {
     Invalid,
-    Sound,
     Set,
-    Add,
     Subtract,
     Multiply,
-    Modulo,
-    Recover,
-    JumpIfGreaterThanZero,
     JumpIfNotZero
 };
 
@@ -122,14 +118,9 @@ Instruction::Instruction(const std::string& inst)
         std::string token;
         OpCode opcode;
     } typeLookup[] = {
-        { "snd", OpCode::Sound },
         { "set", OpCode::Set },
-        { "add", OpCode::Add },
         { "sub", OpCode::Subtract },
         { "mul", OpCode::Multiply },
-        { "mod", OpCode::Modulo },
-        { "rcv", OpCode::Recover },
-        { "jgz", OpCode::JumpIfGreaterThanZero },
         { "jnz", OpCode::JumpIfNotZero }
     };
     type = OpCode::Invalid;
@@ -149,33 +140,22 @@ class Program {
 public:
     Program(std::vector<Instruction>& instructions) : m_instructions(instructions) {}
     bool Complete() const;
-    bool Blocked() const { return m_blocked; }
     int64_t Evaluate(const Operand& op) const { return m_registers.Evaluate(op); }
     void RunInstruction();
-    void SetSndHandler(std::function<void(int64_t)> handler) { m_sndHandler = handler; }
-    void SetRcvHandler(std::function<void(int64_t)> handler) { m_rcvHandler = handler; }
     int64_t MulInstructionCount() const { return m_mulCount; }
     void SetRegister(char reg, int64_t value) { m_registers[RegisterIndex(reg)] = value; }
     int64_t GetRegister(char reg) { return m_registers[RegisterIndex(reg)]; }
 
 protected:
-    void Snd(const Instruction& inst);
-    virtual bool Rcv(const Instruction& inst);      // Returns whether the program is now blocked waiting for a receive
     void Set(const Instruction& inst);
-    void Add(const Instruction& inst);
     void Sub(const Instruction& inst);
     void Mul(const Instruction& inst);
-    void Mod(const Instruction& inst);
-    void Jgz(const Instruction& inst);
     void Jnz(const Instruction& inst);
 
     int64_t m_programCounter = 0;
     int64_t m_mulCount = 0;
-    bool m_blocked = false;
     std::vector<Instruction> m_instructions;
     RegisterBank m_registers;
-    std::function<void(int64_t)> m_sndHandler;
-    std::function<void(int64_t)> m_rcvHandler;
 };
 
 bool Program::Complete() const
@@ -186,34 +166,16 @@ bool Program::Complete() const
 void Program::RunInstruction()
 {
     if (!Complete()) {
-        m_blocked = false;
         auto& current = m_instructions[static_cast<int>(m_programCounter++)];
         switch (current.type) {
-        case OpCode::Sound:
-            Snd(current);
-            break;
         case OpCode::Set:
             Set(current);
-            break;
-        case OpCode::Add:
-            Add(current);
             break;
         case OpCode::Subtract:
             Sub(current);
             break;
         case OpCode::Multiply:
             Mul(current);
-            break;
-        case OpCode::Modulo:
-            Mod(current);
-            break;
-        case OpCode::Recover:
-            m_blocked = Rcv(current);
-            // If we're now blocked, we should stay on this instruction until we're unblocked
-            if (m_blocked) --m_programCounter;
-            break;
-        case OpCode::JumpIfGreaterThanZero:
-            Jgz(current);
             break;
         case OpCode::JumpIfNotZero:
             Jnz(current);
@@ -225,11 +187,6 @@ void Program::RunInstruction()
 void Program::Set(const Instruction& inst)
 {
     m_registers[static_cast<int>(inst.operand[0].Value())] = Evaluate(inst.operand[1]);
-}
-
-void Program::Add(const Instruction& inst) {
-    const auto reg = static_cast<int>(inst.operand[0].Value());
-    m_registers[reg] = m_registers[reg] + Evaluate(inst.operand[1]);
 }
 
 void Program::Sub(const Instruction& inst) {
@@ -244,41 +201,12 @@ void Program::Mul(const Instruction& inst)
     m_mulCount++;
 }
 
-void Program::Mod(const Instruction& inst)
-{
-    const auto reg = static_cast<int>(inst.operand[0].Value());
-    m_registers[reg] = m_registers[reg] % Evaluate(inst.operand[1]);
-}
-
-void Program::Jgz(const Instruction& inst)
-{
-    if (Evaluate(inst.operand[0]) > 0) {
-        // We've already incremented the PC by one, so don't double count that space
-        m_programCounter += (Evaluate(inst.operand[1]) - 1);
-    }
-}
-
 void Program::Jnz(const Instruction& inst)
 {
     if (Evaluate(inst.operand[0]) != 0) {
         // We've already incremented the PC by one, so don't double count that space
         m_programCounter += (Evaluate(inst.operand[1]) - 1);
     }
-}
-
-void Program::Snd(const Instruction& inst)
-{
-    if (m_sndHandler) {
-        m_sndHandler(Evaluate(inst.operand[0]));
-    }
-}
-
-bool Program::Rcv(const Instruction& inst)
-{
-    if (m_rcvHandler) {
-        m_rcvHandler(Evaluate(inst.operand[0]));
-    }
-    return false;
 }
 
 int64_t MultiplyCount(const std::vector<std::string>& input)
@@ -298,9 +226,9 @@ int64_t MultiplyCount(const std::vector<std::string>& input)
     return program.MulInstructionCount();
 }
 
-int64_t FinalValue()
+int64_t PrimesInRange()
 {
-    // The program was counting modulo operations in a very inefficient way.  To see disassembly/processing, see Day23.asm
+    // The program was counting non-prime numbers in a very inefficient way.  To see disassembly/processing, see Day23.asm
     int64_t h = 0;
     for (unsigned int b = 105700; b <= 122700; b += 17) {
         for (unsigned int d = 2; d < b; d++) {
@@ -321,7 +249,7 @@ void Day23Problems()
     const auto start = std::chrono::steady_clock::now();
     const auto input = Helpers::ReadFileLines("input_day23.txt");
     const auto mulCount = Day23::MultiplyCount(input);
-    const auto finalValue = Day23::FinalValue();
+    const auto finalValue = Day23::PrimesInRange();
     const auto end = std::chrono::steady_clock::now();
     std::cout << mulCount << std::endl << finalValue << std::endl;
     std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
