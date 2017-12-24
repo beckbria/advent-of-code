@@ -70,154 +70,156 @@ What is the strength of the longest bridge you can make? If you can make multipl
 longest length, pick the strongest one.
 */
 namespace Day24 {
-    struct Component {
-        Component(unsigned int A = 0, unsigned int B = 0) : portA(A), portB(B) {}
-        unsigned int portA;
-        unsigned int portB;
-        bool inUse = false;
-        unsigned int Value() const { return portA + portB; }
-        unsigned int OtherSide(const unsigned int port);
-    };
 
-    unsigned int Component::OtherSide(const unsigned int port)
+struct Component {
+    Component(unsigned int A = 0, unsigned int B = 0) : portA(A), portB(B) {}
+    unsigned int portA;
+    unsigned int portB;
+    bool inUse = false;
+    unsigned int Value() const { return portA + portB; }
+    unsigned int OtherSide(const unsigned int port);
+};
+
+unsigned int Component::OtherSide(const unsigned int port)
+{
+    if (port == portA) {
+        return portB;
+    } else if (port == portB) {
+        return portA;
+    } else {
+        throw std::invalid_argument("Must specify one of the ports for this component");
+    }
+}
+
+std::vector<Component> ReadComponents(const std::vector<std::string>& input)
+{
+    std::vector<Component> components;
+    for (const auto& line : input) {
+        auto sides = Helpers::Tokenize(line, '/');
+        components.emplace_back(std::stoi(sides[0]), std::stoi(sides[1]));
+    }
+    return components;
+}
+
+template<typename T>
+unsigned int BridgeValue(const T& bridge)
+{
+    unsigned int value = 0;
+    std::for_each(bridge.cbegin(), bridge.cend(), [&value](const Component& c)
     {
-        if (port == portA) {
-            return portB;
-        } else if (port == portB) {
-            return portA;
-        } else {
-            throw std::invalid_argument("Must specify one of the ports for this component");
+        value += c.Value();
+    });
+    return value;
+}
+
+typedef std::map<unsigned int, std::list<unsigned int>> PortLookup;
+
+// Build a list of indexes that have the value in question.  This maps
+// port type to a list of indexes containing that port.  If a component has
+// the same port type, it appears only once in the list
+PortLookup BuildPortLookup(const std::vector<Component>& components)
+{
+    PortLookup portLookup;
+    for (unsigned int i = 0; i < components.size(); ++i) {
+        portLookup[components[i].portA].push_back(i);
+        if (components[i].portA != components[i].portB) {
+            portLookup[components[i].portB].push_back(i);
         }
     }
+    return portLookup;
+}
 
-    std::vector<Component> ReadComponents(const std::vector<std::string>& input)
-    {
-        std::vector<Component> components;
-        for (const auto& line : input) {
-            auto sides = Helpers::Tokenize(line, '/');
-            components.emplace_back(std::stoi(sides[0]), std::stoi(sides[1]));
-        }
-        return components;
-    }
+// Recursively search for the strongest bridge
+void FindStrongestBridge(
+    std::list<Component>& bridge,       // In/Out - the best bridge gets stored here
+    std::vector<Component>& components, // The list of all available components
+    PortLookup& portLookup,
+    unsigned int startFrom)             // The port number we're trying to initially match
+{
+    std::list<Component> bestBridge;
+    unsigned int bestBridgeValue = 0;
 
-    template<typename T>
-    unsigned int BridgeValue(const T& bridge)
-    {
-        unsigned int value = 0;
-        std::for_each(bridge.cbegin(), bridge.cend(), [&value](const Component& c)
-        {
-            value += c.Value();
-        });
-        return value;
-    }
+    for (auto candidate : portLookup[startFrom]) {
+        if (!components[candidate].inUse) {
+            std::list<Component> candidateBridge;
+            candidateBridge.push_back(components[candidate]);
+            components[candidate].inUse = true;
 
-    typedef std::map<unsigned int, std::list<unsigned int>> PortLookup;
-
-    // Build a list of indexes that have the value in question.  This maps
-    // port type to a list of indexes containing that port.  If a component has
-    // the same port type, it appears only once in the list
-    PortLookup BuildPortLookup(const std::vector<Component>& components)
-    {
-        PortLookup portLookup;
-        for (unsigned int i = 0; i < components.size(); ++i) {
-            portLookup[components[i].portA].push_back(i);
-            if (components[i].portA != components[i].portB) {
-                portLookup[components[i].portB].push_back(i);
+            FindStrongestBridge(candidateBridge, components, portLookup, components[candidate].OtherSide(startFrom));
+            const auto value = BridgeValue(candidateBridge);
+            if (value > bestBridgeValue) {
+                bestBridgeValue = value;
+                bestBridge = candidateBridge;
             }
+            components[candidate].inUse = false;
         }
-        return portLookup;
     }
 
-    // Recursively search for the strongest bridge
-    void FindStrongestBridge(
-        std::list<Component>& bridge,       // In/Out - the best bridge gets stored here
-        std::vector<Component>& components, // The list of all available components
-        PortLookup& portLookup,
-        unsigned int startFrom)             // The port number we're trying to initially match
-    {
-        std::list<Component> bestBridge;
-        unsigned int bestBridgeValue = 0;
+    // Add the best values to our bridge
+    bridge.insert(bridge.end(), bestBridge.begin(), bestBridge.end());
+}
 
-        for (auto candidate : portLookup[startFrom]) {
-            if (!components[candidate].inUse) {
-                std::list<Component> candidateBridge;
-                candidateBridge.push_back(components[candidate]);
-                components[candidate].inUse = true;
+std::list<Component> StrongestBridge(std::vector<Component>& components)
+{
+    auto portLookup = BuildPortLookup(components);
+    std::list<Component> bridge;
+    FindStrongestBridge(bridge, components, portLookup, 0);
+    return bridge;
+}
 
-                FindStrongestBridge(candidateBridge, components, portLookup, components[candidate].OtherSide(startFrom));
-                const auto value = BridgeValue(candidateBridge);
-                if (value > bestBridgeValue) {
-                    bestBridgeValue = value;
-                    bestBridge = candidateBridge;
-                }
-                components[candidate].inUse = false;
+unsigned int StrongestBridgeValue(const std::vector<std::string>& input)
+{
+    auto components = ReadComponents(input);
+    auto bridge = StrongestBridge(components);
+    return BridgeValue(bridge);
+}
+
+// Recursively search for the longest bridge
+void FindLongestBridge(
+    std::list<Component>& bridge,       // In/Out - the best bridge gets stored here
+    std::vector<Component>& components, // The list of all available components
+    PortLookup& portLookup,
+    unsigned int startFrom)             // The port number we're trying to initially match
+{
+    std::list<Component> bestBridge;
+    unsigned int bestBridgeValue = 0;
+
+    for (auto candidate : portLookup[startFrom]) {
+        if (!components[candidate].inUse) {
+            std::list<Component> candidateBridge;
+            candidateBridge.push_back(components[candidate]);
+            components[candidate].inUse = true;
+
+            FindLongestBridge(candidateBridge, components, portLookup, components[candidate].OtherSide(startFrom));
+            const auto value = BridgeValue(candidateBridge);
+            if ((candidateBridge.size() > bestBridge.size()) ||
+                ((candidateBridge.size() == bestBridge.size()) && (value > bestBridgeValue))) {
+                bestBridgeValue = value;
+                bestBridge = candidateBridge;
             }
+            components[candidate].inUse = false;
         }
-
-        // Add the best values to our bridge
-        bridge.insert(bridge.end(), bestBridge.begin(), bestBridge.end());
     }
 
-    std::list<Component> StrongestBridge(std::vector<Component>& components)
-    {
-        auto portLookup = BuildPortLookup(components);
-        std::list<Component> bridge;
-        FindStrongestBridge(bridge, components, portLookup, 0);
-        return bridge;
-    }
+    // Add the best values to our bridge
+    bridge.insert(bridge.end(), bestBridge.begin(), bestBridge.end());
+}
 
-    unsigned int StrongestBridgeValue(const std::vector<std::string>& input)
-    {
-        auto components = ReadComponents(input);
-        auto bridge = StrongestBridge(components);
-        return BridgeValue(bridge);
-    }
+std::list<Component> LongestBridge(std::vector<Component>& components)
+{
+    auto portLookup = BuildPortLookup(components);
+    std::list<Component> bridge;
+    FindLongestBridge(bridge, components, portLookup, 0);
+    return bridge;
+}
 
-    // Recursively search for the longest bridge
-    void FindLongestBridge(
-        std::list<Component>& bridge,       // In/Out - the best bridge gets stored here
-        std::vector<Component>& components, // The list of all available components
-        PortLookup& portLookup,
-        unsigned int startFrom)             // The port number we're trying to initially match
-    {
-        std::list<Component> bestBridge;
-        unsigned int bestBridgeValue = 0;
+unsigned int LongestBridgeValue(const std::vector<std::string>& input)
+{
+    auto components = ReadComponents(input);
+    auto bridge = LongestBridge(components);
+    return BridgeValue(bridge);
+}
 
-        for (auto candidate : portLookup[startFrom]) {
-            if (!components[candidate].inUse) {
-                std::list<Component> candidateBridge;
-                candidateBridge.push_back(components[candidate]);
-                components[candidate].inUse = true;
-
-                FindLongestBridge(candidateBridge, components, portLookup, components[candidate].OtherSide(startFrom));
-                const auto value = BridgeValue(candidateBridge);
-                if ((candidateBridge.size() > bestBridge.size()) ||
-                    ((candidateBridge.size() == bestBridge.size()) && value > bestBridgeValue)) {
-                    bestBridgeValue = value;
-                    bestBridge = candidateBridge;
-                }
-                components[candidate].inUse = false;
-            }
-        }
-
-        // Add the best values to our bridge
-        bridge.insert(bridge.end(), bestBridge.begin(), bestBridge.end());
-    }
-
-    std::list<Component> LongestBridge(std::vector<Component>& components)
-    {
-        auto portLookup = BuildPortLookup(components);
-        std::list<Component> bridge;
-        FindLongestBridge(bridge, components, portLookup, 0);
-        return bridge;
-    }
-
-    unsigned int LongestBridgeValue(const std::vector<std::string>& input)
-    {
-        auto components = ReadComponents(input);
-        auto bridge = LongestBridge(components);
-        return BridgeValue(bridge);
-    }
 } // namespace Day24
 
 void Day24Tests()
