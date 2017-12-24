@@ -1,7 +1,7 @@
 #include "Problems.h"
 
 int main() {
-    Helpers::HelpersTests();
+    /*Helpers::HelpersTests();
     Day1Problems();
     Day2Problems();
     Day3Problems();
@@ -24,7 +24,8 @@ int main() {
     Day20Problems();
     Day21Problems();
     Day22Problems();
-    Day23Problems();
+    Day23Problems();*/
+    Day24Problems();
 
     // Wait for keyboard input
     std::cout << std::endl << "Done (press Enter)";

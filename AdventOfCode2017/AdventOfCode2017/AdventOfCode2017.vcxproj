@@ -141,6 +141,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Problems.h</PrecompiledHeaderFile>
     </ClCompile>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Day24.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Day10.h" />
