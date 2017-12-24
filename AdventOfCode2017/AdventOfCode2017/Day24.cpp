@@ -54,6 +54,20 @@ Of these bridges, the strongest one is 0/1--10/1--9/10; it has a strength of
 0+1 + 1+10 + 10+9 = 31.
 
 What is the strength of the strongest bridge you can make with the components you have available?
+
+--- Part Two ---
+
+The bridge you've built isn't long enough; you can't jump the rest of the way.
+
+In the example above, there are two longest bridges:
+
+0/2--2/2--2/3--3/4
+0/2--2/2--2/3--3/5
+
+Of them, the one which uses the 3/5 component is stronger; its strength is 0+2 + 2+2 + 2+3 + 3+5 = 19.
+
+What is the strength of the longest bridge you can make? If you can make multiple bridges of the 
+longest length, pick the strongest one.
 */
 namespace Day24 {
     struct Component {
@@ -147,7 +161,6 @@ namespace Day24 {
     std::list<Component> StrongestBridge(std::vector<Component>& components)
     {
         auto portLookup = BuildPortLookup(components);
-
         std::list<Component> bridge;
         FindStrongestBridge(bridge, components, portLookup, 0);
         return bridge;
@@ -159,6 +172,52 @@ namespace Day24 {
         auto bridge = StrongestBridge(components);
         return BridgeValue(bridge);
     }
+
+    // Recursively search for the longest bridge
+    void FindLongestBridge(
+        std::list<Component>& bridge,       // In/Out - the best bridge gets stored here
+        std::vector<Component>& components, // The list of all available components
+        PortLookup& portLookup,
+        unsigned int startFrom)             // The port number we're trying to initially match
+    {
+        std::list<Component> bestBridge;
+        unsigned int bestBridgeValue = 0;
+
+        for (auto candidate : portLookup[startFrom]) {
+            if (!components[candidate].inUse) {
+                std::list<Component> candidateBridge;
+                candidateBridge.push_back(components[candidate]);
+                components[candidate].inUse = true;
+
+                FindLongestBridge(candidateBridge, components, portLookup, components[candidate].OtherSide(startFrom));
+                const auto value = BridgeValue(candidateBridge);
+                if ((candidateBridge.size() > bestBridge.size()) ||
+                    ((candidateBridge.size() == bestBridge.size()) && value > bestBridgeValue)) {
+                    bestBridgeValue = value;
+                    bestBridge = candidateBridge;
+                }
+                components[candidate].inUse = false;
+            }
+        }
+
+        // Add the best values to our bridge
+        bridge.insert(bridge.end(), bestBridge.begin(), bestBridge.end());
+    }
+
+    std::list<Component> LongestBridge(std::vector<Component>& components)
+    {
+        auto portLookup = BuildPortLookup(components);
+        std::list<Component> bridge;
+        FindLongestBridge(bridge, components, portLookup, 0);
+        return bridge;
+    }
+
+    unsigned int LongestBridgeValue(const std::vector<std::string>& input)
+    {
+        auto components = ReadComponents(input);
+        auto bridge = LongestBridge(components);
+        return BridgeValue(bridge);
+    }
 } // namespace Day24
 
 void Day24Tests()
@@ -167,6 +226,9 @@ void Day24Tests()
     const auto bridgeStrength = Day24::StrongestBridgeValue(input);
     const unsigned int expectedStrength = 31;
     if (bridgeStrength != expectedStrength) std::cerr << "Test 24A Error: Got " << bridgeStrength << ", expected " << expectedStrength << std::endl;
+    const auto longestStrength = Day24::LongestBridgeValue(input);
+    const unsigned int expectedLongest = 19;
+    if (longestStrength != expectedLongest) std::cerr << "Test 24B Error: Got " << longestStrength << ", expected " << expectedLongest << std::endl;
 }
 
 void Day24Problems()
@@ -176,7 +238,8 @@ void Day24Problems()
     const auto start = std::chrono::steady_clock::now();
     const auto input = Helpers::ReadFileLines("input_day24.txt");
     const auto bridgeStrength = Day24::StrongestBridgeValue(input);
+    const auto longestStrength = Day24::LongestBridgeValue(input);
     const auto end = std::chrono::steady_clock::now();
-    std::cout << bridgeStrength << std::endl;
+    std::cout << bridgeStrength << std::endl << longestStrength << std::endl;
     std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
 }
