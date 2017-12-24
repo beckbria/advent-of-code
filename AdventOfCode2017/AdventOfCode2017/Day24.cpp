@@ -130,11 +130,13 @@ PortLookup BuildPortLookup(const std::vector<Component>& components)
 }
 
 // Recursively search for the strongest bridge
-void FindStrongestBridge(
+template <typename T>
+void FindBestBridge(
     std::list<Component>& bridge,       // In/Out - the best bridge gets stored here
     std::vector<Component>& components, // The list of all available components
     PortLookup& portLookup,
-    unsigned int startFrom)             // The port number we're trying to initially match
+    unsigned int startFrom,             // The port number we're trying to initially match
+    T& comparator)
 {
     std::list<Component> bestBridge;
     unsigned int bestBridgeValue = 0;
@@ -145,10 +147,9 @@ void FindStrongestBridge(
             candidateBridge.push_back(components[candidate]);
             components[candidate].inUse = true;
 
-            FindStrongestBridge(candidateBridge, components, portLookup, components[candidate].OtherSide(startFrom));
-            const auto value = BridgeValue(candidateBridge);
-            if (value > bestBridgeValue) {
-                bestBridgeValue = value;
+            FindBestBridge(candidateBridge, components, portLookup, components[candidate].OtherSide(startFrom), comparator);
+            if (comparator(bestBridge, candidateBridge)) {
+                bestBridgeValue = BridgeValue(candidateBridge);
                 bestBridge = candidateBridge;
             }
             components[candidate].inUse = false;
@@ -159,64 +160,35 @@ void FindStrongestBridge(
     bridge.insert(bridge.end(), bestBridge.begin(), bestBridge.end());
 }
 
-std::list<Component> StrongestBridge(std::vector<Component>& components)
+template <typename T>
+std::list<Component> BestBridge(std::vector<Component>& components, T& comparator)
 {
     auto portLookup = BuildPortLookup(components);
     std::list<Component> bridge;
-    FindStrongestBridge(bridge, components, portLookup, 0);
+    FindBestBridge(bridge, components, portLookup, 0, comparator);
     return bridge;
 }
 
 unsigned int StrongestBridgeValue(const std::vector<std::string>& input)
 {
     auto components = ReadComponents(input);
-    auto bridge = StrongestBridge(components);
+    auto bridge = BestBridge(components,
+        [](const std::list<Component>& currentBest, const std::list<Component>& candidate) -> bool
+    {
+        return BridgeValue(candidate) > BridgeValue(currentBest);
+    });
     return BridgeValue(bridge);
-}
-
-// Recursively search for the longest bridge
-void FindLongestBridge(
-    std::list<Component>& bridge,       // In/Out - the best bridge gets stored here
-    std::vector<Component>& components, // The list of all available components
-    PortLookup& portLookup,
-    unsigned int startFrom)             // The port number we're trying to initially match
-{
-    std::list<Component> bestBridge;
-    unsigned int bestBridgeValue = 0;
-
-    for (auto candidate : portLookup[startFrom]) {
-        if (!components[candidate].inUse) {
-            std::list<Component> candidateBridge;
-            candidateBridge.push_back(components[candidate]);
-            components[candidate].inUse = true;
-
-            FindLongestBridge(candidateBridge, components, portLookup, components[candidate].OtherSide(startFrom));
-            const auto value = BridgeValue(candidateBridge);
-            if ((candidateBridge.size() > bestBridge.size()) ||
-                ((candidateBridge.size() == bestBridge.size()) && (value > bestBridgeValue))) {
-                bestBridgeValue = value;
-                bestBridge = candidateBridge;
-            }
-            components[candidate].inUse = false;
-        }
-    }
-
-    // Add the best values to our bridge
-    bridge.insert(bridge.end(), bestBridge.begin(), bestBridge.end());
-}
-
-std::list<Component> LongestBridge(std::vector<Component>& components)
-{
-    auto portLookup = BuildPortLookup(components);
-    std::list<Component> bridge;
-    FindLongestBridge(bridge, components, portLookup, 0);
-    return bridge;
 }
 
 unsigned int LongestBridgeValue(const std::vector<std::string>& input)
 {
     auto components = ReadComponents(input);
-    auto bridge = LongestBridge(components);
+    auto bridge = BestBridge(components,
+        [](const std::list<Component>& currentBest, const std::list<Component>& candidate) -> bool
+    {
+        return ((candidate.size() > currentBest.size()) ||
+            ((candidate.size() == currentBest.size()) && (BridgeValue(candidate) > BridgeValue(currentBest))));
+    });
     return BridgeValue(bridge);
 }
 
