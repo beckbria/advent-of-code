@@ -99,7 +99,7 @@ namespace Day25 {
 
     class State {
     public:
-        State(const std::vector<std::string> instructions, unsigned int beginParseIndex = 0);
+        State(const std::vector<std::string>& instructions, unsigned int beginParseIndex = 0);
         State() = default;
 
         char Name() const { return m_name; };
@@ -114,8 +114,8 @@ namespace Day25 {
     public:
         TuringMachine(const std::vector<std::string>& instructions);
         uint64_t StepsToDiagnostic() { return m_stepsToDiagnostic;  }
-        void RunToStep(uint64_t step);
-        uint64_t SetBits();
+        void RunToStep(uint64_t step) { while (m_step < step) StepForward(); }
+        uint64_t SetBits() { return m_setPositions.size(); }
         uint64_t CurrentStep() { return m_step; }
 
     protected:
@@ -130,7 +130,7 @@ namespace Day25 {
 
     constexpr bool g_validateInput = false;
 
-    State::State(const std::vector<std::string> instructions, unsigned int beginParseIndex)
+    State::State(const std::vector<std::string>& instructions, unsigned int beginParseIndex)
     {
         if (g_validateInput && ((instructions[beginParseIndex + 1] != "  If the current value is 0:") 
             || (instructions[beginParseIndex + 5] != "  If the current value is 1:"))) {
@@ -154,16 +154,17 @@ namespace Day25 {
     TuringMachine::TuringMachine(const std::vector<std::string>& instructions)
     {
         for (unsigned int i = 0; i < instructions.size(); ++i) {
-            if (instructions[i].size() < 1) continue;
+            const auto& currentInstruction = instructions[i];
+            if (currentInstruction.size() < 1) continue;
 
-            switch (instructions[i][0]) {
+            switch (currentInstruction[0]) {
             case 'B':
                 // Begin in state <name>
-                m_currentState = Helpers::Tokenize(instructions[i])[3][0];
+                m_currentState = Helpers::Tokenize(currentInstruction)[3][0];
                 break;
             case 'P':
                 // Perform a diagnostic checksum after <#> steps.
-                m_stepsToDiagnostic = std::stoi(Helpers::Tokenize(instructions[i])[5]);
+                m_stepsToDiagnostic = std::stoi(Helpers::Tokenize(currentInstruction)[5]);
                 break;
             case 'I':
                 // In state <name>:
@@ -172,18 +173,6 @@ namespace Day25 {
                 break;
             }
         }
-    }
-
-    void TuringMachine::RunToStep(uint64_t step)
-    {
-        while (m_step < step) StepForward();
-    }
-
-    uint64_t TuringMachine::SetBits()
-    {
-        uint64_t setBits = 0;
-        for (const auto &it : m_setPositions) ++setBits;
-        return setBits;
     }
 
     void TuringMachine::StepForward()
