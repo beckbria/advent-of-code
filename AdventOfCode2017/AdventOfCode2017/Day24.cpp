@@ -139,8 +139,6 @@ void FindBestBridge(
     T& comparator)
 {
     std::list<Component> bestBridge;
-    unsigned int bestBridgeValue = 0;
-
     for (auto candidate : portLookup[startFrom]) {
         if (!components[candidate].inUse) {
             std::list<Component> candidateBridge;
@@ -149,7 +147,6 @@ void FindBestBridge(
 
             FindBestBridge(candidateBridge, components, portLookup, components[candidate].OtherSide(startFrom), comparator);
             if (comparator(bestBridge, candidateBridge)) {
-                bestBridgeValue = BridgeValue(candidateBridge);
                 bestBridge = candidateBridge;
             }
             components[candidate].inUse = false;
