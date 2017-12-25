@@ -128,7 +128,7 @@ namespace Day25 {
         char m_currentState;
     };
 
-    constexpr bool g_validateInput = true;
+    constexpr bool g_validateInput = false;
 
     State::State(const std::vector<std::string> instructions, unsigned int beginParseIndex)
     {
