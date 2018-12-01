@@ -1,7 +1,25 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"log"
+	"os"
+)
+
+func check(e error) {
+	if e != nil {
+		log.Fatal(e)
+	}
+}
 
 func main() {
-	fmt.Printf("hello world")
+	file, err := os.Open("input.txt")
+	check(err)
+	defer file.Close()
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		fmt.Println(scanner.Text())
+	}
+	check(scanner.Err())
 }
