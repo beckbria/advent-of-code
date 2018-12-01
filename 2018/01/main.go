@@ -14,7 +14,8 @@ func check(e error) {
 	}
 }
 
-func sum(input []int64) int64 {
+// Sum returns the sum of a list of integers
+func Sum(input []int64) int64 {
 	sum := int64(0)
 	for _, i := range input {
 		sum += i
@@ -22,27 +23,23 @@ func sum(input []int64) int64 {
 	return sum
 }
 
-func firstSumRepeat(input []int64) int64 {
+// FirstSumRepeat loops over a list of integers, keeping a rolling sum, and returns the first default sum seen.
+func FirstSumRepeat(input []int64) int64 {
 	sum := int64(0)
-	repeat := int64(0)
 	seen := make(map[int64]bool)
 	seen[0] = true
 
-InfiniteLoop:
 	for {
 		for _, i := range input {
 			sum += i
 			_, exists := seen[sum]
 			if exists {
-				repeat = sum
-				break InfiniteLoop
+				return sum
 			} else {
 				seen[sum] = true
 			}
 		}
 	}
-
-	return repeat
 }
 
 func main() {
@@ -58,5 +55,5 @@ func main() {
 		input = append(input, i)
 	}
 	check(scanner.Err())
-	fmt.Printf("Sum: %d\nFirst Repeat: %d\n", sum(input), firstSumRepeat(input))
+	fmt.Printf("Sum: %d\nFirst Repeat: %d\n", Sum(input), FirstSumRepeat(input))
 }
