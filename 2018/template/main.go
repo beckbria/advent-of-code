@@ -18,8 +18,10 @@ func main() {
 	check(err)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
+	var input []string
 	for scanner.Scan() {
-		fmt.Println(scanner.Text())
+		input = append(input, scanner.Text())
 	}
 	check(scanner.Err())
+	fmt.Println(input)
 }
