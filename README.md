@@ -1,2 +1,5 @@
 # advent-of-code
-This repository contains my solutions for the 2017 [Advent of Code](http://adventofcode.com/) competition in C++.
+This repository contains my solutions for the [Advent of Code](http://adventofcode.com/) competition.
+
+* 2017: C++
+* 2018: Go
