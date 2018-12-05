@@ -21,11 +21,7 @@ func Reduce(polymer string) string {
 		reduced = false
 		for i := len(polymer) - 2; i >= 0; i-- {
 			if (len(polymer) > (i + 1)) && shouldCancel(polymer[i], polymer[i+1]) {
-				if (i + 1) < len(polymer) {
-					polymer = polymer[:i] + polymer[i+2:]
-				} else {
-					polymer = polymer[:i]
-				}
+				polymer = polymer[:i] + polymer[i+2:]
 			}
 		}
 	}
