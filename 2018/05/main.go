@@ -17,13 +17,19 @@ func check(e error) {
 
 // Reduce removes any adjacent pairs of upper/lowercase letters (Aa/aA) until no such pairs remain
 func Reduce(polymer string) string {
-	reduced := false
-	for ok := true; ok; ok = reduced {
-		reduced = false
-		for i := len(polymer) - 2; i >= 0; i-- {
-			if (len(polymer) > (i + 1)) && shouldCancel(polymer[i], polymer[i+1]) {
-				polymer = polymer[:i] + polymer[i+2:]
-			}
+	// By moving right-to-left, we can find all opposite pairs in a single pass without recursing
+	// or looking back at our work.  Take the polymer abcCBA.  We walk through it until i=2:
+	// abcCBA
+	//   ^
+	// After removing the matching pair and decrementing i, we're now looking at the following:
+	// abBA
+	//  ^
+	// At every point, we've guaranteed that everything to the right of i can't be reduced any further.
+	// The only thing that could be reduced is the leftmost character of the right chunk - which we're
+	// comparing to the character to its left presently.  Thus, we can do the reduction in one pass.
+	for i := len(polymer) - 2; i >= 0; i-- {
+		if (len(polymer) > (i + 1)) && shouldCancel(polymer[i], polymer[i+1]) {
+			polymer = polymer[:i] + polymer[i+2:]
 		}
 	}
 	return polymer
