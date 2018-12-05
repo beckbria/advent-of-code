@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"strconv"
-	"strings"
 )
 
 func check(e error) {
@@ -29,21 +29,23 @@ type point struct {
 	Y int64
 }
 
+var (
+	// Input format: "#id @ X,Y: WidthxHeight"
+	fabricRegEx = regexp.MustCompile("^#(\\d+) @ (\\d+),(\\d+): (\\d+)x(\\d+)$")
+)
+
 // ReadFabric converts a line from the input file into a Fabric object
 func ReadFabric(input string) Fabric {
-	// Input format: "#id @ X,Y: WidthxHeight"
-	tokens := strings.Split(input, " ")
-	id, err := strconv.ParseInt(tokens[0][1:], 10, 64)
+	tokens := fabricRegEx.FindStringSubmatch(input)
+	id, err := strconv.ParseInt(tokens[1], 10, 64)
 	check(err)
-	xyTokens := strings.Split(tokens[2], ",")
-	x, err := strconv.ParseInt(xyTokens[0], 10, 64)
+	x, err := strconv.ParseInt(tokens[2], 10, 64)
 	check(err)
-	y, err := strconv.ParseInt(xyTokens[1][:len(xyTokens[1])-1], 10, 64)
+	y, err := strconv.ParseInt(tokens[3], 10, 64)
 	check(err)
-	sizeTokens := strings.Split(tokens[3], "x")
-	width, err := strconv.ParseInt(sizeTokens[0], 10, 64)
+	width, err := strconv.ParseInt(tokens[4], 10, 64)
 	check(err)
-	height, err := strconv.ParseInt(sizeTokens[1], 10, 64)
+	height, err := strconv.ParseInt(tokens[5], 10, 64)
 	check(err)
 
 	// The -1 is because the rectangles are zero-indexed, i.e. the pixel at x=left is the first in the width.
