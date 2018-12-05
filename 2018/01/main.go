@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"time"
 )
 
 func check(e error) {
@@ -55,5 +56,10 @@ func main() {
 		input = append(input, i)
 	}
 	check(scanner.Err())
-	fmt.Printf("Sum: %d\nFirst Repeat: %d\n", Sum(input), FirstSumRepeat(input))
+	start := time.Now()
+	fmt.Printf("Sum: %d\n", Sum(input))
+	fmt.Println(time.Since(start))
+	start = time.Now()
+	fmt.Printf("First Repeat: %d\n", FirstSumRepeat(input))
+	fmt.Println(time.Since(start))
 }

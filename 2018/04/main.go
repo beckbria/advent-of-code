@@ -181,12 +181,16 @@ func main() {
 	check(err)
 
 	// Count the minutes each guard is asleep
+	start := time.Now()
 	sleep := CountSleep(input)
 	mostAsleepGuard := MostAsleep(sleep)
 	minute := MostCommonAsleepMinute(sleep, mostAsleepGuard)
 
 	fmt.Printf("Guard #%d at Minute %d == %d\n", mostAsleepGuard, minute, mostAsleepGuard*int64(minute))
+	fmt.Println(time.Since(start))
 
+	start = time.Now()
 	rGuard, rMinute := MostReliablyAsleep(sleep)
 	fmt.Printf("Most Reliably Guard #%d at Minute %d == %d\n", rGuard, rMinute, rGuard*int64(rMinute))
+	fmt.Println(time.Since(start))
 }

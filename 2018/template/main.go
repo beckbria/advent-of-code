@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
 func check(e error) {
@@ -23,5 +24,7 @@ func main() {
 		input = append(input, scanner.Text())
 	}
 	check(scanner.Err())
+	start := time.Now()
 	fmt.Println(input)
+	fmt.Println(time.Since(start))
 }

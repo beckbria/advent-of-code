@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 )
 
 func check(e error) {
@@ -97,9 +98,12 @@ func main() {
 		input = append(input, scanner.Text())
 	}
 	check(scanner.Err())
+	start := time.Now()
 	r := Reduce(input[0])
 	fmt.Println(len(r))
-
+	fmt.Println(time.Since(start))
+	start = time.Now()
 	r = ShortestRemoveOne(input[0])
 	fmt.Println(len(r))
+	fmt.Println(time.Since(start))
 }

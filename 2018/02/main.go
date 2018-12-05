@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
 // Checksum computes a very basic checksum.  It counts the number of strings in the input
@@ -98,10 +99,14 @@ func main() {
 		input = append(input, scanner.Text())
 	}
 	check(scanner.Err())
+	start := time.Now()
 	fmt.Printf("Checksum: %d\n", Checksum(input))
+	fmt.Println(time.Since(start))
+	start = time.Now()
 	a, b, err := EditDistanceOne(input)
 	check(err)
 	c, err := CommonLetters(a, b)
 	check(err)
 	fmt.Printf("Common Letters: %s\n", c)
+	fmt.Println(time.Since(start))
 }

@@ -7,6 +7,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"time"
 )
 
 func check(e error) {
@@ -105,8 +106,14 @@ func main() {
 		input = append(input, f)
 	}
 	check(scanner.Err())
+
+	start := time.Now()
 	fmt.Printf("Overlapping Area: %d\n", OverlappingArea(input))
+	fmt.Println(time.Since(start))
+
+	start = time.Now()
 	distinct, err := DistinctFabric(input)
 	check(err)
 	fmt.Printf("Distinct Fabric: %d\n", distinct)
+	fmt.Println(time.Since(start))
 }
