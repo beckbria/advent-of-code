@@ -74,7 +74,7 @@ func MaximumArea(input []Point) int64 {
 // (0,0) in the grid is at (minX, minY) for the provided points.  Each grid point will
 // be filled in with its nearest home point.
 func fill(homes []Point) ([][]GridFill, map[Point]bool) {
-	grid, fillQueue := populateGrid(homes, 0)
+	grid, fillQueue := populateGrid(homes)
 	infiniteFill := make(map[Point]bool)
 
 	for len(fillQueue) > 0 {
@@ -113,12 +113,11 @@ func isOutsideGrid(pt Point, grid [][]GridFill) bool {
 
 // Populates an initial grid with the specified homes, with the grid clipped
 // tightly to the initial home points.  Returns the grid and a list of the
-// transformed locations of the initial points.  If padding is provided, that many
-// blank spaces are provided on each edge
-func populateGrid(homes []Point, padding int64) ([][]GridFill, []Point) {
-	minX, minY, maxX, maxY := outerBounds(homes)
-	width := (2 * padding) + maxX - minX + 1
-	height := (2 * padding) + maxY - minY + 1
+// transformed locations of the initial points.
+func populateGrid(homes []Point) ([][]GridFill, []Point) {
+	minX, minY, maxX, maxY, offsetHomes := outerBounds(homes)
+	width := maxX - minX + 1
+	height := maxY - minY + 1
 	grid := make([][]GridFill, width)
 	for i := int64(0); i < width; i++ {
 		grid[i] = make([]GridFill, height)
@@ -132,14 +131,12 @@ func populateGrid(homes []Point, padding int64) ([][]GridFill, []Point) {
 	}
 
 	// Populate the Initial Homes
-	var offsetHomes []Point
-	for _, h := range homes {
-		offset := Point{X: h.X - minX + padding, Y: h.Y - minY + padding}
-		grid[offset.X][offset.Y].home = h
-		grid[offset.X][offset.Y].seen = true
-		grid[offset.X][offset.Y].distance = 0
-		offsetHomes = append(offsetHomes, offset)
+	for _, h := range offsetHomes {
+		grid[h.X][h.Y].home = h
+		grid[h.X][h.Y].seen = true
+		grid[h.X][h.Y].distance = 0
 	}
+
 	return grid, offsetHomes
 }
 
@@ -157,7 +154,7 @@ func countPoints(grid [][]GridFill) map[Point]int64 {
 }
 
 // Returns the edges of a rectangle containing all these points.  Returns minX, minY, maxX, maxY
-func outerBounds(input []Point) (int64, int64, int64, int64) {
+func outerBounds(input []Point) (int64, int64, int64, int64, []Point) {
 	minX := input[0].X
 	maxX := input[0].X
 	minY := input[0].X
@@ -168,7 +165,11 @@ func outerBounds(input []Point) (int64, int64, int64, int64) {
 		minY = min(minY, pt.Y)
 		maxY = max(maxY, pt.Y)
 	}
-	return minX, minY, maxX, maxY
+	var offsetInput []Point
+	for _, i := range input {
+		offsetInput = append(offsetInput, Point{X: i.X - minX, Y: i.Y - minY})
+	}
+	return minX, minY, maxX, maxY, offsetInput
 }
 
 func max(a int64, b int64) int64 {
@@ -193,13 +194,13 @@ func MaximumSafeArea(input []Point, threshold int64) int64 {
 	// level that the O(n^2) runtime of checking the full solution space still
 	// isn't bad for our data set
 	padding := int64(threshold / int64(len(input)))
-	grid, homes := populateGrid(input, padding)
+	_, _, maxX, maxY, offsetHomes := outerBounds(input)
 
 	size := int64(0)
-	for x := 0; x < len(grid); x++ {
-		for y := 0; y < len(grid[0]); y++ {
+	for x := -padding; x <= maxX+padding; x++ {
+		for y := -padding; y <= maxY+padding; y++ {
 			distance := int64(0)
-			for _, h := range homes {
+			for _, h := range offsetHomes {
 				distance += abs(h.X - int64(x))
 				distance += abs(h.Y - int64(y))
 			}
