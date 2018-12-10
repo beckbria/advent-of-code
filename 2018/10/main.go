@@ -82,6 +82,8 @@ func TimeToConvergence(realProj []Projectile) int {
 		if (height > lastHeight) || (width > lastWidth) {
 			return time
 		}
+		lastHeight = height
+		lastWidth = width
 		time++
 	}
 }
@@ -96,33 +98,11 @@ func advance(proj []Projectile, time int) {
 	}
 }
 
-// FindMessages displays a grid of projectiles when they've converged
-func FindMessages(proj []Projectile) {
-	const threshold = 100
-	time := 0
-	// Keep looping while the bounds converge
-	for {
-		minx, miny, maxx, maxy := bounds(proj)
-		if ((maxx - minx) <= threshold) && ((maxy - miny) <= threshold) {
-			// Things are starting to converge.  Print.
-			fmt.Println(time)
-			drawProjectiles(proj, minx, miny, maxx, maxy)
-			fmt.Print("\n\n")
-		}
-
-		for i := 0; i < len(proj); i++ {
-			proj[i].x += proj[i].dx
-			proj[i].y += proj[i].dy
-		}
-		time++
-	}
-}
-
-func drawProjectiles(proj []Projectile, minX, minY, maxX, maxY int) {
+func drawProjectiles(proj []Projectile) {
+	minX, minY, maxX, maxY := bounds(proj)
 	normProj := normalize(proj, minX, minY)
 	normX := maxX - minX
 	normY := maxY - minY
-	fmt.Printf("%d,%d\n", normX, normY)
 	var grid = make(map[int]map[int]bool)
 	for x := 0; x <= normX; x++ {
 		grid[x] = make(map[int]bool)
@@ -168,8 +148,7 @@ func main() {
 	start := time.Now()
 	convergence := TimeToConvergence(input)
 	fmt.Println(convergence)
-	//advance(input, convergence)
-
-	FindMessages(input)
+	advance(input, convergence)
+	drawProjectiles(input)
 	fmt.Println(time.Since(start))
 }
