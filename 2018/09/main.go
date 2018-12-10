@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"container/list"
 	"fmt"
 	"log"
 	"os"
@@ -37,15 +38,17 @@ func ReadInput(input string) (int, int64) {
 }
 
 type gameState struct {
-	scores        []int64 // The players' scores
-	marbles       []int64 // The marbles which make up the circle.  Ascending index is clockwise
-	currentMarble int64   // The index of the "current" marble
-	nextPlayer    int     // The index of the next player to place a marble
-	nextMarble    int64   // The value of the next marble to be placed
+	scores        []int64       // The players' scores
+	marbles       *list.List    // The marbles which make up the circle.  Ascending index is clockwise
+	currentMarble *list.Element // The index of the "current" marble
+	nextPlayer    int           // The index of the next player to place a marble
+	nextMarble    int64         // The value of the next marble to be placed
 }
 
 func createGame(players int) gameState {
-	return gameState{currentMarble: int64(0), nextPlayer: 1, nextMarble: int64(1), marbles: []int64{0}, scores: make([]int64, players)}
+	game := gameState{currentMarble: nil, nextPlayer: 1, nextMarble: int64(1), marbles: list.New(), scores: make([]int64, players)}
+	game.currentMarble = game.marbles.PushFront(int64(0))
+	return game
 }
 
 func printGame(game *gameState) {
@@ -56,46 +59,44 @@ func printGame(game *gameState) {
 		n /= 10
 	}
 
-	fmtStrNormal := fmt.Sprintf(" %%%dd ", digits)
-	fmtStrCurrent := fmt.Sprintf("(%%%dd)", digits)
 	fmt.Printf("[%d]", game.nextPlayer)
-	for i := 0; i < len(game.marbles); i++ {
-		if game.currentMarble == int64(i) {
-			fmt.Printf(fmtStrCurrent, game.marbles[i])
+	for e := game.marbles.Front(); e != nil; e = e.Next() {
+		if game.currentMarble == e {
+			fmt.Printf("(%d)", e.Value.(int64))
 		} else {
-			fmt.Printf(fmtStrNormal, game.marbles[i])
+			fmt.Printf(" %d ", e.Value.(int64))
 		}
 	}
 	fmt.Print("\n")
 }
 
 func moveCurrent(game *gameState, delta int64) {
-	game.currentMarble += delta
-	for game.currentMarble < 0 {
-		game.currentMarble += int64(len(game.marbles))
+	for i := int64(0); i != delta; {
+		if delta < 0 {
+			// Move backwards
+			game.currentMarble = game.currentMarble.Prev()
+			if game.currentMarble == nil {
+				game.currentMarble = game.marbles.Back()
+			}
+			i--
+		} else {
+			game.currentMarble = game.currentMarble.Next()
+			if game.currentMarble == nil {
+				game.currentMarble = game.marbles.Front()
+			}
+			i++
+		}
 	}
-	game.currentMarble %= int64(len(game.marbles))
 }
 
 func removeCurrent(game *gameState) {
-	if game.currentMarble == int64(len(game.marbles)-1) {
-		game.marbles = game.marbles[:len(game.marbles)-1]
-		game.currentMarble = int64(0)
-	} else {
-		game.marbles = append(game.marbles[:game.currentMarble], game.marbles[game.currentMarble+1:]...)
-		// The current Index remains the same because the one next to it shifts into its place
-	}
+	next := game.currentMarble.Next()
+	game.marbles.Remove(game.currentMarble)
+	game.currentMarble = next
 }
 
 func insertRightOfCurrent(game *gameState, val int64) {
-	if game.currentMarble == int64(len(game.marbles)-1) {
-		// The current marble is the last.  Insert at the end
-		game.marbles = append(game.marbles, val)
-	} else {
-		marbles := append([]int64{val}, game.marbles[game.currentMarble+1:]...)
-		marbles = append(game.marbles[0:game.currentMarble+1], marbles...)
-		game.marbles = marbles
-	}
+	game.marbles.InsertAfter(val, game.currentMarble)
 }
 
 func advanceTurn(game *gameState) {
@@ -106,10 +107,10 @@ func advanceTurn(game *gameState) {
 		// becomes the new current marble
 		moveCurrent(game, -7)
 		if debug {
-			fmt.Printf("Scoring Marble index %d (%d) for player %d\n", game.currentMarble, game.marbles[game.currentMarble], game.nextPlayer)
+			fmt.Printf("Scoring Marble index %d (%d) for player %d\n", game.currentMarble, game.currentMarble.Value.(int64), game.nextPlayer)
 			fmt.Println(game.marbles)
 		}
-		game.scores[game.nextPlayer] += game.marbles[game.currentMarble]
+		game.scores[game.nextPlayer] += game.currentMarble.Value.(int64)
 		removeCurrent(game)
 	} else {
 		// This is the standard turn.  Place the next marble two clockwise from the current marble
