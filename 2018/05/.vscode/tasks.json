@@ -18,7 +18,10 @@
         {
             "label": "Run",
             "type": "shell",
-            "command": "${workspaceFolder}\\aoc",
+            "command": "${workspaceFolder}/aoc",
+            "windows": {
+                "command": "${workspaceFolder}\\aoc",
+            },
             "presentation": {
                 "echo": true,
                 "reveal": "always",
