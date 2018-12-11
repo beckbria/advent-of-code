@@ -12,7 +12,7 @@ import (
 
 var (
 	// Input format: "# #"
-	fabricRegEx = regexp.MustCompile("^(\\d+) (\\d+)$")
+	regEx = regexp.MustCompile("^(\\d+) (\\d+)$")
 )
 
 func check(e error) {
@@ -21,13 +21,21 @@ func check(e error) {
 	}
 }
 
-// ReadFabric converts a line from the input file into a Fabric object
-func ReadNumbers(input string) {
-	tokens := fabricRegEx.FindStringSubmatch(input)
+// ReadLine parses a line from the input file
+func ReadLine(input string) {
+	tokens := regEx.FindStringSubmatch(input)
 	id, err := strconv.ParseInt(tokens[1], 10, 64)
 	check(err)
 	x, err := strconv.ParseInt(tokens[2], 10, 64)
 	check(err)
+}
+
+func ReadLines(input []string) []interface{
+	var objs []interface
+	for _, s := range input {
+		objs = append(objs, ReadLine(s))
+	}
+	return obj
 }
 
 func main() {
