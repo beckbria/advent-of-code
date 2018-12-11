@@ -28,7 +28,7 @@ func TestLargestPowerSquare(t *testing.T) {
 	//assert.Equal(t, 90, x)
 	//assert.Equal(t, 269, y)
 	//assert.Equal(t, 16, size)
-	x, y, size = LargestPowerSquare(42)
+	x, y, size := LargestPowerSquare(42)
 	assert.Equal(t, 232, x)
 	assert.Equal(t, 251, y)
 	assert.Equal(t, 12, size)
