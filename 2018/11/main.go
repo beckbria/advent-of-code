@@ -74,7 +74,7 @@ func LargestPowerSquare(seed int) (int, int, int) {
 			s := grid[x][y]
 			sums[x][y] = s
 			sizes[x][y] = 1
-			maxSquareSize := min(len(grid)-(x+1), len(grid[0])-(y+1)) + 1
+			maxSquareSize := min(len(grid)-x, len(grid[0])-y)
 			for i := 1; i < maxSquareSize; i++ {
 				// Add the new right and bottom edge to get the new sum
 				for j := 0; j < i; j++ {

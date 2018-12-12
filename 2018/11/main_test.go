@@ -24,11 +24,11 @@ func TestMakeGrid(t *testing.T) {
 func TestLargestPowerSquare(t *testing.T) {
 	// TODO: Determine why this test case doesn't match the supplied input.
 	// The other test case and the answer for seed 1718 both come out correctly
-	//x, y, size := LargestPowerSquare(18)
-	//assert.Equal(t, 90, x)
-	//assert.Equal(t, 269, y)
-	//assert.Equal(t, 16, size)
-	x, y, size := LargestPowerSquare(42)
+	x, y, size := LargestPowerSquare(18)
+	assert.Equal(t, 90, x)
+	assert.Equal(t, 269, y)
+	assert.Equal(t, 16, size)
+	x, y, size = LargestPowerSquare(42)
 	assert.Equal(t, 232, x)
 	assert.Equal(t, 251, y)
 	assert.Equal(t, 12, size)
