@@ -22,8 +22,17 @@ const (
 	Elf    = 'E'
 )
 
-// CaveMap represents the grid of tracks
-type CaveMap map[int]map[int]Spot // Maps X->Y->Spot
+// Cave represents the units in a cave network
+type Cave struct {
+	layout  caveLayout
+	elves   unitMap
+	goblins unitMap
+	width   int
+	height  int
+}
+
+type caveLayout map[int]map[int]Spot // Maps X->Y->Spot
+type unitMap map[int]map[int]bool
 
 func check(e error) {
 	if e != nil {
@@ -31,48 +40,62 @@ func check(e error) {
 	}
 }
 
-// ReadCaveMap parses the input into a cave network
-func ReadCaveMap(input []string) CaveMap {
-	cave := make(RailMap)
-	carts := make(CartMap)
+// ReadCave parses the input into a cave network
+func ReadCave(input []string) Cave {
+	layout := make(caveLayout)
+	elves := make(unitMap)
+	goblins := make(unitMap)
 	for y, s := range input {
 		for x, c := range []rune(s) {
-			if _, exists := rails[x]; !exists {
-				rails[x] = make(map[int]Track)
+			if _, exists := layout[x]; !exists {
+				layout[x] = make(map[int]Spot)
+			}
+			if _, exists := elves[x]; !exists {
+				elves[x] = make(map[int]bool)
+			}
+			if _, exists := goblins[x]; !exists {
+				goblins[x] = make(map[int]bool)
 			}
 
 			switch c {
-			case Wall, Cavern, Goblin, Elf:
-				cave[x][y] = Spot(c)
+			case Wall, Cavern:
+				layout[x][y] = Spot(c)
 
-			case Up, Left, Right, Down:
-				if _, present := carts[x]; !present {
-					carts[x] = make(map[int][]RailCart)
-				}
-				carts[x][y] = []RailCart{RailCart{
-					currentX:  x,
-					currentY:  y,
-					previousX: -1,
-					previousY: -1,
-					alive:     true,
-					dir:       Direction(c),
-					id:        len(carts)}}
-				if (c == Up) || (c == Down) {
-					rails[x][y] = Vertical
-				} else { // Left or Right
-					rails[x][y] = Horizontal
-				}
+			case Elf:
+				layout[x][y] = Cavern
+				elves[x][y] = true
 
-				if debug {
-					fmt.Printf("Created Cart %d at (%d,%d) facing %c\n", carts[x][y][0].id, x, y, c)
-				}
+			case Goblin:
+				layout[x][y] = Cavern
+				goblins[x][y] = true
 
 			default:
 				log.Fatalf("Unknown character in input: %c", c)
 			}
 		}
 	}
-	return cave
+	return Cave{
+		layout:  layout,
+		elves:   elves,
+		goblins: goblins,
+		width:   len(input[0]),
+		height:  len(input)}
+}
+
+func printCave(c Cave) {
+	for y := 0; y < c.height; y++ {
+		for x := 0; x < c.width; x++ {
+			if _, exists := c.goblins[x][y]; exists {
+				fmt.Printf("%c", rune(Goblin))
+			} else if _, exists := c.elves[x][y]; exists {
+				fmt.Printf("%c", rune(Elf))
+			} else {
+				fmt.Printf("%c", c.layout[x][y])
+			}
+		}
+		fmt.Printf("\n")
+	}
+	fmt.Printf("\n")
 }
 
 func main() {
@@ -86,7 +109,7 @@ func main() {
 	}
 	check(scanner.Err())
 	start := time.Now()
-	cave := ReadCaveMap(input)
-	fmt.Println(input)
+	cave := ReadCave(input)
+	printCave(cave)
 	fmt.Println(time.Since(start))
 }
