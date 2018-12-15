@@ -10,29 +10,44 @@ import (
 
 const debug = false
 
-// Track is an "enum" of Wall/Cavern/Goblin/Elf
-// Yes, this language has no concept of an enum.  I feel like I'm writing QBASIC again.
-type Spot rune
+// spot is an "enum" of Wall/Cavern
+type spot rune
+
+// unitType is an "enum" of Goblin/Elf
+type unitType rune
 
 // I already told you what these are but golint wants a comment here
 const (
 	Wall   = '#'
 	Cavern = '.'
+
 	Goblin = 'G'
 	Elf    = 'E'
 )
 
 // Cave represents the units in a cave network
 type Cave struct {
-	layout  caveLayout
-	elves   unitMap
-	goblins unitMap
-	width   int
-	height  int
+	layout caveLayout
+	units  []Unit
+	width  int
+	height int
 }
 
-type caveLayout map[int]map[int]Spot // Maps X->Y->Spot
-type unitMap map[int]map[int]bool
+// Unit represents a goblin or elf
+type Unit struct {
+	kind   unitType
+	hp     int
+	attack int
+	id     int
+	x      int
+	y      int
+}
+
+var nextUnitID = 0
+
+type caveLayout map[int]map[int]spot // Maps X->Y->spot
+type unitLocationMap map[int]map[int]*Unit
+type unitIDMap map[int]*Unit
 
 func check(e error) {
 	if e != nil {
@@ -40,34 +55,64 @@ func check(e error) {
 	}
 }
 
+func makeUnit(kind unitType, hp, attack, x, y int) Unit {
+	nextUnitID++
+	return Unit{kind: kind, hp: hp, attack: attack, id: nextUnitID, x: x, y: y}
+}
+
+// Returns a map of unit location to the unit
+func makeUnitLocationMap(c *Cave) unitLocationMap {
+	uMap := make(unitLocationMap)
+	for i := 0; i < c.width; i++ {
+		uMap[i] = make(map[int]*Unit)
+	}
+	for _, u := range c.units {
+		uMap[u.x][u.y] = &u
+	}
+	return uMap
+}
+
+func makeUnitIDMap(units []Unit) unitIDMap {
+	uMap := make(unitIDMap)
+	for _, u := range units {
+		uMap[u.id] = &u
+	}
+	return uMap
+}
+
+func makeGoblin(x, y int) Unit {
+	return makeUnit(Goblin, 200, 3, x, y)
+}
+
+func makeElf(x, y int) Unit {
+	return makeUnit(Elf, 200, 3, x, y)
+}
+
+func alive(u Unit) bool {
+	return u.hp > 0
+}
+
 // ReadCave parses the input into a cave network
 func ReadCave(input []string) Cave {
 	layout := make(caveLayout)
-	elves := make(unitMap)
-	goblins := make(unitMap)
+	units := make([]Unit, 0)
 	for y, s := range input {
 		for x, c := range []rune(s) {
 			if _, exists := layout[x]; !exists {
-				layout[x] = make(map[int]Spot)
-			}
-			if _, exists := elves[x]; !exists {
-				elves[x] = make(map[int]bool)
-			}
-			if _, exists := goblins[x]; !exists {
-				goblins[x] = make(map[int]bool)
+				layout[x] = make(map[int]spot)
 			}
 
 			switch c {
 			case Wall, Cavern:
-				layout[x][y] = Spot(c)
+				layout[x][y] = spot(c)
 
 			case Elf:
 				layout[x][y] = Cavern
-				elves[x][y] = true
+				units = append(units, makeElf(x, y))
 
 			case Goblin:
 				layout[x][y] = Cavern
-				goblins[x][y] = true
+				units = append(units, makeGoblin(x, y))
 
 			default:
 				log.Fatalf("Unknown character in input: %c", c)
@@ -75,20 +120,18 @@ func ReadCave(input []string) Cave {
 		}
 	}
 	return Cave{
-		layout:  layout,
-		elves:   elves,
-		goblins: goblins,
-		width:   len(input[0]),
-		height:  len(input)}
+		layout: layout,
+		units:  units,
+		width:  len(input[0]),
+		height: len(input)}
 }
 
-func printCave(c Cave) {
+func printCave(c *Cave) {
+	uMap := makeUnitLocationMap(c)
 	for y := 0; y < c.height; y++ {
 		for x := 0; x < c.width; x++ {
-			if _, exists := c.goblins[x][y]; exists {
-				fmt.Printf("%c", rune(Goblin))
-			} else if _, exists := c.elves[x][y]; exists {
-				fmt.Printf("%c", rune(Elf))
+			if _, exists := uMap[x][y]; exists {
+				fmt.Printf("%c", rune(uMap[x][y].kind))
 			} else {
 				fmt.Printf("%c", c.layout[x][y])
 			}
@@ -96,6 +139,16 @@ func printCave(c Cave) {
 		fmt.Printf("\n")
 	}
 	fmt.Printf("\n")
+}
+
+// Outcome returns the number of rounds multiplied by the hit points
+// of the winning team
+func Outcome(input []string) int {
+	if debug {
+		cave := ReadCave(input)
+		printCave(&cave)
+	}
+	return 0
 }
 
 func main() {
@@ -109,7 +162,6 @@ func main() {
 	}
 	check(scanner.Err())
 	start := time.Now()
-	cave := ReadCave(input)
-	printCave(cave)
+	fmt.Println(Outcome(input))
 	fmt.Println(time.Since(start))
 }
