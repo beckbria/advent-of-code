@@ -144,11 +144,36 @@ func printCave(c *Cave) {
 // Outcome returns the number of rounds multiplied by the hit points
 // of the winning team
 func Outcome(input []string) int {
+	cave := ReadCave(input)
 	if debug {
-		cave := ReadCave(input)
 		printCave(&cave)
 	}
+
+	for round := 0; ; round++ {
+		done, completeRound := performRound(&cave)
+		if debug {
+			printCave(&cave)
+		}
+		if done {
+			if completeRound {
+				return round + 1
+			} else {
+				return round
+			}
+		}
+	}
+
 	return 0
+}
+
+// Where the magic happens.  For a full description of the process,
+// see the README
+func performRound(c *cave) (bool, bool) {
+	sortByPosition(c.units)
+
+	// TODO: Once ready to test, uncomment
+	// return done, completeRound
+	return true, true
 }
 
 func main() {
