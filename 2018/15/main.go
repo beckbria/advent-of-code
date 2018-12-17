@@ -58,8 +58,10 @@ type point struct {
 // the path
 type path struct {
 	distance  int
-	preceding point
+	preceding []point
 }
+
+type Paths map[int]map[int]*path
 
 var nextUnitID = 0
 
@@ -181,16 +183,35 @@ func Outcome(input []string) int {
 }
 
 // Compute the shortest path to all reachable squares on the map
-func shortestPaths(unit *Unit, unitLocations unitLocationMap, cave *Cave) map[int]map[int]path {
-	paths := make(map[int]map[int]path)
+func shortestPaths(unit *Unit, unitLocations unitLocationMap, cave *Cave) Paths {
+	paths := make(Paths)
 	for i := 0; i < cave.width; i++ {
-		paths[i] = make(map[int]path)
+		paths[i] = make(map[int]*path)
 		for j := 0; j < cave.height; j++ {
-			paths[i][j] = path{distance: Unreachable}
+			p := path{distance: Unreachable, preceding: make([]point, 0)}
+			paths[i][j] = &p
 		}
 	}
 
-	// TODO: Djikstra's Algorithm
+	paths[unit.loc.x][unit.loc.y].distance = 0
+	toProcess := []point{unit.loc}
+	for len(toProcess) > 0 {
+		// Take the first element
+		curr := toProcess[0]
+		newDistance := paths[curr.x][curr.y].distance + 1
+		toProcess = toProcess[1:]
+		_, adjacentEmpty := findAdjacent(&curr, unitLocations, cave)
+		for _, adj := range adjacentEmpty {
+			currAdjDistance := paths[adj.x][adj.y].distance
+			if newDistance < currAdjDistance {
+				paths[adj.x][adj.y].distance = newDistance
+				paths[adj.x][adj.y].preceding = []point{curr}
+			} else if newDistance < currAdjDistance {
+				paths[adj.x][adj.y].preceding =
+					append(paths[adj.x][adj.y].preceding, curr)
+			}
+		}
+	}
 
 	return paths
 }
@@ -210,12 +231,12 @@ func performRound(cave *Cave) bool {
 		// Phase 1: Movement
 		// If in adjacent to enemy, do not move
 		unitLocations := makeUnitLocationMap(cave)
-		adjacentUnits, _ := findAdjacent(currentUnit, unitLocations, cave)
+		adjacentUnits, _ := findAdjacent(&currentUnit.loc, unitLocations, cave)
 		if len(enemies(currentUnit, adjacentUnits)) < 1 {
 			// Identify all open squares adjacent to all enemies
 			destinations := make([]point, 0)
 			for _, e := range allEnemies {
-				_, adjacent := findAdjacent(e, unitLocations, cave)
+				_, adjacent := findAdjacent(&e.loc, unitLocations, cave)
 				destinations = append(destinations, adjacent...)
 			}
 			// If no open squares adjacent to enemies, do not move
@@ -238,20 +259,13 @@ func performRound(cave *Cave) bool {
 					}
 				}
 				// Move one space towards that square
-				// Walk the path backwards to find the first step
-				p := distances[target.x][target.y]
-				newLocation := point{x: target.x, y: target.y}
-				for (p.preceding.x != currentUnit.loc.x) || (p.preceding.y != currentUnit.loc.y) {
-					newLocation = p.preceding
-					p = distances[p.preceding.x][p.preceding.y]
-				}
-				currentUnit.loc = newLocation
+				currentUnit.loc = moveOneStep(currentUnit.loc, target, distances)
 			}
 		}
 
 		// Phase 2: Attack
 		// If no target in range, end turn
-		adjacentUnits, _ = findAdjacent(currentUnit, unitLocations, cave)
+		adjacentUnits, _ = findAdjacent(&currentUnit.loc, unitLocations, cave)
 		targetCandidates := enemies(currentUnit, adjacentUnits)
 		if len(targetCandidates) >= 1 {
 			// Take target w/ lowest HP, tiebreak in READING ORDER
@@ -270,9 +284,31 @@ func performRound(cave *Cave) bool {
 		}
 	}
 
-	// TODO: Once ready to test, uncomment
-	//return false
-	return true
+	return false
+}
+
+func moveOneStep(current, target point, distances Paths) point {
+	// Walk the path backwards to find the first step
+	candidates := findPossibleFirstSteps(target, distances)
+	step := candidates[0]
+	for _, c := range candidates {
+		if readOrderLess(&c, &step) {
+			step = c
+		}
+	}
+	return step
+}
+
+func findPossibleFirstSteps(target point, distances Paths) []point {
+	if distances[target.x][target.y].distance == 1 {
+		return []point{target}
+	}
+
+	candidates := make([]point, 0)
+	for _, p := range distances[target.x][target.y].preceding {
+		candidates = append(candidates, findPossibleFirstSteps(p, distances)...)
+	}
+	return candidates
 }
 
 // Removes any deceased units from a list
@@ -296,9 +332,9 @@ func enemies(current *Unit, others Units) Units {
 	return enemy
 }
 
-func findAdjacent(current *Unit, locations unitLocationMap, cave *Cave) (Units, []point) {
-	x := current.loc.x
-	y := current.loc.y
+func findAdjacent(current *point, locations unitLocationMap, cave *Cave) (Units, []point) {
+	x := current.x
+	y := current.y
 	units := make(Units, 0)
 	emptyPoints := make([]point, 0)
 	candidates := []point{
