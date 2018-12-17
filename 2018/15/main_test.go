@@ -15,7 +15,7 @@ func TestAdjacent(t *testing.T) {
 		"#...#E#",
 		"#...E.#",
 		"#######",
-	})
+	}, 3)
 
 	loc := MakeUnitLocationMap(&c)
 	pt := Point{x: 1, y: 1}
@@ -33,7 +33,7 @@ func TestFindShortest(t *testing.T) {
 		"#...#E#",
 		"#...E.#",
 		"#######",
-	})
+	}, 3)
 
 	loc := MakeUnitLocationMap(&c)
 	paths := ShortestPaths(loc[1][3], loc, &c)
@@ -45,7 +45,7 @@ func TestFindShortest(t *testing.T) {
 
 func TestOutcome(t *testing.T) {
 
-	score, rounds, hp := Outcome([]string{
+	score, winningSide, rounds, hp, _ := Outcome([]string{
 		"#######",
 		"#.G...#",
 		"#...EG#",
@@ -53,12 +53,13 @@ func TestOutcome(t *testing.T) {
 		"#..G#E#",
 		"#.....#",
 		"#######",
-	})
+	}, 3)
 	assert.Equal(t, 27730, score)
 	assert.Equal(t, 47, rounds)
 	assert.Equal(t, 590, hp)
+	assert.Equal(t, Goblin, int32(winningSide))
 
-	score, rounds, hp = Outcome([]string{
+	score, winningSide, rounds, hp, _ = Outcome([]string{
 		"#######",
 		"#G..#E#",
 		"#E#E.E#",
@@ -66,13 +67,14 @@ func TestOutcome(t *testing.T) {
 		"#...#E#",
 		"#...E.#",
 		"#######",
-	})
+	}, 3)
 	assert.Equal(t, 36334, score)
 	assert.Equal(t, 37, rounds)
 	// We seem to be missing a hit here - we get 985hp returned
 	assert.Equal(t, 982, hp)
+	assert.Equal(t, Elf, int32(winningSide))
 
-	score, rounds, hp = Outcome([]string{
+	score, winningSide, rounds, hp, _ = Outcome([]string{
 		"#######",
 		"#E..EG#",
 		"#.#G.E#",
@@ -80,13 +82,14 @@ func TestOutcome(t *testing.T) {
 		"#G..#.#",
 		"#..E#.#",
 		"#######",
-	})
+	}, 3)
 	assert.Equal(t, 39514, score)
 	// We appear to be missing a round here - we return 45
 	assert.Equal(t, 46, rounds)
 	assert.Equal(t, 859, hp)
+	assert.Equal(t, Elf, int32(winningSide))
 
-	score, rounds, hp = Outcome([]string{
+	score, winningSide, rounds, hp, _ = Outcome([]string{
 		"#######",
 		"#E.G#.#",
 		"#.#G..#",
@@ -94,12 +97,13 @@ func TestOutcome(t *testing.T) {
 		"#G..#.#",
 		"#...E.#",
 		"#######",
-	})
+	}, 3)
 	assert.Equal(t, 27755, score)
 	assert.Equal(t, 35, rounds)
 	assert.Equal(t, 793, hp)
+	assert.Equal(t, Goblin, int32(winningSide))
 
-	score, rounds, hp = Outcome([]string{
+	score, winningSide, rounds, hp, _ = Outcome([]string{
 		"#######",
 		"#.E...#",
 		"#.#..G#",
@@ -107,12 +111,13 @@ func TestOutcome(t *testing.T) {
 		"#E#G#G#",
 		"#...#G#",
 		"#######",
-	})
+	}, 3)
 	assert.Equal(t, 28944, score)
 	assert.Equal(t, 54, rounds)
 	assert.Equal(t, 536, hp)
+	assert.Equal(t, Goblin, int32(winningSide))
 
-	score, rounds, hp = Outcome([]string{
+	score, winningSide, rounds, hp, _ = Outcome([]string{
 		"#########",
 		"#G......#",
 		"#.E.#...#",
@@ -122,8 +127,54 @@ func TestOutcome(t *testing.T) {
 		"#.G...G.#",
 		"#.....G.#",
 		"#########",
-	})
+	}, 3)
 	assert.Equal(t, 18740, score)
 	assert.Equal(t, 20, rounds)
 	assert.Equal(t, 937, hp)
+	assert.Equal(t, Goblin, int32(winningSide))
+}
+
+func TestSmallestVictory(t *testing.T) {
+
+	assert.Equal(t, 31284, LowestWinningOutcome([]string{
+		"#######",
+		"#E..EG#",
+		"#.#G.E#",
+		"#E.##E#",
+		"#G..#.#",
+		"#..E#.#",
+		"#######",
+	}))
+
+	assert.Equal(t, 3478, LowestWinningOutcome([]string{
+		"#######",
+		"#E.G#.#",
+		"#.#G..#",
+		"#G.#.G#",
+		"#G..#.#",
+		"#...E.#",
+		"#######",
+	}))
+
+	assert.Equal(t, 6474, LowestWinningOutcome([]string{
+		"#######",
+		"#.E...#",
+		"#.#..G#",
+		"#.###.#",
+		"#E#G#G#",
+		"#...#G#",
+		"#######",
+	}))
+
+	assert.Equal(t, 1140, LowestWinningOutcome([]string{
+		"#########",
+		"#G......#",
+		"#.E.#...#",
+		"#..##..G#",
+		"#...##..#",
+		"#...#...#",
+		"#.G...G.#",
+		"#.....G.#",
+		"#########",
+	}))
 }

@@ -29,7 +29,7 @@ Then, the unit identifies all of the open squares (`.`) that are _in range_ of e
 
 If the unit is already in range of a target, it does not _move_, but continues its turn with an _attack_. Otherwise, since it is not in range of a target, it _moves_.
 
-To _move_, the unit first considers the squares that are _in range_ and determines _which of those squares it could reach in the fewest steps_. A _step_ is a single movement to any _adjacent_ (immediately up, down, left, or right) open (`.`) square. Units cannot move into walls or other units. The unit does this while considering the _current positions of units_ and does _not_ do any prediction about where units will be later. If the unit cannot reach (find an open path to) any of the squares that are in range, it ends its turn. If multiple squares are in range and _tied_ for being reachable in the fewest steps, the step which is first in _reading order_ is chosen. For example:
+To _move_, the unit first considers the squares that are _in range_ and determines _which of those squares it could reach in the fewest steps_. A _step_ is a single movement to any _adjacent_ (immediately up, down, left, or right) open (`.`) square. Units cannot move into walls or other units. The unit does this while considering the _current positions of units_ and does _not_ do any prediction about where units will be later. If the unit cannot reach (find an open path to) any of the squares that are in range, it ends its turn. If multiple squares are in range and _tied_ for being reachable in the fewest steps, the square which is first in _reading order_ is chosen. For example:
 
     Targets:      In range:     Reachable:    Nearest:      Chosen:
     #######       #######       #######       #######       #######
@@ -300,3 +300,92 @@ Here are a few example summarized combats:
     
 
 _What is the outcome_ of the combat described in your puzzle input?
+
+### Part Two
+
+According to your calculations, the Elves are going to lose badly. Surely, you won't mess up the timeline too much if you give them <span title="See also: the plot of every Civilization game.">just a little advanced technology</span>, right?
+
+You need to make sure the Elves not only _win_, but also suffer _no losses_: even the death of a single Elf is unacceptable.
+
+However, you can't go too far: larger changes will be more likely to permanently alter spacetime.
+
+So, you need to _find the outcome_ of the battle in which the Elves have the _lowest integer attack power_ (at least `4`) that allows them to _win without a single death_. The Goblins always have an attack power of `3`.
+
+In the first summarized example above, the lowest attack power the Elves need to win without losses is `15`:
+
+    #######       #######
+    #.G...#       #..E..#   E(158)
+    #...EG#       #...E.#   E(14)
+    #.#.#G#  -->  #.#.#.#
+    #..G#E#       #...#.#
+    #.....#       #.....#
+    #######       #######
+    
+    Combat ends after 29 full rounds
+    Elves win with 172 total hit points left
+    Outcome: 29 * 172 = 4988
+    
+
+In the second example above, the Elves need only `4` attack power:
+
+    #######       #######
+    #E..EG#       #.E.E.#   E(200), E(23)
+    #.#G.E#       #.#E..#   E(200)
+    #E.##E#  -->  #E.##E#   E(125), E(200)
+    #G..#.#       #.E.#.#   E(200)
+    #..E#.#       #...#.#
+    #######       #######
+    
+    Combat ends after 33 full rounds
+    Elves win with 948 total hit points left
+    Outcome: 33 * 948 = 31284
+    
+
+In the third example above, the Elves need `15` attack power:
+
+    #######       #######
+    #E.G#.#       #.E.#.#   E(8)
+    #.#G..#       #.#E..#   E(86)
+    #G.#.G#  -->  #..#..#
+    #G..#.#       #...#.#
+    #...E.#       #.....#
+    #######       #######
+    
+    Combat ends after 37 full rounds
+    Elves win with 94 total hit points left
+    Outcome: 37 * 94 = 3478
+    
+
+In the fourth example above, the Elves need `12` attack power:
+
+    #######       #######
+    #.E...#       #...E.#   E(14)
+    #.#..G#       #.#..E#   E(152)
+    #.###.#  -->  #.###.#
+    #E#G#G#       #.#.#.#
+    #...#G#       #...#.#
+    #######       #######
+    
+    Combat ends after 39 full rounds
+    Elves win with 166 total hit points left
+    Outcome: 39 * 166 = 6474
+    
+
+In the last example above, the lone Elf needs `34` attack power:
+
+    #########       #########   
+    #G......#       #.......#   
+    #.E.#...#       #.E.#...#   E(38)
+    #..##..G#       #..##...#   
+    #...##..#  -->  #...##..#   
+    #...#...#       #...#...#   
+    #.G...G.#       #.......#   
+    #.....G.#       #.......#   
+    #########       #########   
+    
+    Combat ends after 30 full rounds
+    Elves win with 38 total hit points left
+    Outcome: 30 * 38 = 1140
+    
+
+After increasing the Elves' attack power until it is just barely enough for them to win without any Elves dying, _what is the outcome_ of the combat described in your puzzle input?

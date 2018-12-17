@@ -11,16 +11,17 @@ import (
 )
 
 const (
-	debug         = false
-	debugPrintMap = false
-	debugAdjacent = false
+	debug         = false // fGeneral debug statements
+	debugPrintMap = false // Printing of the cave map every round
+	debugAdjacent = false // Debugging of the FindAdjacent function
+	debugSearch   = false // Debugging of binary search for Part 2
 )
 
 // spot is an "enum" of Wall/Cavern
 type spot rune
 
-// unitType is an "enum" of Goblin/Elf
-type unitType rune
+// UnitType is an "enum" of Goblin/Elf
+type UnitType rune
 
 // I already told you what these are but golint wants a comment here
 const (
@@ -30,6 +31,7 @@ const (
 	Goblin = 'G'
 	Elf    = 'E'
 
+	// Tag spaces in a path as not reachable
 	Unreachable = math.MaxInt32
 )
 
@@ -46,12 +48,15 @@ type Cave struct {
 
 // Unit represents a goblin or elf
 type Unit struct {
-	kind   unitType
+	kind   UnitType
 	hp     int
 	attack int
 	id     int
 	loc    Point
 }
+
+// Global stati
+var nextUnitID = 0
 
 // Point in a Cartesian plane
 type Point struct {
@@ -69,12 +74,9 @@ type path struct {
 // Paths represents a map of the shortest path to each square
 type Paths map[int]map[int]*path
 
-var nextUnitID = 0
-
-type caveLayout map[int]map[int]spot // Maps X->Y->spot
+type caveLayout map[int]map[int]spot // Maps X->Y->spot in cave
 // UnitLocationMap is a map of what unit is in each grid spot
 type UnitLocationMap map[int]map[int]*Unit
-type unitIDMap map[int]*Unit
 
 func check(e error) {
 	if e != nil {
@@ -82,9 +84,16 @@ func check(e error) {
 	}
 }
 
-func makeUnit(kind unitType, hp, attack, x, y int) Unit {
-	nextUnitID++
-	return Unit{kind: kind, hp: hp, attack: attack, id: nextUnitID, loc: Point{x: x, y: y}}
+func makeUnit(kind UnitType, hp, attack, x, y int) Unit {
+	return Unit{kind: kind, hp: hp, attack: attack, loc: Point{x: x, y: y}}
+}
+
+func makeGoblin(x, y int) Unit {
+	return makeUnit(Goblin, 200, 3, x, y)
+}
+
+func makeElf(x, y, attack int) Unit {
+	return makeUnit(Elf, 200, attack, x, y)
 }
 
 // MakeUnitLocationMap returns a map of unit location to the unit
@@ -99,29 +108,13 @@ func MakeUnitLocationMap(c *Cave) UnitLocationMap {
 	return uMap
 }
 
-func makeUnitIDMap(units Units) unitIDMap {
-	uMap := make(unitIDMap)
-	for _, u := range units {
-		uMap[u.id] = u
-	}
-	return uMap
-}
-
-func makeGoblin(x, y int) Unit {
-	return makeUnit(Goblin, 200, 3, x, y)
-}
-
-func makeElf(x, y int) Unit {
-	return makeUnit(Elf, 200, 3, x, y)
-}
-
 // Alive returns true if a unit is Alive
 func Alive(u *Unit) bool {
 	return u.hp > 0
 }
 
 // ReadCave parses the input into a cave network
-func ReadCave(input []string) Cave {
+func ReadCave(input []string, elfAttack int) Cave {
 	layout := make(caveLayout)
 	units := make(Units, 0)
 	for y, s := range input {
@@ -136,7 +129,7 @@ func ReadCave(input []string) Cave {
 
 			case Elf:
 				layout[x][y] = Cavern
-				elf := makeElf(x, y)
+				elf := makeElf(x, y, elfAttack)
 				units = append(units, &elf)
 
 			case Goblin:
@@ -183,11 +176,24 @@ func PrintCave(c *Cave) {
 }
 
 // Outcome returns the number of rounds multiplied by the hit Points
-// of the winning team
-func Outcome(input []string) (int, int, int) {
-	cave := ReadCave(input)
+// of the winning team as the score.  It also returns the winning team
+// and the components of the score, and the number of winning team
+// deaths
+func Outcome(input []string, elfAttack int) (int, UnitType, int, int, int) {
+	cave := ReadCave(input, elfAttack)
 	if debug {
 		PrintCave(&cave)
+	}
+
+	elfCount := 0
+	goblinCount := 0
+	for _, u := range cave.units {
+		switch u.kind {
+		case Elf:
+			elfCount++
+		case Goblin:
+			goblinCount++
+		}
 	}
 
 	for round := 0; ; round++ {
@@ -200,10 +206,35 @@ func Outcome(input []string) (int, int, int) {
 		}
 		if done {
 			totalHitPoints := 0
-			for _, u := range AliveOnly(cave.units) {
+			var winningSide UnitType
+			leftAlive := AliveOnly(cave.units)
+			for _, u := range leftAlive {
 				totalHitPoints += u.hp
+				winningSide = u.kind
 			}
-			return round * totalHitPoints, round, totalHitPoints
+			deaths := elfCount - len(leftAlive)
+			if winningSide == Goblin {
+				deaths = goblinCount - len(leftAlive)
+			}
+
+			return round * totalHitPoints, winningSide, round, totalHitPoints, deaths
+		}
+	}
+}
+
+// LowestWinningOutcome returns the outcome score of the battle where
+// the elves win with the minimum attack power.
+func LowestWinningOutcome(input []string) int {
+	// Binary search fails because the results aren't continuous.
+	// At 19, elves die with 0 deaths.  At 22, one elf dies.
+	// Just do linear search
+	for elfAttack := 3; ; elfAttack++ {
+		score, winningSide, _, _, deaths := Outcome(input, elfAttack)
+		if debugSearch {
+			fmt.Printf("%d: %c win with %d deaths\n", elfAttack, rune(winningSide), deaths)
+		}
+		if (winningSide == Elf) && (deaths == 0) {
+			return score
 		}
 	}
 }
@@ -501,9 +532,10 @@ func main() {
 	}
 	check(scanner.Err())
 	start := time.Now()
-	score, rounds, hp := Outcome(input)
+	score, _, rounds, hp, _ := Outcome(input, 3)
 	fmt.Printf("%d rounds * %d hp = %d\n", rounds, hp, score)
-	// 195936 is too low - 78*2512
-	// 198744 is correct - 78*2548
+	fmt.Println(time.Since(start))
+	start = time.Now()
+	fmt.Println(LowestWinningOutcome(input))
 	fmt.Println(time.Since(start))
 }
