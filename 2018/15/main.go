@@ -46,8 +46,7 @@ type Unit struct {
 	hp     int
 	attack int
 	id     int
-	x      int
-	y      int
+	loc    point
 }
 
 type point struct {
@@ -76,7 +75,7 @@ func check(e error) {
 
 func makeUnit(kind unitType, hp, attack, x, y int) Unit {
 	nextUnitID++
-	return Unit{kind: kind, hp: hp, attack: attack, id: nextUnitID, x: x, y: y}
+	return Unit{kind: kind, hp: hp, attack: attack, id: nextUnitID, loc: point{x: x, y: y}}
 }
 
 // Returns a map of unit location to the unit
@@ -86,7 +85,7 @@ func makeUnitLocationMap(c *Cave) unitLocationMap {
 		uMap[i] = make(map[int]*Unit)
 	}
 	for _, u := range c.units {
-		uMap[u.x][u.y] = u
+		uMap[u.loc.x][u.loc.y] = u
 	}
 	return uMap
 }
@@ -231,9 +230,9 @@ func performRound(cave *Cave) bool {
 					if dd < dt {
 						target = d
 					} else if dd == dt {
-						ud := Unit{x: d.x, y: d.y}
-						ut := Unit{x: target.x, y: target.y}
-						if readOrderLess(&ud, &ut) {
+						pd := point{x: d.x, y: d.y}
+						pt := point{x: target.x, y: target.y}
+						if readOrderLess(&pd, &pt) {
 							target = d
 						}
 					}
@@ -242,11 +241,11 @@ func performRound(cave *Cave) bool {
 				// Walk the path backwards to find the first step
 				p := distances[target.x][target.y]
 				newLocation := point{x: target.x, y: target.y}
-				for (p.preceding.x != currentUnit.x) || (p.preceding.y != currentUnit.y) {
+				for (p.preceding.x != currentUnit.loc.x) || (p.preceding.y != currentUnit.loc.y) {
 					newLocation = p.preceding
 					p = distances[p.preceding.x][p.preceding.y]
 				}
-				currentUnit.x, currentUnit.y = newLocation.x, newLocation.y
+				currentUnit.loc = newLocation
 			}
 		}
 
@@ -258,7 +257,7 @@ func performRound(cave *Cave) bool {
 			// Take target w/ lowest HP, tiebreak in READING ORDER
 			target := targetCandidates[0]
 			for _, t := range targetCandidates {
-				if (t.hp < target.hp) || ((t.hp == target.hp) && readOrderLess(t, target)) {
+				if (t.hp < target.hp) || ((t.hp == target.hp) && readOrderLess(&t.loc, &target.loc)) {
 					target = t
 				}
 			}
@@ -298,8 +297,8 @@ func enemies(current *Unit, others Units) Units {
 }
 
 func findAdjacent(current *Unit, locations unitLocationMap, cave *Cave) (Units, []point) {
-	x := current.x
-	y := current.y
+	x := current.loc.x
+	y := current.loc.y
 	units := make(Units, 0)
 	emptyPoints := make([]point, 0)
 	candidates := []point{
@@ -330,7 +329,7 @@ func hasLocation(locations unitLocationMap, x, y int) bool {
 }
 
 // Returns true if Unit a<b in reading order (left to right, top to bottom)
-func readOrderLess(a, b *Unit) bool {
+func readOrderLess(a, b *point) bool {
 	if a.y < b.y {
 		return true
 	} else if a.y > b.y {
@@ -345,7 +344,7 @@ func sortedByPosition(units Units) Units {
 		sorted = append(sorted, u)
 	}
 	sort.Slice(sorted, func(i, j int) bool {
-		return readOrderLess(sorted[i], sorted[j])
+		return readOrderLess(&sorted[i].loc, &sorted[j].loc)
 	})
 	return sorted
 }
