@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"sort"
 	"time"
@@ -24,10 +25,11 @@ const (
 
 	Goblin = 'G'
 	Elf    = 'E'
+
+	Unreachable = math.MaxInt32
 )
 
-// We want to modify exactly one set of units and never copy them,
-// so pass around pointers
+// Units should never be copied so pass around pointers
 type Units []*Unit
 
 // Cave represents the units in a cave network
@@ -46,6 +48,18 @@ type Unit struct {
 	id     int
 	x      int
 	y      int
+}
+
+type point struct {
+	x int
+	y int
+}
+
+// path represents the distance to a space and the space before it in
+// the path
+type path struct {
+	distance  int
+	preceding point
 }
 
 var nextUnitID = 0
@@ -93,7 +107,7 @@ func makeElf(x, y int) Unit {
 	return makeUnit(Elf, 200, 3, x, y)
 }
 
-func alive(u Unit) bool {
+func alive(u *Unit) bool {
 	return u.hp > 0
 }
 
@@ -165,40 +179,95 @@ func Outcome(input []string) int {
 			return round
 		}
 	}
+}
 
-	return 0
+// Compute the shortest path to all reachable squares on the map
+func shortestPaths(unit *Unit, unitLocations unitLocationMap, cave *Cave) map[int]map[int]path {
+	paths := make(map[int]map[int]path)
+	for i := 0; i < cave.width; i++ {
+		paths[i] = make(map[int]path)
+		for j := 0; j < cave.height; j++ {
+			paths[i][j] = path{distance: Unreachable}
+		}
+	}
+
+	// TODO: Djikstra's Algorithm
+
+	return paths
 }
 
 // Where the magic happens.  For a full description of the process,
 // see the README
-func performRound(c *Cave) bool {
-	turnOrder := sortedByPosition(c.units)
+func performRound(cave *Cave) bool {
+	turnOrder := sortedByPosition(cave.units)
 
 	for _, currentUnit := range turnOrder {
 		// Phase 0: Count enemies.  If none exist, return true
-		if len(enemies(currentUnit, c.units)) == 0 {
+		allEnemies := enemies(currentUnit, cave.units)
+		if len(allEnemies) == 0 {
 			return true
 		}
 
 		// Phase 1: Movement
 		// If in adjacent to enemy, do not move
-		unitLocations := makeUnitLocationMap(c)
-		adjacent := findAdjacent(currentUnit, &unitLocations)
-		if len(enemies(currentUnit, adjacent)) < 1 {
+		unitLocations := makeUnitLocationMap(cave)
+		adjacentUnits, _ := findAdjacent(currentUnit, unitLocations, cave)
+		if len(enemies(currentUnit, adjacentUnits)) < 1 {
 			// Identify all open squares adjacent to all enemies
+			destinations := make([]point, 0)
+			for _, e := range allEnemies {
+				_, adjacent := findAdjacent(e, unitLocations, cave)
+				destinations = append(destinations, adjacent...)
+			}
 			// If no open squares adjacent to enemies, do not move
-			// Djikstra distance to all of the in-range squares
-			// Pick the square that could be moved to in fewest steps
-			// Move one space towards that square
+			if len(destinations) > 0 {
+				// Djikstra distance to all of the in-range squares
+				distances := shortestPaths(currentUnit, unitLocations, cave)
+				// Pick the square that could be moved to in fewest steps
+				target := destinations[0]
+				for _, d := range destinations {
+					dt := distances[target.x][target.y].distance
+					dd := distances[d.x][d.y].distance
+					if dd < dt {
+						target = d
+					} else if dd == dt {
+						ud := Unit{x: d.x, y: d.y}
+						ut := Unit{x: target.x, y: target.y}
+						if readOrderLess(&ud, &ut) {
+							target = d
+						}
+					}
+				}
+				// Move one space towards that square
+				// Walk the path backwards to find the first step
+				p := distances[target.x][target.y]
+				newLocation := point{x: target.x, y: target.y}
+				for (p.preceding.x != currentUnit.x) || (p.preceding.y != currentUnit.y) {
+					newLocation = p.preceding
+					p = distances[p.preceding.x][p.preceding.y]
+				}
+				currentUnit.x, currentUnit.y = newLocation.x, newLocation.y
+			}
 		}
 
 		// Phase 2: Attack
 		// If no target in range, end turn
-		adjacent = findAdjacent(currentUnit, &unitLocations)
-		targetCandidates := enemies(currentUnit, adjacent)
+		adjacentUnits, _ = findAdjacent(currentUnit, unitLocations, cave)
+		targetCandidates := enemies(currentUnit, adjacentUnits)
 		if len(targetCandidates) >= 1 {
 			// Take target w/ lowest HP, tiebreak in READING ORDER
-			// If unit killed, remove from units list
+			target := targetCandidates[0]
+			for _, t := range targetCandidates {
+				if (t.hp < target.hp) || ((t.hp == target.hp) && readOrderLess(t, target)) {
+					target = t
+				}
+			}
+
+			// Attack!
+			target.hp -= currentUnit.attack
+
+			// Bury the dead
+			cave.units = aliveOnly(cave.units)
 		}
 	}
 
@@ -207,18 +276,67 @@ func performRound(c *Cave) bool {
 	return true
 }
 
+// Removes any deceased units from a list
+func aliveOnly(units Units) Units {
+	living := make(Units, 0)
+	for _, u := range units {
+		if alive(u) {
+			living = append(living, u)
+		}
+	}
+	return living
+}
+
 func enemies(current *Unit, others Units) Units {
 	enemy := make(Units, 0)
 	for _, u := range others {
-		if u.kind != current.kind {
+		if alive(u) && (u.kind != current.kind) {
 			enemy = append(enemy, u)
 		}
 	}
 	return enemy
 }
 
-func findAdjacent(current *Unit, locations *unitLocationMap) Units {
+func findAdjacent(current *Unit, locations unitLocationMap, cave *Cave) (Units, []point) {
+	x := current.x
+	y := current.y
+	units := make(Units, 0)
+	emptyPoints := make([]point, 0)
+	candidates := []point{
+		point{x: x, y: y - 1},
+		point{x: x - 1, y: y},
+		point{x: x + 1, y: y},
+		point{x: x, y: y + 1}}
 
+	for _, pt := range candidates {
+		if (x >= 0) && (y <= 0) && (x < cave.width) && (y < cave.height) {
+			if hasLocation(locations, pt.x, pt.y) {
+				units = append(units, locations[pt.x][pt.y])
+			} else {
+				emptyPoints = append(emptyPoints, pt)
+			}
+		}
+	}
+
+	return units, emptyPoints
+}
+
+func hasLocation(locations unitLocationMap, x, y int) bool {
+	if _, present := locations[x]; !present {
+		return false
+	}
+	_, present := locations[x][y]
+	return present
+}
+
+// Returns true if Unit a<b in reading order (left to right, top to bottom)
+func readOrderLess(a, b *Unit) bool {
+	if a.y < b.y {
+		return true
+	} else if a.y > b.y {
+		return false
+	}
+	return a.x < b.x
 }
 
 func sortedByPosition(units Units) Units {
@@ -227,12 +345,7 @@ func sortedByPosition(units Units) Units {
 		sorted = append(sorted, u)
 	}
 	sort.Slice(sorted, func(i, j int) bool {
-		if sorted[i].y < sorted[j].y {
-			return true
-		} else if sorted[i].y > sorted[j].y {
-			return false
-		}
-		return sorted[i].x < sorted[j].x
+		return readOrderLess(sorted[i], sorted[j])
 	})
 	return sorted
 }
