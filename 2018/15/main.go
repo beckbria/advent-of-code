@@ -10,7 +10,11 @@ import (
 	"time"
 )
 
-const debug = false
+const (
+	debug         = false
+	debugPrintMap = false
+	debugAdjacent = false
+)
 
 // spot is an "enum" of Wall/Cavern
 type spot rune
@@ -29,7 +33,7 @@ const (
 	Unreachable = math.MaxInt32
 )
 
-// Units should never be copied so pass around pointers
+// Units should never be copied so pass around Pointers
 type Units []*Unit
 
 // Cave represents the units in a cave network
@@ -46,10 +50,11 @@ type Unit struct {
 	hp     int
 	attack int
 	id     int
-	loc    point
+	loc    Point
 }
 
-type point struct {
+// Point in a Cartesian plane
+type Point struct {
 	x int
 	y int
 }
@@ -58,9 +63,10 @@ type point struct {
 // the path
 type path struct {
 	distance  int
-	preceding []point
+	preceding []Point
 }
 
+// Paths represents a map of the shortest path to each square
 type Paths map[int]map[int]*path
 
 var nextUnitID = 0
@@ -77,11 +83,11 @@ func check(e error) {
 
 func makeUnit(kind unitType, hp, attack, x, y int) Unit {
 	nextUnitID++
-	return Unit{kind: kind, hp: hp, attack: attack, id: nextUnitID, loc: point{x: x, y: y}}
+	return Unit{kind: kind, hp: hp, attack: attack, id: nextUnitID, loc: Point{x: x, y: y}}
 }
 
-// Returns a map of unit location to the unit
-func makeUnitLocationMap(c *Cave) unitLocationMap {
+// MakeUnitLocationMap returns a map of unit location to the unit
+func MakeUnitLocationMap(c *Cave) unitLocationMap {
 	uMap := make(unitLocationMap)
 	for i := 0; i < c.width; i++ {
 		uMap[i] = make(map[int]*Unit)
@@ -108,7 +114,8 @@ func makeElf(x, y int) Unit {
 	return makeUnit(Elf, 200, 3, x, y)
 }
 
-func alive(u *Unit) bool {
+// Alive returns true if a unit is Alive
+func Alive(u *Unit) bool {
 	return u.hp > 0
 }
 
@@ -141,6 +148,11 @@ func ReadCave(input []string) Cave {
 			}
 		}
 	}
+
+	if debug {
+		fmt.Printf("Read cave\n")
+	}
+
 	return Cave{
 		layout: layout,
 		units:  units,
@@ -148,8 +160,9 @@ func ReadCave(input []string) Cave {
 		height: len(input)}
 }
 
-func printCave(c *Cave) {
-	uMap := makeUnitLocationMap(c)
+// PrintCave prints a graphical representation of a cave
+func PrintCave(c *Cave) {
+	uMap := MakeUnitLocationMap(c)
 	for y := 0; y < c.height; y++ {
 		for x := 0; x < c.width; x++ {
 			if _, exists := uMap[x][y]; exists {
@@ -163,52 +176,75 @@ func printCave(c *Cave) {
 	fmt.Printf("\n")
 }
 
-// Outcome returns the number of rounds multiplied by the hit points
+// Outcome returns the number of rounds multiplied by the hit Points
 // of the winning team
 func Outcome(input []string) int {
 	cave := ReadCave(input)
 	if debug {
-		printCave(&cave)
+		PrintCave(&cave)
 	}
 
 	for round := 0; ; round++ {
-		done := performRound(&cave)
 		if debug {
-			printCave(&cave)
+			fmt.Printf("Round %d:\n", round)
+		}
+		done := performRound(&cave)
+		if debugPrintMap {
+			PrintCave(&cave)
 		}
 		if done {
-			return round
+			totalHitPoints := 0
+			for _, u := range AliveOnly(cave.units) {
+				totalHitPoints += u.hp
+			}
+			return round * totalHitPoints
 		}
 	}
 }
 
-// Compute the shortest path to all reachable squares on the map
-func shortestPaths(unit *Unit, unitLocations unitLocationMap, cave *Cave) Paths {
+// ShortestPaths computes the shortest path to all reachable squares on the map
+func ShortestPaths(unit *Unit, unitLocations unitLocationMap, cave *Cave) Paths {
+	if debug {
+		fmt.Printf("Finding shortest paths from %d,%d\n", unit.loc.x, unit.loc.y)
+	}
 	paths := make(Paths)
 	for i := 0; i < cave.width; i++ {
 		paths[i] = make(map[int]*path)
 		for j := 0; j < cave.height; j++ {
-			p := path{distance: Unreachable, preceding: make([]point, 0)}
+			p := path{distance: Unreachable, preceding: make([]Point, 0)}
 			paths[i][j] = &p
 		}
 	}
 
 	paths[unit.loc.x][unit.loc.y].distance = 0
-	toProcess := []point{unit.loc}
+	toProcess := []Point{unit.loc}
 	for len(toProcess) > 0 {
 		// Take the first element
 		curr := toProcess[0]
 		newDistance := paths[curr.x][curr.y].distance + 1
 		toProcess = toProcess[1:]
-		_, adjacentEmpty := findAdjacent(&curr, unitLocations, cave)
+		adjacentUnits, adjacentEmpty := FindAdjacent(&curr, unitLocations, cave)
 		for _, adj := range adjacentEmpty {
 			currAdjDistance := paths[adj.x][adj.y].distance
 			if newDistance < currAdjDistance {
 				paths[adj.x][adj.y].distance = newDistance
-				paths[adj.x][adj.y].preceding = []point{curr}
-			} else if newDistance < currAdjDistance {
+				paths[adj.x][adj.y].preceding = []Point{curr}
+				toProcess = append(toProcess, adj)
+			} else if newDistance == currAdjDistance {
 				paths[adj.x][adj.y].preceding =
 					append(paths[adj.x][adj.y].preceding, curr)
+			}
+		}
+		for _, adj := range adjacentUnits {
+			currAdjDistance := paths[adj.loc.x][adj.loc.y].distance
+			if newDistance < currAdjDistance {
+				paths[adj.loc.x][adj.loc.y].distance = newDistance
+				paths[adj.loc.x][adj.loc.y].preceding = []Point{curr}
+				// Don't add spaces with units to toProcess since
+				// you can't walk through units
+			} else if newDistance == currAdjDistance {
+				paths[adj.loc.x][adj.loc.y].preceding =
+					append(paths[adj.loc.x][adj.loc.y].preceding, curr)
 			}
 		}
 	}
@@ -220,52 +256,81 @@ func shortestPaths(unit *Unit, unitLocations unitLocationMap, cave *Cave) Paths 
 // see the README
 func performRound(cave *Cave) bool {
 	turnOrder := sortedByPosition(cave.units)
+	if debug {
+		fmt.Print("Turn Order:\n")
+		fmt.Println(turnOrder)
+	}
 
 	for _, currentUnit := range turnOrder {
 		// Phase 0: Count enemies.  If none exist, return true
 		allEnemies := enemies(currentUnit, cave.units)
 		if len(allEnemies) == 0 {
+			if debug {
+				fmt.Print("No enemies found; returning\n")
+			}
 			return true
 		}
 
 		// Phase 1: Movement
 		// If in adjacent to enemy, do not move
-		unitLocations := makeUnitLocationMap(cave)
-		adjacentUnits, _ := findAdjacent(&currentUnit.loc, unitLocations, cave)
+		unitLocations := MakeUnitLocationMap(cave)
+		adjacentUnits, _ := FindAdjacent(&currentUnit.loc, unitLocations, cave)
 		if len(enemies(currentUnit, adjacentUnits)) < 1 {
+			if debug {
+				fmt.Println("No adjacent enemies; moving")
+			}
 			// Identify all open squares adjacent to all enemies
-			destinations := make([]point, 0)
+			destinations := make([]Point, 0)
 			for _, e := range allEnemies {
-				_, adjacent := findAdjacent(&e.loc, unitLocations, cave)
+				_, adjacent := FindAdjacent(&e.loc, unitLocations, cave)
 				destinations = append(destinations, adjacent...)
 			}
 			// If no open squares adjacent to enemies, do not move
 			if len(destinations) > 0 {
+				if debug {
+					fmt.Println("Finding nearest destination")
+				}
 				// Djikstra distance to all of the in-range squares
-				distances := shortestPaths(currentUnit, unitLocations, cave)
+				distances := ShortestPaths(currentUnit, unitLocations, cave)
 				// Pick the square that could be moved to in fewest steps
 				target := destinations[0]
+				if debug {
+					fmt.Printf("Initial target: %d,%d - %d\n", target.x, target.y, distances[target.x][target.y].distance)
+				}
 				for _, d := range destinations {
 					dt := distances[target.x][target.y].distance
 					dd := distances[d.x][d.y].distance
 					if dd < dt {
 						target = d
+						if debug {
+							fmt.Printf("New target: %d,%d - %d\n", target.x, target.y, distances[target.x][target.y].distance)
+						}
 					} else if dd == dt {
-						pd := point{x: d.x, y: d.y}
-						pt := point{x: target.x, y: target.y}
+						pd := Point{x: d.x, y: d.y}
+						pt := Point{x: target.x, y: target.y}
 						if readOrderLess(&pd, &pt) {
 							target = d
+							if debug {
+								fmt.Printf("New target: %d,%d - %d\n", target.x, target.y, distances[target.x][target.y].distance)
+							}
 						}
 					}
 				}
 				// Move one space towards that square
-				currentUnit.loc = moveOneStep(currentUnit.loc, target, distances)
+				if distances[target.x][target.y].distance != Unreachable {
+					currentUnit.loc = moveOneStep(currentUnit.loc, target, distances)
+				}
+				if debug {
+					fmt.Printf("Moved to %d,%d\n", currentUnit.loc.x, currentUnit.loc.y)
+				}
+			} else if debug {
+				fmt.Println("No open squares adjacent to enemies")
 			}
 		}
 
 		// Phase 2: Attack
 		// If no target in range, end turn
-		adjacentUnits, _ = findAdjacent(&currentUnit.loc, unitLocations, cave)
+		adjacentUnits, _ = FindAdjacent(&currentUnit.loc, unitLocations, cave)
 		targetCandidates := enemies(currentUnit, adjacentUnits)
 		if len(targetCandidates) >= 1 {
 			// Take target w/ lowest HP, tiebreak in READING ORDER
@@ -277,19 +342,24 @@ func performRound(cave *Cave) bool {
 			}
 
 			// Attack!
+			if debug {
+				fmt.Printf("Attacking target at %d,%d with %d hp\n", target.loc.x, target.loc.y, target.hp)
+			}
 			target.hp -= currentUnit.attack
 
 			// Bury the dead
-			cave.units = aliveOnly(cave.units)
+			cave.units = AliveOnly(cave.units)
+		} else if debug {
+			fmt.Println("No adjacent enemies")
 		}
 	}
 
 	return false
 }
 
-func moveOneStep(current, target point, distances Paths) point {
+func moveOneStep(current, target Point, distances Paths) Point {
 	// Walk the path backwards to find the first step
-	candidates := findPossibleFirstSteps(target, distances)
+	candidates := FindPossibleFirstSteps(target, distances)
 	step := candidates[0]
 	for _, c := range candidates {
 		if readOrderLess(&c, &step) {
@@ -299,23 +369,27 @@ func moveOneStep(current, target point, distances Paths) point {
 	return step
 }
 
-func findPossibleFirstSteps(target point, distances Paths) []point {
+// FindPossibleFirstSteps finds all candidates for the first step
+// in the direction of the nearest target.
+func FindPossibleFirstSteps(target Point, distances Paths) []Point {
 	if distances[target.x][target.y].distance == 1 {
-		return []point{target}
+		return []Point{target}
+	} else if distances[target.x][target.y].distance < 1 {
+		log.Fatalf("Invalid distance")
 	}
 
-	candidates := make([]point, 0)
+	candidates := make([]Point, 0)
 	for _, p := range distances[target.x][target.y].preceding {
-		candidates = append(candidates, findPossibleFirstSteps(p, distances)...)
+		candidates = append(candidates, FindPossibleFirstSteps(p, distances)...)
 	}
 	return candidates
 }
 
 // Removes any deceased units from a list
-func aliveOnly(units Units) Units {
+func AliveOnly(units Units) Units {
 	living := make(Units, 0)
 	for _, u := range units {
-		if alive(u) {
+		if Alive(u) {
 			living = append(living, u)
 		}
 	}
@@ -325,30 +399,44 @@ func aliveOnly(units Units) Units {
 func enemies(current *Unit, others Units) Units {
 	enemy := make(Units, 0)
 	for _, u := range others {
-		if alive(u) && (u.kind != current.kind) {
+		if Alive(u) && (u.kind != current.kind) {
 			enemy = append(enemy, u)
 		}
 	}
 	return enemy
 }
 
-func findAdjacent(current *point, locations unitLocationMap, cave *Cave) (Units, []point) {
+func FindAdjacent(current *Point, locations unitLocationMap, cave *Cave) (Units, []Point) {
+	if debugAdjacent {
+		fmt.Printf("FindAdjacent(%d,%d)\n", current.x, current.y)
+	}
 	x := current.x
 	y := current.y
 	units := make(Units, 0)
-	emptyPoints := make([]point, 0)
-	candidates := []point{
-		point{x: x, y: y - 1},
-		point{x: x - 1, y: y},
-		point{x: x + 1, y: y},
-		point{x: x, y: y + 1}}
+	emptyPoints := make([]Point, 0)
+	candidates := []Point{
+		Point{x: x, y: y - 1},
+		Point{x: x - 1, y: y},
+		Point{x: x + 1, y: y},
+		Point{x: x, y: y + 1}}
 
 	for _, pt := range candidates {
-		if (x >= 0) && (y <= 0) && (x < cave.width) && (y < cave.height) {
+		if debugAdjacent {
+			fmt.Printf("    FA checking (%d,%d) - ", pt.x, pt.y)
+		}
+		if (pt.x >= 0) && (pt.y >= 0) && (pt.x < cave.width) && (pt.y < cave.height) {
 			if hasLocation(locations, pt.x, pt.y) {
+				if debugAdjacent {
+					fmt.Printf("Found unit\n")
+				}
 				units = append(units, locations[pt.x][pt.y])
 			} else {
-				emptyPoints = append(emptyPoints, pt)
+				if debugAdjacent {
+					fmt.Printf("Found %c\n", rune(cave.layout[pt.x][pt.y]))
+				}
+				if cave.layout[pt.x][pt.y] == Cavern {
+					emptyPoints = append(emptyPoints, pt)
+				}
 			}
 		}
 	}
@@ -365,7 +453,7 @@ func hasLocation(locations unitLocationMap, x, y int) bool {
 }
 
 // Returns true if Unit a<b in reading order (left to right, top to bottom)
-func readOrderLess(a, b *point) bool {
+func readOrderLess(a, b *Point) bool {
 	if a.y < b.y {
 		return true
 	} else if a.y > b.y {
