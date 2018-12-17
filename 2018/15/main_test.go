@@ -45,7 +45,20 @@ func TestFindShortest(t *testing.T) {
 
 func TestOutcome(t *testing.T) {
 
-	assert.Equal(t, 36334, Outcome([]string{
+	score, rounds, hp := Outcome([]string{
+		"#######",
+		"#.G...#",
+		"#...EG#",
+		"#.#.#G#",
+		"#..G#E#",
+		"#.....#",
+		"#######",
+	})
+	assert.Equal(t, 27730, score)
+	assert.Equal(t, 47, rounds)
+	assert.Equal(t, 590, hp)
+
+	score, rounds, hp = Outcome([]string{
 		"#######",
 		"#G..#E#",
 		"#E#E.E#",
@@ -53,9 +66,13 @@ func TestOutcome(t *testing.T) {
 		"#...#E#",
 		"#...E.#",
 		"#######",
-	}))
+	})
+	assert.Equal(t, 36334, score)
+	assert.Equal(t, 37, rounds)
+	// We seem to be missing a hit here - we get 985hp returned
+	assert.Equal(t, 982, hp)
 
-	/*assert.Equal(t, 39514, Outcome([]string{
+	score, rounds, hp = Outcome([]string{
 		"#######",
 		"#E..EG#",
 		"#.#G.E#",
@@ -63,9 +80,13 @@ func TestOutcome(t *testing.T) {
 		"#G..#.#",
 		"#..E#.#",
 		"#######",
-	}))
+	})
+	assert.Equal(t, 39514, score)
+	// We appear to be missing a round here - we return 45
+	assert.Equal(t, 46, rounds)
+	assert.Equal(t, 859, hp)
 
-	assert.Equal(t, 27755, Outcome([]string{
+	score, rounds, hp = Outcome([]string{
 		"#######",
 		"#E.G#.#",
 		"#.#G..#",
@@ -73,9 +94,12 @@ func TestOutcome(t *testing.T) {
 		"#G..#.#",
 		"#...E.#",
 		"#######",
-	}))
+	})
+	assert.Equal(t, 27755, score)
+	assert.Equal(t, 35, rounds)
+	assert.Equal(t, 793, hp)
 
-	assert.Equal(t, 28944, Outcome([]string{
+	score, rounds, hp = Outcome([]string{
 		"#######",
 		"#.E...#",
 		"#.#..G#",
@@ -83,9 +107,12 @@ func TestOutcome(t *testing.T) {
 		"#E#G#G#",
 		"#...#G#",
 		"#######",
-	}))
+	})
+	assert.Equal(t, 28944, score)
+	assert.Equal(t, 54, rounds)
+	assert.Equal(t, 536, hp)
 
-	assert.Equal(t, 18740, Outcome([]string{
+	score, rounds, hp = Outcome([]string{
 		"#########",
 		"#G......#",
 		"#.E.#...#",
@@ -95,5 +122,8 @@ func TestOutcome(t *testing.T) {
 		"#.G...G.#",
 		"#.....G.#",
 		"#########",
-	}))*/
+	})
+	assert.Equal(t, 18740, score)
+	assert.Equal(t, 20, rounds)
+	assert.Equal(t, 937, hp)
 }

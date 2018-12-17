@@ -72,7 +72,8 @@ type Paths map[int]map[int]*path
 var nextUnitID = 0
 
 type caveLayout map[int]map[int]spot // Maps X->Y->spot
-type unitLocationMap map[int]map[int]*Unit
+// UnitLocationMap is a map of what unit is in each grid spot
+type UnitLocationMap map[int]map[int]*Unit
 type unitIDMap map[int]*Unit
 
 func check(e error) {
@@ -87,8 +88,8 @@ func makeUnit(kind unitType, hp, attack, x, y int) Unit {
 }
 
 // MakeUnitLocationMap returns a map of unit location to the unit
-func MakeUnitLocationMap(c *Cave) unitLocationMap {
-	uMap := make(unitLocationMap)
+func MakeUnitLocationMap(c *Cave) UnitLocationMap {
+	uMap := make(UnitLocationMap)
 	for i := 0; i < c.width; i++ {
 		uMap[i] = make(map[int]*Unit)
 	}
@@ -171,6 +172,11 @@ func PrintCave(c *Cave) {
 				fmt.Printf("%c", c.layout[x][y])
 			}
 		}
+		for _, u := range c.units {
+			if u.loc.y == y {
+				fmt.Printf(" %c(%d)", rune(u.kind), u.hp)
+			}
+		}
 		fmt.Printf("\n")
 	}
 	fmt.Printf("\n")
@@ -178,7 +184,7 @@ func PrintCave(c *Cave) {
 
 // Outcome returns the number of rounds multiplied by the hit Points
 // of the winning team
-func Outcome(input []string) int {
+func Outcome(input []string) (int, int, int) {
 	cave := ReadCave(input)
 	if debug {
 		PrintCave(&cave)
@@ -197,13 +203,13 @@ func Outcome(input []string) int {
 			for _, u := range AliveOnly(cave.units) {
 				totalHitPoints += u.hp
 			}
-			return round * totalHitPoints
+			return round * totalHitPoints, round, totalHitPoints
 		}
 	}
 }
 
 // ShortestPaths computes the shortest path to all reachable squares on the map
-func ShortestPaths(unit *Unit, unitLocations unitLocationMap, cave *Cave) Paths {
+func ShortestPaths(unit *Unit, unitLocations UnitLocationMap, cave *Cave) Paths {
 	if debug {
 		fmt.Printf("Finding shortest paths from %d,%d\n", unit.loc.x, unit.loc.y)
 	}
@@ -262,6 +268,16 @@ func performRound(cave *Cave) bool {
 	}
 
 	for _, currentUnit := range turnOrder {
+		if debug {
+			fmt.Printf("Taking turn for %c unit at (%d,%d)\n", currentUnit.kind, currentUnit.loc.x, currentUnit.loc.y)
+		}
+
+		if !Alive(currentUnit) {
+			if debug {
+				fmt.Println("Unit is already dead")
+			}
+			continue
+		}
 		// Phase 0: Count enemies.  If none exist, return true
 		allEnemies := enemies(currentUnit, cave.units)
 		if len(allEnemies) == 0 {
@@ -385,7 +401,7 @@ func FindPossibleFirstSteps(target Point, distances Paths) []Point {
 	return candidates
 }
 
-// Removes any deceased units from a list
+// AliveOnly removes any deceased units from a list
 func AliveOnly(units Units) Units {
 	living := make(Units, 0)
 	for _, u := range units {
@@ -406,7 +422,8 @@ func enemies(current *Unit, others Units) Units {
 	return enemy
 }
 
-func FindAdjacent(current *Point, locations unitLocationMap, cave *Cave) (Units, []Point) {
+// FindAdjacent finds what things are in adjacent squares to a point
+func FindAdjacent(current *Point, locations UnitLocationMap, cave *Cave) (Units, []Point) {
 	if debugAdjacent {
 		fmt.Printf("FindAdjacent(%d,%d)\n", current.x, current.y)
 	}
@@ -444,7 +461,7 @@ func FindAdjacent(current *Point, locations unitLocationMap, cave *Cave) (Units,
 	return units, emptyPoints
 }
 
-func hasLocation(locations unitLocationMap, x, y int) bool {
+func hasLocation(locations UnitLocationMap, x, y int) bool {
 	if _, present := locations[x]; !present {
 		return false
 	}
@@ -484,6 +501,9 @@ func main() {
 	}
 	check(scanner.Err())
 	start := time.Now()
-	fmt.Println(Outcome(input))
+	score, rounds, hp := Outcome(input)
+	fmt.Printf("%d rounds * %d hp = %d\n", rounds, hp, score)
+	// 195936 is too low - 78*2512
+	// 198744 is correct - 78*2548
 	fmt.Println(time.Since(start))
 }
