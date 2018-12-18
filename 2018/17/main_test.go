@@ -26,7 +26,7 @@ func TestFloodCount(t *testing.T) {
 	// 12 ...d#vutsw#|..
 	// 13 ...e#######|..
 
-	assert.Equal(t, 57, FloodCount([]string{
+	running, standing := FloodCount([]string{
 		"x=495, y=2..7",
 		"y=7, x=495..501",
 		"x=501, y=3..7",
@@ -34,5 +34,7 @@ func TestFloodCount(t *testing.T) {
 		"x=506, y=1..2",
 		"x=498, y=10..13",
 		"x=504, y=10..13",
-		"y=13, x=498..504"}))
+		"y=13, x=498..504"})
+	assert.Equal(t, 57, running+standing)
+	assert.Equal(t, 29, standing)
 }

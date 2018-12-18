@@ -12,8 +12,9 @@ import (
 )
 
 const (
-	debug      = false
-	debugInput = false
+	debug               = false
+	debugInput          = false
+	debugPrintReservoir = true
 )
 
 // Point in Cartesian space
@@ -26,8 +27,9 @@ type Material rune
 
 // You alredy know what these are
 const (
-	Clay  = '#'
-	Water = '~'
+	Clay         = '#'
+	Water        = '~'
+	RunningWater = '|'
 )
 
 // MinMax represents a paired minimum/maximum value
@@ -149,12 +151,13 @@ func fillWorker(r *Reservoir, current Point) bool {
 		}
 	}
 
+	backflow := false
 	if sideFlow {
 		if debug {
 			fmt.Printf("    Starting side flow for %d,%d\n", current.x, current.y)
 		}
 		sides := []Point{Point{x: current.x - 1, y: current.y}, Point{x: current.x + 1, y: current.y}}
-		backflow := true
+		backflow = true
 		for _, pt := range sides {
 			// If there's any value (clay or water), we don't want to search a square that's already been seen
 			_, present := r.mat[pt]
@@ -166,22 +169,53 @@ func fillWorker(r *Reservoir, current Point) bool {
 		if debug {
 			fmt.Printf("    %t -- backflow for %d,%d\n", backflow, current.x, current.y)
 		}
-		return backflow
 	}
-	return false
+
+	if !backflow {
+		r.mat[current] = RunningWater
+		for x := current.x - 1; r.mat[Point{x: x, y: current.y}] == Water; x-- {
+			r.mat[Point{x: x, y: current.y}] = RunningWater
+		}
+		for x := current.x + 1; r.mat[Point{x: x, y: current.y}] == Water; x++ {
+			r.mat[Point{x: x, y: current.y}] = RunningWater
+		}
+	}
+
+	return backflow
 }
 
 // FloodCount solves part 1 of the problem - fills the reservoir and counts the water
-func FloodCount(input []string) int {
+func FloodCount(input []string) (int, int) {
 	r := ReadReservoir(input)
 	Fill(&r, Point{x: 500, y: 0})
-	waterCount := 0
+	if debugPrintReservoir {
+		PrintReservoir(&r)
+	}
+	standing := 0
+	running := 0
 	for _, v := range r.mat {
 		if v == Water {
-			waterCount++
+			standing++
+		} else if v == RunningWater {
+			running++
 		}
 	}
-	return waterCount
+	return running, standing
+}
+
+// PrintReservoir prints a graphical representation
+func PrintReservoir(r *Reservoir) {
+	for y := r.y.min; y <= r.y.max; y++ {
+		for x := r.x.min; x <= r.x.max; x++ {
+			v, present := r.mat[Point{x: x, y: y}]
+			if present {
+				fmt.Printf("%c", rune(v))
+			} else {
+				fmt.Printf(".")
+			}
+		}
+		fmt.Printf("\n")
+	}
 }
 
 func main() {
@@ -195,6 +229,8 @@ func main() {
 	}
 	check(scanner.Err())
 	start := time.Now()
-	fmt.Println(FloodCount(input))
+	running, standing := FloodCount(input)
+	fmt.Println(running + standing)
+	fmt.Println(standing)
 	fmt.Println(time.Since(start))
 }
