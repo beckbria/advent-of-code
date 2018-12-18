@@ -139,10 +139,16 @@ func fillWorker(r *Reservoir, current Point) bool {
 	if current.y < r.y.max {
 		_, present := r.mat[Point{x: current.x, y: current.y + 1}]
 		if present {
-			if debug {
-				fmt.Printf("    Substance underneath %d,%d\n", current.x, current.y)
+			if r.mat[Point{x: current.x, y: current.y + 1}] == RunningWater {
+				if debug {
+					fmt.Printf("    Encountered running water beneath %d,%d\n", current.x, current.y)
+				}
+			} else {
+				if debug {
+					fmt.Printf("    Substance underneath %d,%d\n", current.x, current.y)
+				}
+				sideFlow = true
 			}
-			sideFlow = true
 		} else if !present {
 			if debug {
 				fmt.Printf("    Nothing underneath %d,%d\n", current.x, current.y)
@@ -203,7 +209,7 @@ func FloodCount(input []string) (int, int) {
 	return running, standing
 }
 
-// PrintReservoir prints a graphical representation
+// PrintReservoir prints a graphical representation of the reservoir and its contents
 func PrintReservoir(r *Reservoir) {
 	for y := r.y.min; y <= r.y.max; y++ {
 		for x := r.x.min; x <= r.x.max; x++ {
