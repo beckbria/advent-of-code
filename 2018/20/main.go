@@ -9,6 +9,13 @@ import (
 	"time"
 )
 
+const (
+	debug             = true
+	debugPattern      = debug && false
+	debugMap          = debug && true
+	debugShortestPath = debug && true
+)
+
 // Component represents a component of the base.  It's an enum
 type Component rune
 
@@ -59,15 +66,15 @@ type Direction rune
 
 // The directions
 const (
-	West         = 'W'
-	East         = 'E'
-	North        = 'N'
-	South        = 'S'
-	BeginGroup   = '('
-	EndGroup     = ')'
-	GroupOption  = '|'
-	BeginPattern = '^'
-	EndPattern   = '$'
+	West         Direction = 'W'
+	East                   = 'E'
+	North                  = 'N'
+	South                  = 'S'
+	BeginGroup             = '('
+	EndGroup               = ')'
+	GroupOption            = '|'
+	BeginPattern           = '^'
+	EndPattern             = '$'
 )
 
 // Pattern represents a set of paths.  If there are multiple options, then each will
@@ -104,10 +111,121 @@ func check(e error) {
 	}
 }
 
+// ReadPattern state machine conditions
+type state int
+
+const (
+	idle       state = iota + 1
+	readString       = iota + 1
+	choice           = iota + 1
+)
+
 // ReadPattern turns the string RegEx into a pattern state machine
 func ReadPattern(s string) Pattern {
-	var p Pattern
-	return p
+	return readPattern(s, 0)
+}
+
+// debugOffset is added to any incides when returning errors
+func readPattern(s string, debugOffset int) Pattern {
+	if len(s) < 1 {
+		return SinglePattern("")
+	}
+
+	patterns := make([]Pattern, 0)
+
+	status := idle
+	sectionStart := 0
+	choiceDivider := 0
+	parenDepth := 0 // How many levels of lParen have we seen since we started looking at a group
+	for i, c := range []rune(s) {
+		switch Direction(c) {
+		case BeginPattern:
+			status = idle
+		case West, East, North, South:
+			if status == idle {
+				status = readString
+				sectionStart = i
+			}
+		case BeginGroup:
+			if status == readString {
+				// We've finished reading a string group.
+				patterns = append(patterns, SinglePattern(s[sectionStart:i]))
+				status = idle
+			}
+
+			if status == idle {
+				status = choice
+				choiceDivider = -1
+				sectionStart = i + 1
+				parenDepth = 1
+			} else if status == choice {
+				parenDepth++
+			} else {
+
+			}
+		case EndGroup:
+			if status != choice {
+				log.Fatalf("Found EndGroup when not parsing group at index %d\n", debugOffset+i)
+			}
+			parenDepth--
+			if parenDepth == 0 {
+				// We've reached the end of this group
+				if choiceDivider < 0 {
+					log.Fatalf("Found group without divider from %d-%d\n", debugOffset+sectionStart, debugOffset+i)
+				}
+				first := s[sectionStart:choiceDivider]
+				second := s[choiceDivider+1 : i]
+				if debugPattern {
+					fmt.Printf("Choice between \"%s\" and \"%s\" from %d-%d\n",
+						first, second, debugOffset+sectionStart, debugOffset+i)
+				}
+				patterns = append(patterns, ChoicePattern(
+					readPattern(first, debugOffset+sectionStart),
+					readPattern(second, debugOffset+choiceDivider+1)))
+				status = idle
+			}
+
+		case GroupOption:
+			if status != choice {
+				log.Fatalf("Found EndGroup when not parsing group at index %d\n", debugOffset+i)
+			}
+			if parenDepth == 1 {
+				if choiceDivider >= 0 {
+					log.Fatalf("Found duplicate | at %d and %d\n", debugOffset+choiceDivider, debugOffset+i)
+				}
+				choiceDivider = i
+			}
+		case EndPattern:
+			if status == readString {
+				// We've finished reading a string group.
+				patterns = append(patterns, SinglePattern(s[sectionStart:i]))
+				status = idle
+			}
+
+			if status != idle {
+				log.Fatalf("Unexpected end of pattern parsing \"%s\"\n", s)
+			}
+		}
+	}
+	// Terminate a final pattern
+	if status == readString {
+		// We've finished reading a string group.
+		patterns = append(patterns, SinglePattern(s[sectionStart:]))
+		status = idle
+	}
+
+	if status != idle {
+		log.Fatalf("Unexpected end of pattern parsing \"%s\"\n", s)
+	}
+
+	if len(patterns) == 1 {
+		return patterns[0]
+	} else if len(patterns) > 1 {
+		return ConcatenatePattern(patterns...)
+	} else {
+		log.Fatalf("Found no patterns: \"%s\"\n", s)
+		return SinglePattern("")
+	}
 }
 
 // SinglePattern returns a pattern which matches a single string

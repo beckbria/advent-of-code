@@ -68,6 +68,7 @@ func TestReadPattern(t *testing.T) {
 		ReadPattern("^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$"))
 }
 
+/*
 func inputToMap(input []string) RoomMap {
 	m := make(RoomMap)
 
@@ -178,3 +179,4 @@ func TestMostDoors(t *testing.T) {
 	assert.Equal(t, 23, MostDoors("^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$"))
 	assert.Equal(t, 31, MostDoors("^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$"))
 }
+*/
