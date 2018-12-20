@@ -7,14 +7,13 @@ import (
 	"os"
 	"regexp"
 	"strconv"
-	"strings"
 	"time"
 )
 
 var (
 	// Input format: "# #"
 	beforeRegEx = regexp.MustCompile("^Before: \\[(\\d+), (\\d+), (\\d+), (\\d+)\\]$")
-	instRegEx   = regexp.MustCompile("$(\\d+) (\\d+) (\\d+) (\\d+)$") // TODO: Determine why this doesn't work
+	instRegEx   = regexp.MustCompile("^(\\d+) (\\d+) (\\d+) (\\d+)$")
 	afterRegEx  = regexp.MustCompile("^After:  \\[(\\d+), (\\d+), (\\d+), (\\d+)\\]$")
 )
 
@@ -71,14 +70,14 @@ func ReadInstruction(input []string) Instruction {
 // ReadRawInstruction reads only the four numbers that go into an instruction without any
 // values for registers before or after
 func readRawInstruction(inst string) (int, int, int, int) {
-	instTokens := strings.Split(inst, " ")
-	opCode, err := strconv.Atoi(instTokens[0])
+	instTokens := instRegEx.FindStringSubmatch(inst)
+	opCode, err := strconv.Atoi(instTokens[1])
 	check(err)
-	A, err := strconv.Atoi(instTokens[1])
+	A, err := strconv.Atoi(instTokens[2])
 	check(err)
-	B, err := strconv.Atoi(instTokens[2])
+	B, err := strconv.Atoi(instTokens[3])
 	check(err)
-	dest, err := strconv.Atoi(instTokens[3])
+	dest, err := strconv.Atoi(instTokens[4])
 	check(err)
 	return opCode, A, B, dest
 }
@@ -268,96 +267,74 @@ func CouldBeThree(inst []Instruction) int {
 // ValidOpcodes returns each opcode that might be valid for the provided instruction -
 // that is, whether (regardless of the opcode) the transform applied would produce the
 // provided output
-func ValidOpcodes(i Instruction) []string {
-	candidates := make([]string, 0)
+func ValidOpcodes(i Instruction) map[string]bool {
+	candidates := make(map[string]bool)
 
 	if equalReg(i.regAfter, Addr(i)) {
-		candidates = append(candidates, "addr")
+		candidates["addr"] = true
 	}
 	if equalReg(i.regAfter, Addi(i)) {
-		candidates = append(candidates, "addi")
+		candidates["addi"] = true
 	}
 	if equalReg(i.regAfter, Mulr(i)) {
-		candidates = append(candidates, "mulr")
+		candidates["mulr"] = true
 	}
 	if equalReg(i.regAfter, Muli(i)) {
-		candidates = append(candidates, "muli")
+		candidates["muli"] = true
 	}
 	if equalReg(i.regAfter, Banr(i)) {
-		candidates = append(candidates, "banr")
+		candidates["banr"] = true
 	}
 	if equalReg(i.regAfter, Bani(i)) {
-		candidates = append(candidates, "bani")
+		candidates["bani"] = true
 	}
 	if equalReg(i.regAfter, Borr(i)) {
-		candidates = append(candidates, "borr")
+		candidates["borr"] = true
 	}
 	if equalReg(i.regAfter, Bori(i)) {
-		candidates = append(candidates, "bori")
+		candidates["bori"] = true
 	}
 	if equalReg(i.regAfter, Setr(i)) {
-		candidates = append(candidates, "setr")
+		candidates["setr"] = true
 	}
 	if equalReg(i.regAfter, Seti(i)) {
-		candidates = append(candidates, "seti")
+		candidates["seti"] = true
 	}
 	if equalReg(i.regAfter, Gtir(i)) {
-		candidates = append(candidates, "gtir")
+		candidates["gtir"] = true
 	}
 	if equalReg(i.regAfter, Gtri(i)) {
-		candidates = append(candidates, "gtri")
+		candidates["gtri"] = true
 	}
 	if equalReg(i.regAfter, Gtrr(i)) {
-		candidates = append(candidates, "gtrr")
+		candidates["gtrr"] = true
 	}
 	if equalReg(i.regAfter, Eqir(i)) {
-		candidates = append(candidates, "eqir")
+		candidates["eqir"] = true
 	}
 	if equalReg(i.regAfter, Eqri(i)) {
-		candidates = append(candidates, "eqri")
+		candidates["eqri"] = true
 	}
 	if equalReg(i.regAfter, Eqrr(i)) {
-		candidates = append(candidates, "eqrr")
+		candidates["eqrr"] = true
 	}
 
 	return candidates
 }
 
 // Find the intersection of two string lists
-func intersection(a, b []string) []string {
+func intersection(a, b map[string]bool) map[string]bool {
 	seen := make(map[string]bool)
-	for _, s := range a {
-		seen[s] = true
-	}
-	intersect := make([]string, 0)
-	for _, s := range b {
-		if _, exists := seen[s]; exists {
-			intersect = append(intersect, s)
+	for k := range a {
+		if _, present := b[k]; present {
+			seen[k] = true
 		}
 	}
-	return intersect
+	return seen
 }
 
-// dumpOpcodes prints out a list of what opcodes a given number could be from the
-// test data.  Manual analysis gives the following list:
-//0: [eqri]
-//1: [banr]
-//2: [bori]
-//3: [mulr]
-//4: [seti]
-//5: [bani]
-//6: [muli]
-//7: [gtrr]
-//8: [setr]
-//9: [addi]
-//10: [gtir]
-//11: [borr]
-//12: [addr]
-//13: [eqrr]
-//14: [gtri]
-//15: [eqir]
-func dumpOpcodes(inst []Instruction) {
-	validOpcodes := make(map[int][]string)
+func findOpcodes(inst []Instruction) map[int]string {
+	validOpcodes := make(map[int]map[string]bool)
 
 	for _, i := range inst {
 		vo := ValidOpcodes(i)
@@ -368,49 +345,62 @@ func dumpOpcodes(inst []Instruction) {
 		}
 	}
 
-	for k, v := range validOpcodes {
-		op := fmt.Sprintln(v)
-		fmt.Printf("%d: %s", k, op)
+	actualOpcodes := make(map[int]string)
+
+	for len(actualOpcodes) < 16 {
+		for intKey, validList := range validOpcodes {
+			if len(validList) == 1 {
+				for opcode := range validList {
+					actualOpcodes[intKey] = opcode
+					for _, list := range validOpcodes {
+						// Delete from the seen list
+						delete(list, opcode)
+					}
+				}
+			}
+		}
 	}
+
+	return actualOpcodes
 }
 
 // This simulates an actual program from raw instructions
-func runProgram(inst []Instruction) Registers {
+func runProgram(opcodes map[int]string, inst []Instruction) Registers {
 	reg := Registers{0, 0, 0, 0}
 	for _, i := range inst {
 		i.regBefore = reg
-		switch i.opCode {
-		case 0:
+		switch opcodes[i.opCode] {
+		case "eqri":
 			reg = Eqri(i)
-		case 1:
+		case "banr":
 			reg = Banr(i)
-		case 2:
+		case "bori":
 			reg = Bori(i)
-		case 3:
+		case "mulr":
 			reg = Mulr(i)
-		case 4:
+		case "seti":
 			reg = Seti(i)
-		case 5:
+		case "bani":
 			reg = Bani(i)
-		case 6:
+		case "muli":
 			reg = Muli(i)
-		case 7:
+		case "gtrr":
 			reg = Gtrr(i)
-		case 8:
+		case "setr":
 			reg = Setr(i)
-		case 9:
+		case "addi":
 			reg = Addi(i)
-		case 10:
+		case "gtir":
 			reg = Gtir(i)
-		case 11:
+		case "borr":
 			reg = Borr(i)
-		case 12:
+		case "addr":
 			reg = Addr(i)
-		case 13:
+		case "eqrr":
 			reg = Eqrr(i)
-		case 14:
+		case "gtri":
 			reg = Gtri(i)
-		case 15:
+		case "eqir":
 			reg = Eqir(i)
 		}
 	}
@@ -442,12 +432,11 @@ func main() {
 	fmt.Println(CouldBeThree(inst))
 	fmt.Println(time.Since(start))
 	start = time.Now()
-	// To see what opcodes are candidates for what numbers (and recreate the manual work), uncomment:
-	//dumpOpcodes(inst)
 
 	// Calculate Part 2
+	opcodes := findOpcodes(inst)
 	inst2 := ReadRawInstructions(input2)
-	reg := runProgram(inst2)
+	reg := runProgram(opcodes, inst2)
 	fmt.Println(reg[0])
 	fmt.Println(time.Since(start))
 }
