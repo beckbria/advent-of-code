@@ -68,12 +68,11 @@ func TestReadPattern(t *testing.T) {
 		ReadPattern("^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$"))
 }
 
-/*
 func inputToMap(input []string) RoomMap {
 	m := make(RoomMap)
 
 	// Find the origin
-	var origin point
+	var origin Point
 findorigin:
 	for y, s := range input {
 		for x, c := range []rune(s) {
@@ -88,9 +87,9 @@ findorigin:
 		for x, c := range []rune(s) {
 			if (y == origin.y) && (x == origin.x) {
 				// Treat this like a normal room
-				m.set(0, 0, Room)
+				m.set(Point{x: 0, y: 0}, Room)
 			} else {
-				m.set(x-origin.x, y-origin.y, Component(c))
+				m.set(Point{x: x - origin.x, y: y - origin.y}, Component(c))
 			}
 		}
 	}
@@ -172,6 +171,7 @@ func TestBuildMap(t *testing.T) {
 	}), patternToMap("^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$"))
 }
 
+/*
 func TestMostDoors(t *testing.T) {
 	assert.Equal(t, 3, MostDoors("^WNE$"))
 	assert.Equal(t, 10, MostDoors("^ENWWW(NEEE|SSE(EE|N))$"))

@@ -54,11 +54,20 @@ func (m *RoomMap) resetDistance() {
 	}
 }
 
-func (m *RoomMap) set(x, y int, c Component) {
-	if _, present := (*m)[x]; !present {
-		(*m)[x] = make(map[int]Location)
+func (m *RoomMap) set(pt Point, c Component) {
+	if _, present := (*m)[pt.x]; !present {
+		(*m)[pt.x] = make(map[int]Location)
 	}
-	(*m)[x][y] = makeLocation(c)
+	(*m)[pt.x][pt.y] = makeLocation(c)
+}
+
+func (m *RoomMap) setIfAbsent(pt Point, c Component) {
+	if _, present := (*m)[pt.x]; !present {
+		(*m)[pt.x] = make(map[int]Location)
+	}
+	if _, present := (*m)[pt.x][pt.y]; !present {
+		(*m)[pt.x][pt.y] = makeLocation(c)
+	}
 }
 
 // Direction is an enum representing all of the options in the instruction pattern.
@@ -101,7 +110,8 @@ func (p *Pattern) isCompound() bool {
 	return len(p.paths) > 0
 }
 
-type point struct {
+// Point in Cartesian space
+type Point struct {
 	x, y int
 }
 
@@ -131,12 +141,13 @@ func readPattern(s string, debugOffset int) Pattern {
 		return SinglePattern("")
 	}
 
+	// What patterns we have seen
 	patterns := make([]Pattern, 0)
 
-	status := idle
-	sectionStart := 0
-	choiceDivider := 0
-	parenDepth := 0 // How many levels of lParen have we seen since we started looking at a group
+	status := idle     // What are we parsing right now?
+	sectionStart := 0  // Where we started parsing the current pattern
+	choiceDivider := 0 // Where the | divider is
+	parenDepth := 0    // How many levels of lParen have we seen since we started looking at a group
 	for i, c := range []rune(s) {
 		switch Direction(c) {
 		case BeginPattern:
@@ -146,6 +157,7 @@ func readPattern(s string, debugOffset int) Pattern {
 				status = readString
 				sectionStart = i
 			}
+
 		case BeginGroup:
 			if status == readString {
 				// We've finished reading a string group.
@@ -160,9 +172,8 @@ func readPattern(s string, debugOffset int) Pattern {
 				parenDepth = 1
 			} else if status == choice {
 				parenDepth++
-			} else {
-
 			}
+
 		case EndGroup:
 			if status != choice {
 				log.Fatalf("Found EndGroup when not parsing group at index %d\n", debugOffset+i)
@@ -207,6 +218,7 @@ func readPattern(s string, debugOffset int) Pattern {
 			}
 		}
 	}
+
 	// Terminate a final pattern
 	if status == readString {
 		// We've finished reading a string group.
@@ -250,7 +262,83 @@ func ConcatenatePattern(p ...Pattern) Pattern {
 // BuildMap generates a map from a pattern
 func BuildMap(p *Pattern) RoomMap {
 	m := make(RoomMap)
+
+	origin := Point{x: 0, y: 0}
+	m.addRoom(origin)
+	m.addPatternToMap(p, origin)
+
 	return m
+}
+
+func (m *RoomMap) addPatternToMap(p *Pattern, start Point) {
+	if !p.isCompound() {
+		m.addSimplePatternToMap(p, start)
+	} else {
+		for _, path := range p.paths {
+			// Add each choice to the map separately
+			m.addCompoundPatternToMap(path, start)
+		}
+	}
+}
+
+// Add a single directional path to the map.  Return its end point for any patterns
+// which come after it.
+func (m *RoomMap) addSimplePatternToMap(p *Pattern, start Point) Point {
+	current := start
+	for _, c := range []rune(p.pattern) {
+		switch Direction(c) {
+		case West:
+			(*m)[current.x-1][current.y] = makeLocation(HDoor)
+			m.addRoom(Point{x: current.x - 2, y: current.y})
+			current.x -= 2
+		case East:
+			(*m)[current.x+1][current.y] = makeLocation(HDoor)
+			m.addRoom(Point{x: current.x + 2, y: current.y})
+			current.x += 2
+		case North:
+			(*m)[current.x][current.y-1] = makeLocation(VDoor)
+			m.addRoom(Point{x: current.x, y: current.y - 2})
+			current.y -= 2
+		case South:
+			(*m)[current.x][current.y+1] = makeLocation(VDoor)
+			m.addRoom(Point{x: current.x, y: current.y + 2})
+			current.y += 2
+		default:
+			log.Fatalf("Unexpected character in simple pattern: %c\n", c)
+		}
+	}
+	return current
+}
+
+// Add what may be a concatenated series of patterns to the map
+func (m *RoomMap) addCompoundPatternToMap(path []Pattern, start Point) {
+	if len(path) < 1 {
+		return
+	} else if len(path) == 1 {
+		m.addPatternToMap(&(path[0]), start)
+	} else {
+		current := path[0]
+		rest := path[1:]
+		if current.isCompound() {
+			for _, path := range current.paths {
+				// Add each choice to the map separately
+				m.addCompoundPatternToMap(append(path, rest...), start)
+			}
+		} else {
+			newStart := m.addSimplePatternToMap(&current, start)
+			m.addCompoundPatternToMap(rest, newStart)
+		}
+	}
+}
+
+func (m *RoomMap) addRoom(pt Point) {
+	m.set(Point{x: pt.x, y: pt.y}, Room)
+	// Add walls
+	for x := pt.x - 1; x <= pt.x+1; x++ {
+		for y := pt.y - 1; y <= pt.y+1; y++ {
+			m.setIfAbsent(Point{x: x, y: y}, Wall)
+		}
+	}
 }
 
 // MostDoors returns the most doors you must pass through to reach any room of the house along
@@ -258,7 +346,7 @@ func BuildMap(p *Pattern) RoomMap {
 func MostDoors(s string) int {
 	p := ReadPattern(s)
 	m := BuildMap(&p)
-	m.findShortestDistances(point{x: 0, y: 0})
+	m.findShortestDistances(Point{x: 0, y: 0})
 
 	maxDoors := 0
 	for _, yr := range m {
@@ -273,7 +361,7 @@ func MostDoors(s string) int {
 }
 
 // findShortestDistances uses Djikstra's algorithm to find the shortest path to every room in the map
-func (m *RoomMap) findShortestDistances(from point) int {
+func (m *RoomMap) findShortestDistances(from Point) int {
 	m.resetDistance()
 	return 0
 }
