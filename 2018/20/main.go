@@ -144,10 +144,10 @@ func readPattern(s string, debugOffset int) Pattern {
 	// What patterns we have seen
 	patterns := make([]Pattern, 0)
 
-	status := idle     // What are we parsing right now?
-	sectionStart := 0  // Where we started parsing the current pattern
-	choiceDivider := 0 // Where the | divider is
-	parenDepth := 0    // How many levels of lParen have we seen since we started looking at a group
+	status := idle    // What are we parsing right now?
+	sectionStart := 0 // Where we started parsing the current pattern
+	var choiceSections []Pattern
+	parenDepth := 0 // How many levels of lParen have we seen since we started looking at a group
 	for i, c := range []rune(s) {
 		switch Direction(c) {
 		case BeginPattern:
@@ -167,7 +167,7 @@ func readPattern(s string, debugOffset int) Pattern {
 
 			if status == idle {
 				status = choice
-				choiceDivider = -1
+				choiceSections = make([]Pattern, 0)
 				sectionStart = i + 1
 				parenDepth = 1
 			} else if status == choice {
@@ -181,18 +181,18 @@ func readPattern(s string, debugOffset int) Pattern {
 			parenDepth--
 			if parenDepth == 0 {
 				// We've reached the end of this group
-				if choiceDivider < 0 {
+				if len(choiceSections) < 1 {
 					log.Fatalf("Found group without divider from %d-%d\n", debugOffset+sectionStart, debugOffset+i)
 				}
-				first := s[sectionStart:choiceDivider]
-				second := s[choiceDivider+1 : i]
+
+				pattern := s[sectionStart:i]
 				if debugPattern {
-					fmt.Printf("Choice between \"%s\" and \"%s\" from %d-%d\n",
-						first, second, debugOffset+sectionStart, debugOffset+i)
+					fmt.Printf("Choice \"%s\" from %d-%d\n",
+						pattern, debugOffset+sectionStart, debugOffset+i)
 				}
-				patterns = append(patterns, ChoicePattern(
-					readPattern(first, debugOffset+sectionStart),
-					readPattern(second, debugOffset+choiceDivider+1)))
+				choiceSections = append(choiceSections, readPattern(pattern, debugOffset+sectionStart))
+
+				patterns = append(patterns, ChoicePattern(choiceSections...))
 				status = idle
 			}
 
@@ -201,10 +201,13 @@ func readPattern(s string, debugOffset int) Pattern {
 				log.Fatalf("Found EndGroup when not parsing group at index %d\n", debugOffset+i)
 			}
 			if parenDepth == 1 {
-				if choiceDivider >= 0 {
-					log.Fatalf("Found duplicate | at %d and %d\n", debugOffset+choiceDivider, debugOffset+i)
+				pattern := s[sectionStart:i]
+				if debugPattern {
+					fmt.Printf("Choice \"%s\" from %d-%d\n",
+						pattern, debugOffset+sectionStart, debugOffset+i)
 				}
-				choiceDivider = i
+				choiceSections = append(choiceSections, readPattern(pattern, debugOffset+sectionStart))
+				sectionStart = i + 1
 			}
 		case EndPattern:
 			if status == readString {
