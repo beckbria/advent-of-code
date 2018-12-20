@@ -13,7 +13,7 @@ const (
 	debug             = true
 	debugPattern      = debug && false
 	debugMap          = debug && true
-	debugShortestPath = debug && true
+	debugShortestPath = debug && false
 )
 
 // Component represents a component of the base.  It's an enum
@@ -351,7 +351,7 @@ func MostDoors(s string) int {
 	maxDoors := 0
 	for _, yr := range m {
 		for _, c := range yr {
-			if c.c == Room {
+			if (c.c == Room) && (c.dist != Unreachable) {
 				maxDoors = max(maxDoors, c.dist)
 			}
 		}
@@ -360,10 +360,57 @@ func MostDoors(s string) int {
 	return maxDoors
 }
 
+func location(c Component, distance int) Location {
+	return Location{c: c, dist: distance}
+}
+
+func isDoor(c Component) bool {
+	return (c == HDoor) || (c == VDoor)
+}
+
 // findShortestDistances uses Djikstra's algorithm to find the shortest path to every room in the map
-func (m *RoomMap) findShortestDistances(from Point) int {
+func (m *RoomMap) findShortestDistances(from Point) {
 	m.resetDistance()
-	return 0
+	(*m)[0][0] = location((*m)[0][0].c, 0)
+	if debugShortestPath {
+		fmt.Println("Setting origin distance to 0")
+	}
+
+	// Offset to N/W/E/S neighbors
+	neighborOffset := []Point{Point{x: 0, y: -1}, Point{x: -1, y: 0}, Point{x: 1, y: 0}, Point{x: 0, y: 1}}
+
+	// The queue of unvisited nodes
+	toProcess := []Point{Point{x: 0, y: 0}}
+	for len(toProcess) > 0 {
+		// Pop the first element
+		pt := toProcess[0]
+		toProcess = toProcess[1:]
+		newDistance := (*m)[pt.x][pt.y].dist + 1
+
+		// Check for neighbors
+		for _, no := range neighborOffset {
+			x := pt.x + no.x
+			y := pt.y + no.y
+			if debugShortestPath {
+				fmt.Printf("Checking for door at %d,%d\n", x, y)
+			}
+			if isDoor((*m)[x][y].c) {
+				// Double the offset to get through the door to the room
+				x += no.x
+				y += no.y
+				if debugShortestPath {
+					fmt.Printf("Found door.  Checking room at %d,%d [Current dist %d, new %d]\n", x, y, (*m)[x][y].dist, newDistance)
+				}
+				if newDistance < (*m)[x][y].dist {
+					if debugShortestPath {
+						fmt.Printf("Updating distance to %d\n", newDistance)
+					}
+					(*m)[x][y] = location((*m)[x][y].c, newDistance)
+					toProcess = append(toProcess, Point{x: x, y: y})
+				}
+			}
+		}
+	}
 }
 
 func max(a, b int) int {
