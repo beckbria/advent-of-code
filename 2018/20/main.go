@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	debug             = true
+	debug             = false
 	debugPattern      = debug && false
 	debugMap          = debug && true
 	debugShortestPath = debug && false
@@ -345,22 +345,33 @@ func (m *RoomMap) addRoom(pt Point) {
 }
 
 // MostDoors returns the most doors you must pass through to reach any room of the house along
-// the shortest path
-func MostDoors(s string) int {
+// the shortest path.  It also returns a count of the number of doors whose minimum distance is
+// at least 1000 doors away
+func MostDoors(s string) (int, int) {
 	p := ReadPattern(s)
+	if debug {
+		fmt.Println("Read pattern")
+	}
 	m := BuildMap(&p)
+	if debug {
+		fmt.Println("Built map")
+	}
 	m.findShortestDistances(Point{x: 0, y: 0})
 
+	atLeastOneThousand := 0
 	maxDoors := 0
 	for _, yr := range m {
 		for _, c := range yr {
 			if (c.c == Room) && (c.dist != Unreachable) {
 				maxDoors = max(maxDoors, c.dist)
+				if c.dist >= 1000 {
+					atLeastOneThousand++
+				}
 			}
 		}
 	}
 
-	return maxDoors
+	return maxDoors, atLeastOneThousand
 }
 
 func location(c Component, distance int) Location {
@@ -434,6 +445,8 @@ func main() {
 	}
 	check(scanner.Err())
 	start := time.Now()
-	fmt.Println(MostDoors(input[0]))
+	furthest, atLeastOneThousand := MostDoors(input[0])
+	fmt.Println(furthest)
+	fmt.Println(atLeastOneThousand)
 	fmt.Println(time.Since(start))
 }

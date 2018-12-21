@@ -172,10 +172,16 @@ func TestBuildMap(t *testing.T) {
 }
 
 func TestMostDoors(t *testing.T) {
-	assert.Equal(t, 3, MostDoors("^WNE$"))
-	assert.Equal(t, 1, MostDoors("^(W|N|E)$"))
-	assert.Equal(t, 10, MostDoors("^ENWWW(NEEE|SSE(EE|N))$"))
-	assert.Equal(t, 18, MostDoors("^ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$"))
-	assert.Equal(t, 23, MostDoors("^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$"))
-	assert.Equal(t, 31, MostDoors("^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$"))
+	most, _ := MostDoors("^WNE$")
+	assert.Equal(t, 3, most)
+	most, _ = MostDoors("^(W|N|E)$")
+	assert.Equal(t, 1, most)
+	most, _ = MostDoors("^ENWWW(NEEE|SSE(EE|N))$")
+	assert.Equal(t, 10, most)
+	most, _ = MostDoors("^ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN$")
+	assert.Equal(t, 18, most)
+	most, _ = MostDoors("^ESSWWN(E|NNENN(EESS(WNSE|)SSS|WWWSSSSE(SW|NNNE)))$")
+	assert.Equal(t, 23, most)
+	most, _ = MostDoors("^WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))$")
+	assert.Equal(t, 31, most)
 }
