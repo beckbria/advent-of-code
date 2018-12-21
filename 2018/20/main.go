@@ -10,10 +10,10 @@ import (
 )
 
 const (
-	debug             = false
+	debug             = true
 	debugPattern      = debug && false
 	debugMap          = debug && true
-	debugShortestPath = debug && false
+	debugShortestPath = debug && true
 )
 
 // Component represents a component of the base.  It's an enum
@@ -427,11 +427,111 @@ func (m *RoomMap) findShortestDistances(from Point) {
 	}
 }
 
+// ShortestDistancesNoMap generates the shortest distance to each square from the pattern
+func ShortestDistancesNoMap(p *Pattern) map[Point]int {
+	m := make(map[Point]int)
+	origin := Point{x: 0, y: 0}
+	m[origin] = 0
+	patternShortestDistance(m, p, origin, 0)
+	return m
+}
+
+func patternShortestDistance(m map[Point]int, p *Pattern, start Point, distance int) {
+	if !p.isCompound() {
+		simplePatternShortestDistance(m, p, start, distance)
+	} else {
+		for _, path := range p.paths {
+			// Add each choice to the map separately
+			compoundPatternShortestDistance(m, path, start, distance)
+		}
+	}
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+// Add a single directional path to the map.  Return its end point for any patterns
+// which come after it.
+func simplePatternShortestDistance(m map[Point]int, p *Pattern, start Point, distance int) (Point, int) {
+	current := start
+	currentDistance := distance
+	for _, c := range []rune(p.pattern) {
+		currentDistance++
+		switch Direction(c) {
+		case West:
+			current.x--
+		case East:
+			current.x++
+		case North:
+			current.y--
+		case South:
+			current.y++
+		default:
+			log.Fatalf("Unexpected character in simple pattern: %c\n", c)
+		}
+		val, present := m[current]
+		if present {
+			currentDistance = min(currentDistance, val)
+		}
+		m[current] = currentDistance
+	}
+	if debugShortestPath {
+		if len(m) > (100 * nextHundred) {
+			fmt.Println(100 * nextHundred)
+			nextHundred++
+		}
+	}
+	return current, currentDistance
+}
+
+var nextHundred = 1
+
+// Add what may be a concatenated series of patterns to the map
+func compoundPatternShortestDistance(m map[Point]int, path []Pattern, start Point, distance int) {
+	if len(path) < 1 {
+		return
+	} else if len(path) == 1 {
+		patternShortestDistance(m, &(path[0]), start, distance)
+	} else {
+		current := path[0]
+		rest := path[1:]
+		if current.isCompound() {
+			for _, path := range current.paths {
+				// Add each choice to the map separately
+				compoundPatternShortestDistance(m, append(path, rest...), start, distance)
+			}
+		} else {
+			newStart, newDistance := simplePatternShortestDistance(m, &current, start, distance)
+			compoundPatternShortestDistance(m, rest, newStart, newDistance)
+		}
+	}
+}
+
 func max(a, b int) int {
 	if a > b {
 		return a
 	}
 	return b
+}
+
+// Answers returns the part 1 and part 2 answers
+func Answers(input string) (int, int) {
+	p := ReadPattern(input)
+	m := ShortestDistancesNoMap(&p)
+	atLeastOneThousand := 0
+	maxDoors := 0
+	for _, d := range m {
+		maxDoors = max(maxDoors, d)
+		if d >= 1000 {
+			atLeastOneThousand++
+		}
+	}
+
+	return maxDoors, atLeastOneThousand
 }
 
 func main() {
@@ -445,7 +545,7 @@ func main() {
 	}
 	check(scanner.Err())
 	start := time.Now()
-	furthest, atLeastOneThousand := MostDoors(input[0])
+	furthest, atLeastOneThousand := Answers(input[0])
 	fmt.Println(furthest)
 	fmt.Println(atLeastOneThousand)
 	fmt.Println(time.Since(start))
