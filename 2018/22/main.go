@@ -4,22 +4,29 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"sort"
 	"time"
 )
 
 const (
-	debug = true
+	debug     = true
+	debugPath = true
 )
 
 type point struct {
 	x, y int
 }
 
+type path struct {
+	cost int
+	prev rescuer
+}
+
 type cave struct {
 	depth         int
 	target        point
 	geologicCache map[point]int
-	shortestPath  map[rescuer]int
+	shortestPath  map[rescuer]path
 }
 
 type region int
@@ -33,14 +40,31 @@ const (
 type tool int
 
 const (
-	gear    tool = iota + 1
-	torch   tool = iota + 1
-	neither tool = iota + 1
+	gear    tool = 1
+	torch   tool = 2
+	neither tool = 3
 )
+
+func (t tool) toString() string {
+	switch t {
+	case gear:
+		return "gear"
+	case torch:
+		return "torch"
+	case neither:
+		return "neither"
+	default:
+		return fmt.Sprintf("Unknown tool: %d", int(t))
+	}
+}
 
 type rescuer struct {
 	location point
 	equipped tool
+}
+
+func (r *rescuer) toString() string {
+	return fmt.Sprintf("(%d,%d) holding %s", r.location.x, r.location.y, r.equipped.toString())
 }
 
 var rescuerStart = rescuer{equipped: torch, location: point{x: 0, y: 0}}
@@ -52,8 +76,8 @@ const (
 )
 
 func makeCave(depth int, target point) cave {
-	c := cave{depth: depth, target: target, geologicCache: make(map[point]int), shortestPath: make(map[rescuer]int)}
-	c.shortestPath[rescuerStart] = 0
+	c := cave{depth: depth, target: target, geologicCache: make(map[point]int), shortestPath: make(map[rescuer]path)}
+	c.shortestPath[rescuerStart] = path{cost: 0, prev: rescuer{location: point{x: -1, y: -1}, equipped: torch}}
 	return c
 }
 
@@ -117,7 +141,16 @@ func (c *cave) timeToTarget() int {
 		// Pop the to entry
 		curr := toProcess[0]
 		if curr.location == c.target {
-			return c.shortestPath[curr]
+			if debugPath {
+				r := curr
+				p, present := c.shortestPath[r]
+				for present {
+					fmt.Println(r.toString())
+					r = p.prev
+					p, present = c.shortestPath[r]
+				}
+			}
+			return c.shortestPath[curr].cost
 		}
 		currRegion := c.regionType(curr.location)
 		toProcess = toProcess[1:]
@@ -129,18 +162,22 @@ func (c *cave) timeToTarget() int {
 				continue
 			}
 			neighborRegion := c.regionType(neighbor)
-			for ti := range allTools {
+			for _, ti := range allTools {
 				t := tool(ti)
 				if isToolOk(t, currRegion) && isToolOk(t, neighborRegion) {
 					newRescuer := rescuer{location: neighbor, equipped: t}
-					newCost := c.shortestPath[curr] + moveTime
+					newCost := c.shortestPath[curr].cost + moveTime
 					if t != curr.equipped {
 						newCost += switchTime
 					}
-					if oldCost, present := c.shortestPath[newRescuer]; !present || (newCost < oldCost) {
-						c.shortestPath[newRescuer] = newCost
-						// TODO: May have to make this a heap to always get the shortest point
+					if oldPath, present := c.shortestPath[newRescuer]; !present || (newCost < oldPath.cost) {
+						c.shortestPath[newRescuer] = path{cost: newCost, prev: curr}
 						toProcess = append(toProcess, newRescuer)
+						// TODO: A heap should be more effiient, but by my calculations we should only have to deal
+						// with ~50k nodes, so sorting every step is painful but not the end of the world
+						sort.Slice(toProcess, func(i, j int) bool {
+							return c.shortestPath[toProcess[i]].cost < c.shortestPath[toProcess[i]].cost
+						})
 					}
 				}
 			}
