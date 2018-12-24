@@ -6,9 +6,17 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
+)
+
+const (
+	debug                = false
+	debugRead            = debug && true
+	debugTargetSelection = debug && true
+	debugAttack          = debug && true
 )
 
 var (
@@ -24,7 +32,7 @@ type faction int
 
 const (
 	imm faction = 1 // A group of immune system cells
-	inf faction = 1 // A group of infection cells
+	inf faction = 2 // A group of infection cells
 )
 
 type group struct {
@@ -44,21 +52,35 @@ func (g *group) power() int {
 	return g.count * g.damage
 }
 
-// A unit is dead if it runs out of HP and should not take part in combat
+// A unit is dead if it runs out of units and should not take part in combat
 func (g *group) alive() bool {
-	return g.hp > 0
+	return g.count > 0
+}
+
+func (g *group) projectedDamage(target *group) int {
+	// If the target is immune, it takes no damage
+	if _, present := target.immuneTo[g.attack]; present {
+		return 0
+	}
+
+	damage := g.power()
+	// If the target is weak, it takes double damage
+	if _, present := target.weakTo[g.attack]; present {
+		damage *= 2
+	}
+
+	return damage
 }
 
 // A body has immune cells and infection cells battling in it
 type body struct {
-	immune    []group
-	infection []group
+	groups []*group
 }
 
 func (b *body) liveImmuneGroups() int {
 	count := 0
-	for _, g := range b.immune {
-		if g.alive() {
+	for _, g := range b.groups {
+		if g.alive() && g.team == imm {
 			count++
 		}
 	}
@@ -67,30 +89,144 @@ func (b *body) liveImmuneGroups() int {
 
 func (b *body) liveInfectedGroups() int {
 	count := 0
-	for _, g := range b.infection {
-		if g.alive() {
+	for _, g := range b.groups {
+		if g.alive() && g.team == inf {
 			count++
 		}
 	}
 	return count
 }
 
+func (b *body) sortByPower() {
+	sort.Slice(b.groups, func(i, j int) bool {
+		// Sort by power descending
+		if b.groups[i].power() > b.groups[j].power() {
+			return true
+		} else if b.groups[i].power() < b.groups[j].power() {
+			return false
+		}
+		// Fall back to initiative descending
+		return b.groups[i].initiative > b.groups[j].initiative
+	})
+}
+
+func (b *body) sortByInitiative() {
+	sort.Slice(b.groups, func(i, j int) bool {
+		// Sort by initiative descending
+		return b.groups[i].initiative > b.groups[j].initiative
+	})
+}
+
+const noTarget = -1
+
 // Two teams enter.  One team leaves.
 func (b *body) battle() {
 	for (b.liveImmuneGroups() > 0) && (b.liveInfectedGroups() > 0) {
+		// Target Selection
+		targets := make(map[int]*group)
+		targetedBy := make(map[int]int)
+		b.sortByPower()
+		for _, attacker := range b.groups {
+			if !attacker.alive() {
+				if debugTargetSelection {
+					fmt.Printf("TARGET: attacker %d is dead, skipping\n", attacker.id)
+				}
+				continue
+			}
+			bestTarget := (*group)(nil)
+			for _, target := range b.groups {
+				if !target.alive() || (target.team == attacker.team) {
+					// We shouldn't attack deceased groups or groups on our side
+					if debugTargetSelection {
+						if !target.alive() {
+							fmt.Printf("TARGET: target %d is dead\n", target.id)
+						} else {
+							fmt.Printf("TARGET: target %d is on same team as attacker %d\n", target.id, attacker.id)
+						}
+					}
+					continue
+				}
+				if _, present := targetedBy[target.id]; present {
+					// Each group may only be targeted by one unit
+					if debugTargetSelection {
+						fmt.Printf("TARGET: target %d is already targeted\n", target.id)
+					}
+					continue
+				}
+				if isBetterTarget(attacker, target, bestTarget) {
+					bestTarget = target
+					if debugTargetSelection {
+						fmt.Printf("TARGET: attacker %d best target = %d\n",
+							attacker.id,
+							bestTarget.id)
+					}
+				}
+			}
+			if bestTarget != nil {
+				targets[attacker.id] = bestTarget
+				targetedBy[bestTarget.id] = attacker.id
+			} else if debugTargetSelection {
+				fmt.Printf("TARGET: attacker %d selected no target\n", attacker.id)
+			}
+		}
 
+		// Attacking
+		b.sortByInitiative()
+		for _, attacker := range b.groups {
+			if !attacker.alive() {
+				continue
+			}
+			// If a unit has no target, it doesn't attack
+			if _, present := targets[attacker.id]; !present {
+				continue
+			}
+			target := targets[attacker.id]
+			damage := attacker.projectedDamage(target)
+			deadUnits := int(damage / target.hp)
+			target.count -= deadUnits
+			if debugAttack {
+				fmt.Printf("ATTACK: attacker %d deals %d damage to group %d (%d units die, %d remain)\n",
+					attacker.id,
+					damage,
+					target.id,
+					deadUnits,
+					target.count)
+			}
+		}
 	}
+}
+
+func isBetterTarget(attacker, target, bestTarget *group) bool {
+	damage := attacker.projectedDamage(target)
+	if debugTargetSelection {
+		fmt.Printf("TARGET: Attacker %d would deal %d damage to target %d\n", attacker.id, damage, target.id)
+	}
+	if damage < 1 {
+		// If a unit wouldn't be damaged, it shoudln't be targeted
+		return false
+	}
+
+	if bestTarget == nil {
+		// Any target is better than no target
+		return true
+	}
+
+	bestDamage := attacker.projectedDamage(bestTarget)
+	if damage == bestDamage {
+		// If the damage to be done is equal, choose the target with the highest
+		// effective power.  If tie, fallback to highest initiative
+		if target.power() == bestTarget.power() {
+			return target.initiative > bestTarget.initiative
+		}
+		return target.power() > bestTarget.power()
+	}
+	return damage > bestDamage
 }
 
 func (b *body) winningArmyCount() int {
 	b.battle()
 	total := 0
-	for _, g := range b.immune {
-		if g.alive() {
-			total += g.count
-		}
-	}
-	for _, g := range b.infection {
+	for _, g := range b.groups {
 		if g.alive() {
 			total += g.count
 		}
@@ -161,8 +297,7 @@ func parseVulnerabilities(input string) (map[string]bool, map[string]bool) {
 
 // Returns immune, infection
 func readBody(input []string) body {
-	immune := make([]group, 0)
-	infection := make([]group, 0)
+	groups := make([]*group, 0)
 	readingImmune := true
 	for _, s := range input {
 		if (len(s) == 0) || (s[:2] == "Im") {
@@ -174,15 +309,21 @@ func readBody(input []string) body {
 		}
 
 		g := readGroup(s)
+		groupStr := fmt.Sprint(g)
 		if readingImmune {
 			g.team = imm
-			immune = append(immune, g)
+			if debugRead {
+				fmt.Printf("Read Immune Group: %s\n", groupStr)
+			}
 		} else {
 			g.team = inf
-			infection = append(infection, g)
+			if debugRead {
+				fmt.Printf("Read Infection Group: %s\n", groupStr)
+			}
 		}
+		groups = append(groups, &g)
 	}
-	return body{immune: immune, infection: infection}
+	return body{groups: groups}
 }
 
 func main() {
