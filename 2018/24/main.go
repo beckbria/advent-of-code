@@ -12,11 +12,12 @@ import (
 	"time"
 )
 
-const (
+var (
 	debug                = false
-	debugRead            = debug && true
-	debugTargetSelection = debug && true
-	debugAttack          = debug && true
+	debugRead            = debug && false
+	debugTargetSelection = debug && false
+	debugAttack          = debug && false
+	debugMinimumSearch   = debug && false
 )
 
 var (
@@ -117,10 +118,8 @@ func (b *body) sortByInitiative() {
 	})
 }
 
-const noTarget = -1
-
-// Two teams enter.  One team leaves.
-func (b *body) battle() {
+// Two teams enter.  One team leaves.  Unless it's a stalemate.  Then return true.
+func (b *body) battle() bool {
 	for (b.liveImmuneGroups() > 0) && (b.liveInfectedGroups() > 0) {
 		// Target Selection
 		targets := make(map[int]*group)
@@ -172,6 +171,7 @@ func (b *body) battle() {
 
 		// Attacking
 		b.sortByInitiative()
+		totalUnitsKilled := 0
 		for _, attacker := range b.groups {
 			if !attacker.alive() {
 				continue
@@ -184,6 +184,7 @@ func (b *body) battle() {
 			damage := attacker.projectedDamage(target)
 			deadUnits := int(damage / target.hp)
 			target.count -= deadUnits
+			totalUnitsKilled += deadUnits
 			if debugAttack {
 				fmt.Printf("ATTACK: attacker %d deals %d damage to group %d (%d units die, %d remain)\n",
 					attacker.id,
@@ -193,7 +194,15 @@ func (b *body) battle() {
 					target.count)
 			}
 		}
+		if totalUnitsKilled == 0 {
+			// Stalemate
+			if debugAttack {
+				fmt.Println("Stalemate detected")
+			}
+			return true
+		}
 	}
+	return false
 }
 
 func isBetterTarget(attacker, target, bestTarget *group) bool {
@@ -223,15 +232,74 @@ func isBetterTarget(attacker, target, bestTarget *group) bool {
 	return damage > bestDamage
 }
 
-func (b *body) winningArmyCount() int {
-	b.battle()
+func (b *body) winningArmyCount() (int, faction) {
+	var f faction
+	stalemate := b.battle()
+	if stalemate {
+		// Stalemate means the immune system doesn't win.
+		return 0, inf
+	}
 	total := 0
 	for _, g := range b.groups {
 		if g.alive() {
 			total += g.count
+			f = g.team
 		}
 	}
-	return total
+	return total, f
+}
+
+// Finds the minimum attack boost to the cause the immune team to win.
+// Returns the minimum boost and the number of units left after that boost
+func findMinimumBoost(input []string) (int, int) {
+	lower := 0
+	upper := 5000
+
+	// Ensure the upper bound issane
+	for {
+		_, winningTeam := countWithBoost(input, upper)
+		if winningTeam == inf {
+			if debugMinimumSearch {
+				fmt.Printf("%d is too low, doubling upper bound\n", upper)
+			}
+			lower = upper
+			upper *= 2
+		} else {
+			if debugMinimumSearch {
+				fmt.Printf("Upper bound: %d\n", upper)
+			}
+			break
+		}
+	}
+
+	// Binary Search
+	for upper-lower > 1 {
+		boost := lower + (upper-lower)/2
+		if debugMinimumSearch {
+			fmt.Printf("Range [%d-%d], Guess: %d\n", lower, upper, boost)
+		}
+		_, winningTeam := countWithBoost(input, boost)
+
+		if winningTeam == imm {
+			upper = boost
+		} else {
+			lower = boost
+		}
+	}
+
+	// Measure the final amounts
+	remaining, _ := countWithBoost(input, upper)
+	return upper, remaining
+}
+
+func countWithBoost(input []string, boost int) (int, faction) {
+	b := readBody(input)
+	for _, g := range b.groups {
+		if g.team == imm {
+			g.damage += boost
+		}
+	}
+	return b.winningArmyCount()
 }
 
 func check(e error) {
@@ -339,5 +407,9 @@ func main() {
 	start := time.Now()
 	b := readBody(input)
 	fmt.Println(b.winningArmyCount())
+	fmt.Println(time.Since(start))
+	start = time.Now()
+	minBoost, remaining := findMinimumBoost(input)
+	fmt.Printf("Minimum boost of %d leaves %d units remaining\n", minBoost, remaining)
 	fmt.Println(time.Since(start))
 }
