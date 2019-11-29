@@ -28,7 +28,7 @@ func sum(i []int64) int64 {
 	return s
 }
 
-// StringToInts blah blah comment
+// StringToInts Parses a string consisting of space-delimited numbers
 func StringToInts(s string) []int64 {
 	var i []int64
 	for _, v := range strings.Split(s, " ") {
