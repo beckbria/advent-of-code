@@ -24,12 +24,12 @@ type wire map[aoc.Point]int
 
 func main() {
 	lines := aoc.ReadFileLines("input.txt")
-	firstPath := readWire(lines[0])
-	secondPath := readWire(lines[1])
+	firstPath := readPath(lines[0])
+	secondPath := readPath(lines[1])
 
 	sw := aoc.NewStopwatch()	
-	firstPoints := findPoints(firstPath)
-	secondPoints := findPoints(secondPath)
+	firstPoints := pathToWire(firstPath)
+	secondPoints := pathToWire(secondPath)
 	crosses := intersection(firstPoints, secondPoints)
 	// Find the shortest Manhattan Distance
 	home := aoc.Point{X:0, Y:0}
@@ -46,7 +46,7 @@ func main() {
 	fmt.Println(sw.Elapsed())
 }
 
-func readWire(line string) []path {
+func readPath(line string) []path {
 	input := strings.Split(line, ",")
 	program := []path{}
 	for _, i := range input {
@@ -60,7 +60,7 @@ func readWire(line string) []path {
 	return program
 }
 
-func findPoints(trace []path) wire{
+func pathToWire(trace []path) wire{
 	points := make(wire)
 
 	x := 0
