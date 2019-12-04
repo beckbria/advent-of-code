@@ -24,26 +24,33 @@ type wire map[aoc.Point]int
 
 func main() {
 	lines := aoc.ReadFileLines("input.txt")
-	firstPath := readPath(lines[0])
-	secondPath := readPath(lines[1])
+
 
 	sw := aoc.NewStopwatch()	
+	optimalManhattan, optimalCost := bestValues(lines[0], lines[1])
+	fmt.Println(optimalManhattan)
+	fmt.Println(optimalCost)
+	fmt.Println(sw.Elapsed())
+}
+
+// Returns the optimal manhattan distance and the optimal total cost
+func bestValues(first, second string) (int64, int) {
+	// Generate the set of points touched by each wire
+	firstPath := readPath(first)
+	secondPath := readPath(second)
 	firstPoints := pathToWire(firstPath)
 	secondPoints := pathToWire(secondPath)
+
 	crosses := intersection(firstPoints, secondPoints)
 	// Find the shortest Manhattan Distance
 	home := aoc.Point{X:0, Y:0}
-	bestPart1 := aoc.Point{X: 999999, Y: 999999}
-	bestPart2 := 99999999
+	optimalManhattan := int64(99999999)
+	optimalCost := 99999999
 	for pt, distance := range crosses {
-		if home.ManhattanDistance(pt) < home.ManhattanDistance(bestPart1) {
-			bestPart1 = pt
-		}
-		bestPart2 = aoc.MinInt(bestPart2, distance)
+		optimalManhattan = aoc.Min(optimalManhattan, home.ManhattanDistance(pt))
+		optimalCost = aoc.MinInt(optimalCost, distance)
 	}
-	fmt.Println(home.ManhattanDistance(bestPart1))
-	fmt.Println(bestPart2)
-	fmt.Println(sw.Elapsed())
+	return optimalManhattan, optimalCost
 }
 
 func readPath(line string) []path {
