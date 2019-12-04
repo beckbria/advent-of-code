@@ -21,7 +21,7 @@ func Ordinal(i byte) byte {
 	} else if IsLower(i) {
 		return i - 'a'
 	} else {
-		log.Fatalf("Non-letter passed to Ordinal: '%c'")
+		log.Fatalf("Non-letter passed to Ordinal: '%c'", i)
 		return 0
 	}
 }
@@ -42,18 +42,10 @@ func ToLower(i byte) byte {
 	return i
 }
 
-// Apparently sort.Sort doesn't understand byte arrays, and you can't implement
-// Len/Less/Swap on []byte directly.  Go REALLY needs generics.
-type ByteSlice []byte
-
-func (a ByteSlice) Len() int           { return len(a) }
-func (a ByteSlice) Less(i, j int) bool { return a[i] < a[j] }
-func (a ByteSlice) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-
-// StringSetIntersection finds the intersection of two sets of strings
-
+// StringSet represents a hash set of strings
 type StringSet map[string]bool
 
+// StringSetIntersection finds the intersection of two sets of strings
 func StringSetIntersection(a, b StringSet) StringSet {
 	seen := make(StringSet)
 	for k := range a {

@@ -8,7 +8,7 @@ func Max(x, y int64) int64 {
 	return x
 }
 
-// Max returns the smaller of two numbers
+// MaxInt returns the smaller of two numbers
 func MaxInt(x, y int) int {
 	if x < y {
 		return y
@@ -24,7 +24,7 @@ func Min(x, y int64) int64 {
 	return y
 }
 
-// Min returns the smaller of two numberrs
+// MinInt returns the smaller of two numberrs
 func MinInt(x, y int) int {
 	if x < y {
 		return x
@@ -40,7 +40,7 @@ func Abs(i int64) int64 {
 	return i
 }
 
-// Abs returns the absolute value of a number
+// AbsInt returns the absolute value of a number
 func AbsInt(i int) int {
 	if i < 0 {
 		return -i
@@ -57,7 +57,7 @@ func Sum(i []int64) int64 {
 	return s
 }
 
-// Sum returns the sum of a slice of integers
+// SumInt returns the sum of a slice of integers
 func SumInt(i []int) int {
 	s := 0
 	for _, v := range i {
