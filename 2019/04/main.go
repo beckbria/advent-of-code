@@ -26,7 +26,7 @@ func validPasswords(start, end int, part2 bool) []int {
 }
 
 func validPassword(pw int, part2 bool) bool {
-	d := digits(pw)
+	d := aoc.DigitsInt(pw)
 	if d[0] > d[1] || d[1] > d[2] || d[2] > d[3] || d[3] > d[4] || d[4] > d[5] {
 		return false
 	}
@@ -49,13 +49,4 @@ func validPassword(pw int, part2 bool) bool {
 	}
 
 	return true
-}
-
-func digits(i int) []int {
-	d := []int{}
-	for ; i > 0; {
-		d = append([]int{i % 10}, d...)
-		i /= 10
-	}
-	return d
 }

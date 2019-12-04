@@ -71,36 +71,24 @@ func Digits(i int64) []int64 {
 	if i == int64(0) {
 		return []int64{i}
 	}
-	d := make([]int64, 0)
+	d := []int64{}
 	for i > int64(0) {
-		d = append(d, i%10)
+		d = append([]int64{i % 10}, d...)
 		i = int64(i / 10)
-	}
-
-	// Reverse the order
-	for j := (len(d) / 2) - 1; j >= 0; j-- {
-		k := len(d) - (j + 1)
-		d[j], d[k] = d[k], d[j]
 	}
 
 	return d
 }
 
-// Digits splits the digits of a number into a slice
+// DigitsInt splits the digits of a number into a slice
 func DigitsInt(i int) []int {
 	if i == 0 {
 		return []int{i}
 	}
-	d := make([]int, 0)
+	d := []int{}
 	for i > 0 {
-		d = append(d, i%10)
+		d = append([]int{i % 10}, d...)
 		i = int(i / 10)
-	}
-
-	// Reverse the order
-	for j := (len(d) / 2) - 1; j >= 0; j-- {
-		k := len(d) - (j + 1)
-		d[j], d[k] = d[k], d[j]
 	}
 
 	return d
