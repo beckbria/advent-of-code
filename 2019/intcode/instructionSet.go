@@ -14,16 +14,35 @@ type Program = []Instruction
 
 // Opcodes in the IntCode architecture
 const (
-	OpAdd 		Instruction = 1
-	OpMultiply 	Instruction = 2
-	OpTerminate	Instruction = 99
+	// OpAdd reads from two parameter and stores their sum in the third parameter
+	OpAdd 			Instruction = 1
+	// OpMultiply reads from two parameter and stores their product in the third parameter
+	OpMultiply 		Instruction = 2
+	// OpStore reads a integer from the I/O Component and saves it to the first parameter
+	OpStore			Instruction = 3
+	// OpOutput reads a value from the first parameter and outputs it to the I/O Component
+	OpOutput		Instruction = 4
+	// OpJumpIfTrue sets the IP to the second parameter if the first parameter is non-zero
+	OpJumpIfTrue	Instruction = 5
+	// OpJumpIfFalse sets the IP to the second parameter if the first parameter is zero
+	OpJumpIfFalse	Instruction = 6
+	// OpLessThan stores 1 in the third parameter if the first parameter is less than the second parameter, otherwise 0
+	OpLessThan		Instruction = 7
+	// OpEquals stores 1 in the third parameter if the first parameter is equal to the second parameter, otherwise 0
+	OpEquals		Instruction = 8
+	// OpTerminate immediately halts the program
+	OpTerminate		Instruction = 99
 )
 
-// Returns the number of arguments for a given instruction
+// argCount returns the number of arguments for a given instruction
 func argCount(i Instruction) int64 {
 	switch i {
-	case OpAdd, OpMultiply:
+	case OpAdd, OpMultiply, OpLessThan, OpEquals:
 		return 3
+	case OpJumpIfTrue, OpJumpIfFalse:
+		return 2
+	case OpStore, OpOutput:
+		return 1
 	case OpTerminate:
 		return 0
 	default:

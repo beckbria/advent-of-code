@@ -7,6 +7,10 @@ import (
 	"../intcode"
 )
 
+// https://adventofcode.com/2019/day/2
+// Write a computer for a made-up language.  Run a program.
+// Part 2: Find a set of inputs to match the target value
+
 const add = int64(1)
 const multiply = int64(2)
 const terminate = int64(99)

@@ -12,6 +12,16 @@ import (
 // debug can be set to true to print debugging information as the program runs
 const debug = false
 
+// ParameterMode represents the mode of an instruction parameter, controlling how it is read
+type ParameterMode = int64
+
+const (
+	// PmPosition indicates that a parameter contains a memory address to be read from
+	PmPosition	ParameterMode = 0
+	// PmImmediate indicates that a parameter contains an immediate value
+	PmImmediate ParameterMode = 1
+)
+
 // Computer represents an IntCode computer, capable of simulating instructions.  Internals such
 // as the state of memory, registers, etc. are directly exposed for manipulation while the machine
 // is running
@@ -26,11 +36,13 @@ type Computer struct {
 	running bool
 	// Whether the program crashed
 	crashed bool
+	// The IO component
+	Io InputOutput
 }
 
 // NewComputer creates a new computer which has loaded the provided program
 func NewComputer(program Program) Computer {
-	c := Computer{}
+	c := Computer{Io: nil}
 	c.LoadProgram(program)
 	return c
 }
@@ -53,6 +65,11 @@ func (c *Computer) LoadProgram(program Program) {
 		fmt.Print("Loaded Program: ")
 		fmt.Println(program)
 	}
+}
+
+// Reset reloads the current program, resetting memory and other bits to their initial state
+func (c *Computer) Reset() {
+	c.LoadProgram(c.program)
 }
 
 // IsRunning returns true if the program has not ended
@@ -95,54 +112,108 @@ func (c *Computer) Step() bool {
 			c.crash()
 			return false
 		}
-		op := c.Memory[c.IP]
-		arg1 := c.IP + 1
-		arg2 := c.IP + 2
-		arg3 := c.IP + 3
+		opCode := c.Memory[c.IP]
+		op := opCode % 100
+		argc := argCount(op)
+		args := []Address{}
+		modes := []ParameterMode{}
+		vals := []Instruction{}
+		modifiedIP := false
+
+		// Validate position mode arguments
+		modeDivisor := int64(10)
+		for i := int64(0); i < argc; i++ {
+			modeDivisor *= 10
+			mode := ParameterMode((opCode / modeDivisor) % 10)
+			modes = append(modes, mode)
+			arg := c.IP + i + 1
+			args = append(args, arg)
+			if !c.validAddress(arg) {
+				c.crash()
+				return false
+			}
+			val := c.Memory[arg]
+			if mode == PmPosition {
+				if !c.validAddress(val) {
+					c.crash()
+					return false
+				}
+				val = c.Memory[val]
+			}
+			vals = append(vals, val)
+		}
+
 		switch op {
 		case OpAdd:
-			if !(c.validAddress(arg1) && c.validAddress(arg2) && c.validAddress(arg3)) {
-				c.crash()
-				return false
-			}
-			target := c.Memory[arg3]
-			s1 := c.Memory[arg1]
-			s2 := c.Memory[arg2]
-			// TODO: If writing to previously-unknown memory address is supported, remove the target check
-			if !(c.validAddress(target) && c.validAddress(s1) && c.validAddress(s2)) {
-				c.crash()
-				return false
-			}
+			target := c.Memory[args[2]]
 			if (debug) {
-				fmt.Printf("i%d := i%d(%d) + i%d(%d)\n", target, s1, c.Memory[s1], s2, c.Memory[s2])
+				// TODO: fix this
+				fmt.Printf("i%d := %d + %d", target, vals[0], vals[1])
 			}
-			c.Memory[target] = c.Memory[s1] + c.Memory[s2]
+			c.Memory[target] = vals[0] + vals[1]
 		case OpMultiply:
-			if !(c.validAddress(arg1) && c.validAddress(arg2) && c.validAddress(arg3)) {
-				c.crash()
-				return false
-			}
-			target := c.Memory[arg3]
-			s1 := c.Memory[arg1]
-			s2 := c.Memory[arg2]
-			// TODO: If writing to previously-unknown memory address is supported, remove the target check
-			if !(c.validAddress(target) && c.validAddress(s1) && c.validAddress(s2)) {
-				c.crash()
-				return false
-			}
+			target := c.Memory[args[2]]
 			if (debug) {
-				fmt.Printf("i%d := i%d(%d) * i%d(%d)\n", target, s1, c.Memory[s1], s2, c.Memory[s2])
+				// TODO: fix this
+				fmt.Printf("i%d := %d * %d", target, vals[0], vals[1])
 			}
-			c.Memory[target] = c.Memory[s1] * c.Memory[s2]
+			c.Memory[target] = vals[0] * vals[1]
+		case OpStore:
+			target := c.Memory[args[0]]
+			input := c.Io.GetInput()
+			if (debug) {
+				fmt.Printf("i%d := Input(%d)\n", target, input)
+			}
+			c.Memory[target] = input
+		case OpOutput:
+			output := vals[0]
+			if (debug) {
+				fmt.Printf("Output << %d\n", output)
+			}
+			c.Io.Output(output)
 		case OpTerminate:
 			if (debug) {
 				fmt.Println("TERMINATE")
 			}
 			c.running = false
+		case OpJumpIfTrue:
+			if vals[0] != 0 {
+				c.IP = vals[1]
+				modifiedIP = true
+			}
+		case OpJumpIfFalse:
+			if vals[0] == 0 {
+				c.IP = vals[1]
+				modifiedIP = true
+			}
+		case OpLessThan:
+			target := c.Memory[args[2]]
+			if (debug) {
+				// TODO: fix this
+				fmt.Printf("i%d := %d + %d", target, vals[0], vals[1])
+			}
+			if vals[0] < vals[1] {
+				c.Memory[target] = 1
+			} else {
+				c.Memory[target] = 0
+			}
+		case OpEquals:
+			target := c.Memory[args[2]]
+			if (debug) {
+				// TODO: fix this
+				fmt.Printf("i%d := %d + %d", target, vals[0], vals[1])
+			}
+			if vals[0] == vals[1] {
+				c.Memory[target] = 1
+			} else {
+				c.Memory[target] = 0
+			}
 		default:
 			fmt.Printf("Unexpected instruction: %d\n", op)
 		}
-		c.IP += (argCount(op) + 1)	// Add one to account for op itself
+		if !modifiedIP {
+			c.IP += (argCount(op) + 1)	// Add one to account for op itself
+		}
 		if (debug) {
 			fmt.Println(c.memoryContents())
 		}

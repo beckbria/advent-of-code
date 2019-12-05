@@ -25,7 +25,7 @@ func (a ByteSlice) Len() int           { return len(a) }
 func (a ByteSlice) Less(i, j int) bool { return a[i] < a[j] }
 func (a ByteSlice) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
-// Int64Slice is a []byte alias necessary for sorting
+// Int64Slice is a []int64 alias necessary for sorting
 type Int64Slice []int64
 
 func (a Int64Slice) Len() int           { return len(a) }

@@ -8,6 +8,12 @@ import (
 	"../aoc"
 )
 
+// https://adventofcode.com/2019/day/3
+// Given the path of two wires (that is, how far in a direction they go before turning)
+// find the intersection closest to the initial port (not counting the initial port)
+// Part 1: By Manhattan Distance
+// Part 2: By the total length along the wire you must travel to reach the point
+
 const (
 	right = 'R'
 	down = 'D'
@@ -24,7 +30,6 @@ type wire map[aoc.Point]int
 
 func main() {
 	lines := aoc.ReadFileLines("input.txt")
-
 
 	sw := aoc.NewStopwatch()	
 	optimalManhattan, optimalCost := bestValues(lines[0], lines[1])
