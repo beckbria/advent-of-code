@@ -1,13 +1,13 @@
 package aoc
 
-import(
+import (
 	"fmt"
 )
 
 // Node represents a node in a tree structure with attached data
 type TreeNode struct {
 	Children []TreeNode
-	Data interface{}
+	Data     interface{}
 }
 
 func (n *TreeNode) Print() {
@@ -23,6 +23,6 @@ func (n *TreeNode) printTree(depth int) {
 	fmt.Print(n.Data)
 	fmt.Print(")\n")
 	for _, c := range n.Children {
-		c.printTree(depth+1)
+		c.printTree(depth + 1)
 	}
 }

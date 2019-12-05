@@ -39,9 +39,9 @@ func (rc *Rectangle) IsEmpty() bool {
 // Intersection returns the intersection of two rectangles
 func (a *Rectangle) Intersection(b *Rectangle) Rectangle {
 	i := Rectangle{
-		Left: Max(a.Left, b.Left),
-		Top: Max(a.Top, b.Top),
-		Right: Min(a.Right, b.Right),
+		Left:   Max(a.Left, b.Left),
+		Top:    Max(a.Top, b.Top),
+		Right:  Min(a.Right, b.Right),
 		Bottom: Min(a.Bottom, b.Bottom)}
 	return i
 }
@@ -52,4 +52,3 @@ func (a *Rectangle) Intersects(b *Rectangle) bool {
 	i := a.Intersection(b)
 	return !i.IsEmpty()
 }
-

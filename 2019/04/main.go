@@ -50,7 +50,7 @@ func validPassword(pw int, part2 bool) bool {
 		return false
 	}
 
-	if (part2) {
+	if part2 {
 		if !((ab && !bc) || (!ab && bc && !cd) || (!bc && cd && !de) || (!cd && de && !ef) || (!de && ef)) {
 			return false
 		}

@@ -11,7 +11,7 @@ type stopwatch struct {
 
 // NewStopwatch creates a stopwatch class which records the time since its construction or most recent reset.
 func NewStopwatch() stopwatch {
-	sw := stopwatch { time.Now() }
+	sw := stopwatch{time.Now()}
 	return sw
 }
 

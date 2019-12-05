@@ -6,7 +6,7 @@ package aoc
 // say something like "who thought that was a good idea", but the much likelier
 // answer is that no one thought of it at all.  It's not like sorting is common
 // in computer programs or anything...
-// 
+//
 // Anyway, we have two choices: One, every single time we want to sort, write a
 // custom lambda comparison function.  We cannot even write a reusable one here
 // because it has to capture the slice in question:

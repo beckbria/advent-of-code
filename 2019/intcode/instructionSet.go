@@ -15,23 +15,23 @@ type Program = []Instruction
 // Opcodes in the IntCode architecture
 const (
 	// OpAdd reads from two parameter and stores their sum in the third parameter
-	OpAdd 			Instruction = 1
+	OpAdd Instruction = 1
 	// OpMultiply reads from two parameter and stores their product in the third parameter
-	OpMultiply 		Instruction = 2
+	OpMultiply Instruction = 2
 	// OpStore reads a integer from the I/O Component and saves it to the first parameter
-	OpStore			Instruction = 3
+	OpStore Instruction = 3
 	// OpOutput reads a value from the first parameter and outputs it to the I/O Component
-	OpOutput		Instruction = 4
+	OpOutput Instruction = 4
 	// OpJumpIfTrue sets the IP to the second parameter if the first parameter is non-zero
-	OpJumpIfTrue	Instruction = 5
+	OpJumpIfTrue Instruction = 5
 	// OpJumpIfFalse sets the IP to the second parameter if the first parameter is zero
-	OpJumpIfFalse	Instruction = 6
+	OpJumpIfFalse Instruction = 6
 	// OpLessThan stores 1 in the third parameter if the first parameter is less than the second parameter, otherwise 0
-	OpLessThan		Instruction = 7
+	OpLessThan Instruction = 7
 	// OpEquals stores 1 in the third parameter if the first parameter is equal to the second parameter, otherwise 0
-	OpEquals		Instruction = 8
+	OpEquals Instruction = 8
 	// OpTerminate immediately halts the program
-	OpTerminate		Instruction = 99
+	OpTerminate Instruction = 99
 )
 
 // argCount returns the number of arguments for a given instruction

@@ -16,14 +16,14 @@ import (
 
 const (
 	right = 'R'
-	down = 'D'
-	up = 'U'
-	left = 'L'
+	down  = 'D'
+	up    = 'U'
+	left  = 'L'
 )
 
 type path struct {
 	direction rune
-	distance int
+	distance  int
 }
 
 type wire map[aoc.Point]int
@@ -31,7 +31,7 @@ type wire map[aoc.Point]int
 func main() {
 	lines := aoc.ReadFileLines("input.txt")
 
-	sw := aoc.NewStopwatch()	
+	sw := aoc.NewStopwatch()
 	optimalManhattan, optimalCost := bestValues(lines[0], lines[1])
 	fmt.Println(optimalManhattan)
 	fmt.Println(optimalCost)
@@ -48,7 +48,7 @@ func bestValues(first, second string) (int64, int) {
 
 	crosses := intersection(firstPoints, secondPoints)
 	// Find the shortest Manhattan Distance
-	home := aoc.Point{X:0, Y:0}
+	home := aoc.Point{X: 0, Y: 0}
 	optimalManhattan := int64(99999999)
 	optimalCost := 99999999
 	for pt, distance := range crosses {
@@ -63,16 +63,16 @@ func readPath(line string) []path {
 	program := []path{}
 	for _, i := range input {
 		runes := []rune(i)
-		distance, _ := strconv.ParseInt(string(runes[1:]), 10, 32) 
+		distance, _ := strconv.ParseInt(string(runes[1:]), 10, 32)
 		p := path{
 			direction: runes[0],
-			distance: int(distance)}
+			distance:  int(distance)}
 		program = append(program, p)
 	}
 	return program
 }
 
-func pathToWire(trace []path) wire{
+func pathToWire(trace []path) wire {
 	points := make(wire)
 
 	x := 0
@@ -95,7 +95,7 @@ func pathToWire(trace []path) wire{
 			totalDistance++
 			x += xDelta
 			y += yDelta
-			key := aoc.Point{X:int64(x), Y:int64(y)}
+			key := aoc.Point{X: int64(x), Y: int64(y)}
 			if oldVal, found := points[key]; !found || totalDistance < oldVal {
 				points[key] = totalDistance
 			}

@@ -13,7 +13,7 @@ type InputOutput interface {
 // ConstantInputOutput represents an I/O interface that always returns a constant
 // value whenever input is requested
 type ConstantInputOutput struct {
-	input int64
+	input   int64
 	Outputs []int64
 }
 
@@ -34,7 +34,7 @@ func (io *ConstantInputOutput) Reset() {
 }
 
 // NewConstantInputOutput creates a new I/O module which returns a constant input value
-func NewConstantInputOutput(input int64) *ConstantInputOutput{
+func NewConstantInputOutput(input int64) *ConstantInputOutput {
 	io := ConstantInputOutput{Outputs: []int64{}, input: input}
 	return &io
 }
