@@ -1,19 +1,33 @@
 package intcode
 
 import (
-	"../aoc"
 	"log"
 	"strconv"
 	"strings"
+
+	"../aoc"
 )
 
 // ReadIntCode reads a program consisting of IntCode instructions - comma-separated integers
-func ReadIntCode(fileName string) []int64 {
+func ReadIntCode(fileName string) []Instruction {
 	lines := aoc.ReadFileLines(fileName)
 	if len(lines) > 1 {
 		log.Fatalf("ReadIntCode expects a single line of input")
 	}
-	nums := strings.Split(lines[0], ",")
+	return parseProgram(lines[0])
+}
+
+// ReadIntCodePrograms reads a series of IntCode programs, one per line
+func ReadIntCodePrograms(fileName string) [][]Instruction {
+	programs := make([][]Instruction, 0)
+	for _, line := range aoc.ReadFileLines(fileName) {
+		programs = append(programs, parseProgram(line))
+	}
+	return programs
+}
+
+func parseProgram(line string) []Instruction {
+	nums := strings.Split(line, ",")
 	program := []int64{}
 	for _, n := range nums {
 		i, _ := strconv.ParseInt(n, 10, 64)

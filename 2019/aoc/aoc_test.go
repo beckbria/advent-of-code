@@ -33,3 +33,18 @@ func TestStopwatchReset(t *testing.T) {
 	}
 	assert.Greater(t, int64(sw2.Elapsed()), int64(sw1.Elapsed()))
 }
+
+func TestPermutation(t *testing.T) {
+	arr := []int64{1, 2, 3}
+	assert.True(t, NextPermutation(arr))
+	assert.Equal(t, []int64{1, 3, 2}, arr)
+	assert.True(t, NextPermutation(arr))
+	assert.Equal(t, []int64{2, 1, 3}, arr)
+	assert.True(t, NextPermutation(arr))
+	assert.Equal(t, []int64{2, 3, 1}, arr)
+	assert.True(t, NextPermutation(arr))
+	assert.Equal(t, []int64{3, 1, 2}, arr)
+	assert.True(t, NextPermutation(arr))
+	assert.Equal(t, []int64{3, 2, 1}, arr)
+	assert.False(t, NextPermutation(arr))
+}
