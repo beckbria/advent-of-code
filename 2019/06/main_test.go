@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Examples of program input and output from https://adventofcode.com/2019/day/3
+// Examples of program input and output from https://adventofcode.com/2019/day/6
 func TestOrbits(t *testing.T) {
 	lines := []string{
 		"COM)B",

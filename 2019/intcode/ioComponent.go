@@ -38,43 +38,44 @@ func NewConstantInputOutput(input int64) *ConstantInputOutput {
 	return &io
 }
 
-type FixedInputOutput struct {
+// StreamInputOutput represents an IO component which returns inputs from a stream until it is exhausted
+type StreamInputOutput struct {
 	inputs         []int64
 	nextInputIndex int
 	Outputs        []int64
 }
 
 // GetInput returns the provided input value
-func (io *FixedInputOutput) GetInput() int64 {
+func (io *StreamInputOutput) GetInput() int64 {
 	input := io.inputs[io.nextInputIndex]
 	io.nextInputIndex++
 	return input
 }
 
-// AddInput adds another input to the queue
-func (io *FixedInputOutput) AddInput(i int64) {
+// AppendInput adds another input to the queue
+func (io *StreamInputOutput) AppendInput(i int64) {
 	io.inputs = append(io.inputs, i)
 }
 
 // Output collects the output value into a slice for later use
-func (io *FixedInputOutput) Output(o int64) {
+func (io *StreamInputOutput) Output(o int64) {
 	io.Outputs = append(io.Outputs, o)
 }
 
 // Reset resets the output buffer
-func (io *FixedInputOutput) Reset() {
+func (io *StreamInputOutput) Reset() {
 	io.Outputs = []int64{}
 	io.nextInputIndex = 0
 }
 
 // LastOutput returns the most recent value output into the buffer
-func (io *FixedInputOutput) LastOutput() int64 {
+func (io *StreamInputOutput) LastOutput() int64 {
 	return io.Outputs[len(io.Outputs)-1]
 }
 
-// NewFixedInputOutput creates an IO component which returns a fixed series of inputs
-func NewFixedInputOutput(input []int64) *FixedInputOutput {
-	io := FixedInputOutput{Outputs: []int64{}, inputs: input, nextInputIndex: 0}
+// NewStreamInputOutput creates an IO component which returns a fixed series of inputs
+func NewStreamInputOutput(input []int64) *StreamInputOutput {
+	io := StreamInputOutput{Outputs: []int64{}, inputs: input, nextInputIndex: 0}
 	return &io
 }
 

@@ -14,19 +14,20 @@ func ReadIntCode(fileName string) []Instruction {
 	if len(lines) > 1 {
 		log.Fatalf("ReadIntCode expects a single line of input")
 	}
-	return parseProgram(lines[0])
+	return ParseProgram(lines[0])
 }
 
 // ReadIntCodePrograms reads a series of IntCode programs, one per line
-func ReadIntCodePrograms(fileName string) [][]Instruction {
+func ReadIntCodePrograms(fileName string) []Program {
 	programs := make([][]Instruction, 0)
 	for _, line := range aoc.ReadFileLines(fileName) {
-		programs = append(programs, parseProgram(line))
+		programs = append(programs, ParseProgram(line))
 	}
 	return programs
 }
 
-func parseProgram(line string) []Instruction {
+// ParseProgram reads an intcode program from a string containing comma-separated instructions
+func ParseProgram(line string) Program {
 	nums := strings.Split(line, ",")
 	program := []int64{}
 	for _, n := range nums {
