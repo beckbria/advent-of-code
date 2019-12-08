@@ -10,60 +10,34 @@ import (
 // Read a 25x6 image layered image.  Do some statistics
 // and then render the image, taking transparency into account
 
-const (
-	zero        = '0'
-	one         = '1'
-	two         = '2'
-	black       = zero
-	white       = one
-	transparent = two
-)
+const width = 25
+const height = 6
+const layerSize = width * height
+const zero = '0'
+const one = '1'
+const two = '2'
+const black = zero
+const white = one
+const transparent = two
 
 type layer struct {
-	grid [][]rune
-}
-
-func newLayer(height, width int) layer {
-	l := layer{grid: make([][]rune, height)}
-	for i := 0; i < height; i++ {
-		l.grid[i] = make([]rune, width)
-	}
-	return l
-}
-
-func readLayers(input string, height, width int) []layer {
-	layerSize := height * width
-	chars := []rune(input)
-	layers := []layer{}
-
-	for i := 0; i < len(chars)/layerSize; i++ {
-		layers = append(layers, newLayer(height, width))
-	}
-
-	for i, c := range chars {
-		l := i / layerSize
-		layerPos := i % layerSize
-		row := layerPos / width
-		col := layerPos % width
-		layers[l].grid[row][col] = c
-	}
-	return layers
+	grid [height][width]rune
 }
 
 func main() {
 	input := aoc.ReadFileLines("input.txt")[0]
 	sw := aoc.NewStopwatch()
-	layers := readLayers(input, 6, 25)
+	layers := readLayers(input)
 	fmt.Println(bestLayerScore(layers))
-	image := composeImage(layers)
+	image := parseImage(layers)
 	printImage(image)
 	fmt.Println(sw.Elapsed())
 }
 
-func composeImage(layers []layer) layer {
+func parseImage(layers []layer) layer {
 	image := layers[0]
-	for y := 0; y < len(image.grid); y++ {
-		for x := 0; x < len(image.grid[0]); x++ {
+	for y := 0; y < height; y++ {
+		for x := 0; x < width; x++ {
 			image.grid[y][x] = transparent
 			for _, l := range layers {
 				if l.grid[y][x] != transparent {
@@ -112,8 +86,22 @@ func countValues(l layer) (int, int, int) {
 	return z, o, t
 }
 
+func readLayers(input string) []layer {
+	chars := []rune(input)
+	layers := make([]layer, len(chars)/layerSize)
+
+	for i, c := range chars {
+		l := i / layerSize
+		layerPos := i % layerSize
+		row := layerPos / width
+		col := layerPos % width
+		layers[l].grid[row][col] = c
+	}
+	return layers
+}
+
 func bestLayerScore(layers []layer) int {
-	minZeroes := len(layers[0].grid)*len(layers[0].grid[0]) + 1
+	minZeroes := layerSize + 1
 	score := 0
 	for _, l := range layers {
 		z, o, t := countValues(l)
