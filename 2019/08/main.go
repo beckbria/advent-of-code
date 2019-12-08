@@ -10,34 +10,41 @@ import (
 // Read a 25x6 image layered image.  Do some statistics
 // and then render the image, taking transparency into account
 
-const width = 25
-const height = 6
-const layerSize = width * height
-const zero = '0'
-const one = '1'
-const two = '2'
-const black = zero
-const white = one
-const transparent = two
+const (
+	zero        = '0'
+	one         = '1'
+	two         = '2'
+	black       = zero
+	white       = one
+	transparent = two
+)
 
 type layer struct {
-	grid [height][width]rune
+	grid [][]rune
+}
+
+func newLayer(height, width int) *layer {
+	l := layer{grid: make([][]rune, height)}
+	for i := range l.grid {
+		l.grid[i] = make([]rune, width)
+	}
+	return &l
 }
 
 func main() {
 	input := aoc.ReadFileLines("input.txt")[0]
 	sw := aoc.NewStopwatch()
-	layers := readLayers(input)
+	layers := readLayers(input, 6, 25)
 	fmt.Println(bestLayerScore(layers))
-	image := parseImage(layers)
+	image := composeImage(layers)
 	printImage(image)
 	fmt.Println(sw.Elapsed())
 }
 
-func parseImage(layers []layer) layer {
-	image := layers[0]
-	for y := 0; y < height; y++ {
-		for x := 0; x < width; x++ {
+func composeImage(layers []*layer) *layer {
+	image := newLayer(len(layers[0].grid), len(layers[0].grid[0]))
+	for y := 0; y < len(image.grid); y++ {
+		for x := 0; x < len(image.grid[0]); x++ {
 			image.grid[y][x] = transparent
 			for _, l := range layers {
 				if l.grid[y][x] != transparent {
@@ -51,12 +58,12 @@ func parseImage(layers []layer) layer {
 	return image
 }
 
-func printImage(image layer) {
+func printImage(image *layer) {
 	for _, row := range image.grid {
 		for _, c := range row {
 			switch c {
 			case white:
-				fmt.Print("X")
+				fmt.Print("#")
 			case black:
 				fmt.Print(" ")
 			default:
@@ -67,7 +74,7 @@ func printImage(image layer) {
 	}
 }
 
-func countValues(l layer) (int, int, int) {
+func countValues(l *layer) (int, int, int) {
 	z := 0
 	o := 0
 	t := 0
@@ -86,9 +93,13 @@ func countValues(l layer) (int, int, int) {
 	return z, o, t
 }
 
-func readLayers(input string) []layer {
+func readLayers(input string, height, width int) []*layer {
+	layerSize := height * width
 	chars := []rune(input)
-	layers := make([]layer, len(chars)/layerSize)
+	layers := make([]*layer, len(chars)/layerSize)
+	for i := range layers {
+		layers[i] = newLayer(height, width)
+	}
 
 	for i, c := range chars {
 		l := i / layerSize
@@ -100,8 +111,8 @@ func readLayers(input string) []layer {
 	return layers
 }
 
-func bestLayerScore(layers []layer) int {
-	minZeroes := layerSize + 1
+func bestLayerScore(layers []*layer) int {
+	minZeroes := len(layers[0].grid)*len(layers[0].grid[0]) + 1
 	score := 0
 	for _, l := range layers {
 		z, o, t := countValues(l)
