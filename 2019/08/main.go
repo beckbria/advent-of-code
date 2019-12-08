@@ -23,6 +23,17 @@ type layer struct {
 	grid [][]rune
 }
 
+func (l *layer) height() int {
+	return len(l.grid)
+}
+
+func (l *layer) width() int {
+	if l.height() < 1 {
+		return 0
+	}
+	return len(l.grid[0])
+}
+
 func newLayer(height, width int) *layer {
 	l := layer{grid: make([][]rune, height)}
 	for i := range l.grid {
@@ -42,9 +53,9 @@ func main() {
 }
 
 func composeImage(layers []*layer) *layer {
-	image := newLayer(len(layers[0].grid), len(layers[0].grid[0]))
-	for y := 0; y < len(image.grid); y++ {
-		for x := 0; x < len(image.grid[0]); x++ {
+	image := newLayer(layers[0].height(), layers[0].width())
+	for y := 0; y < image.height(); y++ {
+		for x := 0; x < image.width(); x++ {
 			image.grid[y][x] = transparent
 			for _, l := range layers {
 				if l.grid[y][x] != transparent {
@@ -112,7 +123,7 @@ func readLayers(input string, height, width int) []*layer {
 }
 
 func bestLayerScore(layers []*layer) int {
-	minZeroes := len(layers[0].grid)*len(layers[0].grid[0]) + 1
+	minZeroes := layers[0].height()*layers[0].width() + 1
 	score := 0
 	for _, l := range layers {
 		z, o, t := countValues(l)
