@@ -122,6 +122,34 @@ func TestLessThanImmediate(t *testing.T) {
 	assert.Equal(t, io.Outputs, []int64{1})
 }
 
+// Examples of programs from https://adventofcode.com/2019/day/9
+func TestRelativeMode1(t *testing.T) {
+	program := Program{109, 1, 204, -1, 1001, 100, 1, 100, 1008, 100, 16, 101, 1006, 101, 0, 99}
+	io := NewConstantInputOutput(0)
+	c := NewComputer(program)
+	c.Io = io
+	c.Run()
+	assert.Equal(t, program, io.Outputs)
+}
+
+func TestRelativeMode2(t *testing.T) {
+	program := Program{1102, 34915192, 34915192, 7, 4, 7, 99, 0}
+	io := NewConstantInputOutput(0)
+	c := NewComputer(program)
+	c.Io = io
+	c.Run()
+	assert.Equal(t, io.Outputs, []int64{1219070632396864})
+}
+
+func TestRelativeMode3(t *testing.T) {
+	program := Program{104, 1125899906842624, 99}
+	io := NewConstantInputOutput(0)
+	c := NewComputer(program)
+	c.Io = io
+	c.Run()
+	assert.Equal(t, io.Outputs, []int64{1125899906842624})
+}
+
 // Other test cases
 func TestConstantInputOutput(t *testing.T) {
 	program := Program{3, 0, 4, 0, 99}

@@ -25,6 +25,8 @@ const (
 	PmPosition ParameterMode = 0
 	// PmImmediate indicates that a parameter contains an immediate value
 	PmImmediate ParameterMode = 1
+	// PmRelative indicates that a parameter contains a value relative to the relative base
+	PmRelative ParameterMode = 2
 )
 
 // Computer represents an IntCode computer, capable of simulating instructions.  Internals such
@@ -43,6 +45,8 @@ type Computer struct {
 	crashed bool
 	// The IO component
 	Io InputOutput
+	// The Relative Base, used for relative mode instructions
+	RelativeBase Instruction
 }
 
 // NewComputer creates a new computer which has loaded the provided program
@@ -63,6 +67,7 @@ func (c *Computer) LoadProgram(program Program) {
 		c.Memory[Address(idx)] = val
 	}
 	c.IP = 0
+	c.RelativeBase = 0
 	c.running = true
 	c.crashed = false
 
@@ -211,6 +216,8 @@ func (c *Computer) Step() bool {
 					fmt.Println("0")
 				}
 			}
+		case OpAdjustRelativeBase:
+			c.RelativeBase += vals[0]
 		default:
 			fmt.Printf("Unexpected instruction: %d\n", op)
 		}
@@ -225,19 +232,9 @@ func (c *Computer) Step() bool {
 	return c.running
 }
 
-// validAddress indicates whether a memory address is valid
-func (c *Computer) validAddress(a Address) bool {
-	_, exists := c.Memory[a]
-	return exists
-}
-
 // readInstruction parses the opcode at the instruction pointer and its parameters.
 // Returns opcode, parameter values, parameter modes, memory addresses of parameters, and parameter debug strings for printing
 func (c *Computer) readInstruction() (Instruction, []Instruction, []ParameterMode, []Address, []string) {
-	if !c.validAddress(c.IP) {
-		c.crash()
-		return -1, nil, nil, nil, nil
-	}
 	opCode := c.Memory[c.IP]
 	op := opCode % 100
 	argc := argCount(op)
@@ -254,24 +251,18 @@ func (c *Computer) readInstruction() (Instruction, []Instruction, []ParameterMod
 		modes = append(modes, mode)
 		arg := c.IP + i + 1
 		args = append(args, arg)
-		if !c.validAddress(arg) {
-			c.crash()
-			return -1, nil, nil, nil, nil
-		}
 		val := c.Memory[arg]
 		debugVal := ""
 		if debug {
 			debugVal = fmt.Sprintf("%d", val)
 		}
 		if mode == PmPosition {
-			if !c.validAddress(val) {
-				c.crash()
-				return -1, nil, nil, nil, nil
-			}
 			if debug {
 				debugVal = fmt.Sprintf("i%d(%d)", val, c.Memory[val])
 			}
 			val = c.Memory[val]
+		} else if mode == PmRelative {
+			val += c.RelativeBase
 		}
 		vals = append(vals, val)
 		if debug {

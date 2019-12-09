@@ -30,6 +30,8 @@ const (
 	OpLessThan Instruction = 7
 	// OpEquals stores 1 in the third parameter if the first parameter is equal to the second parameter, otherwise 0
 	OpEquals Instruction = 8
+	// OpAdjustRelativeBase adjusts the relative base by the value of its parameter
+	OpAdjustRelativeBase Instruction = 9
 	// OpTerminate immediately halts the program
 	OpTerminate Instruction = 99
 )
@@ -41,7 +43,7 @@ func argCount(i Instruction) int64 {
 		return 3
 	case OpJumpIfTrue, OpJumpIfFalse:
 		return 2
-	case OpStore, OpOutput:
+	case OpStore, OpOutput, OpAdjustRelativeBase:
 		return 1
 	case OpTerminate:
 		return 0
