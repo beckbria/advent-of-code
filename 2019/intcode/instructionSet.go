@@ -12,6 +12,18 @@ type Instruction = int64
 // 0 and consist of a series of numbers representing the instructions/initial memory values
 type Program = []Instruction
 
+// ParameterMode represents the mode of an instruction parameter, controlling how it is read
+type ParameterMode = int64
+
+const (
+	// PmPosition indicates that a parameter contains a memory address to be read from
+	PmPosition ParameterMode = 0
+	// PmImmediate indicates that a parameter contains an immediate value
+	PmImmediate ParameterMode = 1
+	// PmRelative indicates that a parameter contains a value relative to the relative base
+	PmRelative ParameterMode = 2
+)
+
 // Opcodes in the IntCode architecture
 const (
 	// OpAdd reads from two parameter and stores their sum in the third parameter

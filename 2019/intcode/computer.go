@@ -2,6 +2,7 @@ package intcode
 
 import (
 	"fmt"
+	"log"
 	"sort"
 	"strconv"
 
@@ -15,18 +16,6 @@ import (
 const (
 	debug                   = false
 	debugDumpMemoryEachStep = debug && false
-)
-
-// ParameterMode represents the mode of an instruction parameter, controlling how it is read
-type ParameterMode = int64
-
-const (
-	// PmPosition indicates that a parameter contains a memory address to be read from
-	PmPosition ParameterMode = 0
-	// PmImmediate indicates that a parameter contains an immediate value
-	PmImmediate ParameterMode = 1
-	// PmRelative indicates that a parameter contains a value relative to the relative base
-	PmRelative ParameterMode = 2
 )
 
 // Computer represents an IntCode computer, capable of simulating instructions.  Internals such
@@ -113,38 +102,64 @@ func (c *Computer) crash() {
 	}
 }
 
+// address modifies an address parameter to account for its mode.
+// It returns the updated value and (if debugging is enabled) a
+// debug representation of how the parameter was read
+func (c *Computer) address(addr Address, mode ParameterMode) (Address, string) {
+	target := c.Memory[addr]
+	debugTarget := ""
+	if mode == PmRelative {
+		if debug {
+			debugTarget = fmt.Sprintf("i[%d+%d]", target, c.RelativeBase)
+		}
+		target += c.RelativeBase
+	} else if debug {
+		debugTarget = fmt.Sprintf("i[%d]", target)
+	}
+	return target, debugTarget
+}
+
 // Step runs a single instruction in the program.  Returns true if the program is still running and false
 // if it has ended (due to termination or crash)
 func (c *Computer) Step() bool {
 	if c.running {
 		if debug {
-			fmt.Printf("IP %d: ", c.IP)
+			fmt.Printf("IP %d\t", c.IP)
 		}
 
-		op, vals, _, args, debugVals := c.readInstruction()
+		op, rawOp, vals, modes, args, debugVals := c.readInstruction()
 		if c.DidCrash() {
 			return false
+		}
+		if debug {
+			fmt.Printf("%d\t", rawOp)
+			for i := 0; i < 4; i++ {
+				if i < len(args) {
+					fmt.Print(c.Memory[args[i]])
+				}
+				fmt.Print("\t")
+			}
 		}
 		modifiedIP := false
 
 		switch op {
 		case OpAdd:
-			target := c.Memory[args[2]]
+			target, debugTarget := c.address(args[2], modes[2])
 			if debug {
-				fmt.Printf("i%d := %s + %s\n", target, debugVals[0], debugVals[1])
+				fmt.Printf("%s := %s + %s\n", debugTarget, debugVals[0], debugVals[1])
 			}
 			c.Memory[target] = vals[0] + vals[1]
 		case OpMultiply:
-			target := c.Memory[args[2]]
+			target, debugTarget := c.address(args[2], modes[2])
 			if debug {
-				fmt.Printf("i%d := %s * %s\n", target, debugVals[0], debugVals[1])
+				fmt.Printf("%s := %s * %s\n", debugTarget, debugVals[0], debugVals[1])
 			}
 			c.Memory[target] = vals[0] * vals[1]
 		case OpStore:
-			target := c.Memory[args[0]]
 			input := c.Io.GetInput()
+			target, debugTarget := c.address(args[0], modes[0])
 			if debug {
-				fmt.Printf("i%d := Input(%d)\n", target, input)
+				fmt.Printf("%s := Input(%d)\n", debugTarget, input)
 			}
 			c.Memory[target] = input
 		case OpOutput:
@@ -185,9 +200,9 @@ func (c *Computer) Step() bool {
 				fmt.Println("No")
 			}
 		case OpLessThan:
-			target := c.Memory[args[2]]
+			target, debugTarget := c.address(args[2], modes[2])
 			if debug {
-				fmt.Printf("i%d := %s > %s ? 1 : 0 => ", target, debugVals[0], debugVals[1])
+				fmt.Printf("%s := %s < %s ? 1 : 0 => ", debugTarget, debugVals[0], debugVals[1])
 			}
 			if vals[0] < vals[1] {
 				c.Memory[target] = 1
@@ -201,9 +216,9 @@ func (c *Computer) Step() bool {
 				}
 			}
 		case OpEquals:
-			target := c.Memory[args[2]]
+			target, debugTarget := c.address(args[2], modes[2])
 			if debug {
-				fmt.Printf("i%d := %s == %s ? 1 : 0 => ", target, debugVals[0], debugVals[1])
+				fmt.Printf("%s := %s == %s ? 1 : 0 => ", debugTarget, debugVals[0], debugVals[1])
 			}
 			if vals[0] == vals[1] {
 				c.Memory[target] = 1
@@ -217,6 +232,9 @@ func (c *Computer) Step() bool {
 				}
 			}
 		case OpAdjustRelativeBase:
+			if debug {
+				fmt.Printf("RelativeBase += %s (%d)\n", debugVals[0], c.RelativeBase+vals[0])
+			}
 			c.RelativeBase += vals[0]
 		default:
 			fmt.Printf("Unexpected instruction: %d\n", op)
@@ -233,8 +251,8 @@ func (c *Computer) Step() bool {
 }
 
 // readInstruction parses the opcode at the instruction pointer and its parameters.
-// Returns opcode, parameter values, parameter modes, memory addresses of parameters, and parameter debug strings for printing
-func (c *Computer) readInstruction() (Instruction, []Instruction, []ParameterMode, []Address, []string) {
+// Returns opcode, raw opcode, parameter values, parameter modes, memory addresses of parameters, and parameter debug strings for printing
+func (c *Computer) readInstruction() (Instruction, Instruction, []Instruction, []ParameterMode, []Address, []string) {
 	opCode := c.Memory[c.IP]
 	op := opCode % 100
 	argc := argCount(op)
@@ -253,24 +271,32 @@ func (c *Computer) readInstruction() (Instruction, []Instruction, []ParameterMod
 		args = append(args, arg)
 		val := c.Memory[arg]
 		debugVal := ""
-		if debug {
-			debugVal = fmt.Sprintf("%d", val)
-		}
-		if mode == PmPosition {
+		switch mode {
+		case PmImmediate:
+			if debug {
+				debugVal = fmt.Sprintf("%d", val)
+			}
+		case PmPosition:
 			if debug {
 				debugVal = fmt.Sprintf("i%d(%d)", val, c.Memory[val])
 			}
 			val = c.Memory[val]
-		} else if mode == PmRelative {
-			val += c.RelativeBase
+		case PmRelative:
+			if debug {
+				debugVal = fmt.Sprintf("i[%d+%d](%d)", c.RelativeBase, val, c.Memory[val+c.RelativeBase])
+			}
+			val = c.Memory[val+c.RelativeBase]
+		default:
+			log.Fatalf("Unexpected mode: %d", mode)
 		}
+
 		vals = append(vals, val)
 		if debug {
 			debugVals = append(debugVals, debugVal)
 		}
 	}
 
-	return op, vals, modes, args, debugVals
+	return op, opCode, vals, modes, args, debugVals
 }
 
 // programMemoryContents returns a string containing the contents of the instructions corresponding to the program

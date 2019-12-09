@@ -65,13 +65,13 @@ func TestEqualPosition(t *testing.T) {
 	c := NewComputer(program)
 	c.Io = io
 	c.Run()
-	assert.Equal(t, io.Outputs, []int64{1})
+	assert.Equal(t, []int64{1}, io.Outputs)
 
 	c.Reset()
 	io = NewConstantInputOutput(5)
 	c.Io = io
 	c.Run()
-	assert.Equal(t, io.Outputs, []int64{0})
+	assert.Equal(t, []int64{0}, io.Outputs)
 }
 
 func TestEqualImmediate(t *testing.T) {
@@ -81,13 +81,13 @@ func TestEqualImmediate(t *testing.T) {
 	c := NewComputer(program)
 	c.Io = io
 	c.Run()
-	assert.Equal(t, io.Outputs, []int64{1})
+	assert.Equal(t, []int64{1}, io.Outputs)
 
 	c.Reset()
 	io = NewConstantInputOutput(5)
 	c.Io = io
 	c.Run()
-	assert.Equal(t, io.Outputs, []int64{0})
+	assert.Equal(t, []int64{0}, io.Outputs)
 }
 
 func TestLessThanPosition(t *testing.T) {
@@ -97,13 +97,13 @@ func TestLessThanPosition(t *testing.T) {
 	c := NewComputer(program)
 	c.Io = io
 	c.Run()
-	assert.Equal(t, io.Outputs, []int64{0})
+	assert.Equal(t, []int64{0}, io.Outputs)
 
 	c.Reset()
 	io = NewConstantInputOutput(5)
 	c.Io = io
 	c.Run()
-	assert.Equal(t, io.Outputs, []int64{1})
+	assert.Equal(t, []int64{1}, io.Outputs)
 }
 
 func TestLessThanImmediate(t *testing.T) {
@@ -113,13 +113,13 @@ func TestLessThanImmediate(t *testing.T) {
 	c := NewComputer(program)
 	c.Io = io
 	c.Run()
-	assert.Equal(t, io.Outputs, []int64{0})
+	assert.Equal(t, []int64{0}, io.Outputs)
 
 	c.Reset()
 	io = NewConstantInputOutput(5)
 	c.Io = io
 	c.Run()
-	assert.Equal(t, io.Outputs, []int64{1})
+	assert.Equal(t, []int64{1}, io.Outputs)
 }
 
 // Examples of programs from https://adventofcode.com/2019/day/9
@@ -138,7 +138,7 @@ func TestRelativeMode2(t *testing.T) {
 	c := NewComputer(program)
 	c.Io = io
 	c.Run()
-	assert.Equal(t, io.Outputs, []int64{1219070632396864})
+	assert.Equal(t, []int64{1219070632396864}, io.Outputs)
 }
 
 func TestRelativeMode3(t *testing.T) {
@@ -147,7 +147,7 @@ func TestRelativeMode3(t *testing.T) {
 	c := NewComputer(program)
 	c.Io = io
 	c.Run()
-	assert.Equal(t, io.Outputs, []int64{1125899906842624})
+	assert.Equal(t, []int64{1125899906842624}, io.Outputs)
 }
 
 // Other test cases
@@ -157,7 +157,7 @@ func TestConstantInputOutput(t *testing.T) {
 	c := NewComputer(program)
 	c.Io = io
 	c.Run()
-	assert.Equal(t, io.Outputs, []int64{5})
+	assert.Equal(t, []int64{5}, io.Outputs)
 }
 
 // Generates a map representation of a program to compare memory to
