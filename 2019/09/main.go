@@ -8,6 +8,7 @@ import (
 )
 
 // https://adventofcode.com/2019/day/9
+// Add a new parameter mode to the intcode computer.  Run a new program.
 
 func main() {
 	program := intcode.ReadIntCode("input.txt")

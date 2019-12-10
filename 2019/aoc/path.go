@@ -1,5 +1,7 @@
 package aoc
 
+import "math"
+
 // Point represents a point in 2D space
 type Point struct {
 	X int64
@@ -7,8 +9,20 @@ type Point struct {
 }
 
 // ManhattanDistance returns the manhattan distance between tow points
-func (a *Point) ManhattanDistance(b Point) int64 {
+func (a *Point) ManhattanDistance(b *Point) int64 {
 	return Abs(a.X-b.X) + Abs(a.Y-b.Y)
+}
+
+// SlopeTo finds the slope of a line from one Point to another
+func (a *Point) SlopeTo(to *Point) Fraction {
+	run := to.X - a.X
+	rise := to.Y - a.Y
+	return NewFraction(rise, run)
+}
+
+// Equals returns true if two points are equal
+func (a *Point) Equals(b *Point) bool {
+	return a.X == b.X && a.Y == b.Y
 }
 
 // Point3 represents a point in 3D space
@@ -51,4 +65,42 @@ func (a *Rectangle) Intersects(b *Rectangle) bool {
 	//return !((a.Left > b.Right) || (a.Right < b.Left) || (a.Top > b.Bottom) || (a.Bottom < b.Top))
 	i := a.Intersection(b)
 	return !i.IsEmpty()
+}
+
+// SameSlope returns true if the two slopes (in rise/run format) are equal
+func SameSlope(a, b *Fraction) bool {
+	if a.Numerator == 0 && b.Numerator == 0 {
+		// Horizontal
+		return (a.Denominator < 0) == (b.Denominator < 0)
+	}
+
+	if a.Denominator == 0 && b.Denominator == 0 {
+		// Vertical
+		return (a.Numerator < 0) == (b.Numerator < 0)
+	}
+
+	return a.Equals(b)
+}
+
+// SlopeToRadians converts a slope to the number of radians corresponding to that angle.
+// As is traditional in math, 0 degrees is to the right, Pi/2 is straight up, Pi is to the left, and 270 is straight down
+func SlopeToRadians(s *Fraction) float64 {
+	if s.Denominator == 0 {
+		if s.Numerator >= 0 {
+			return PiOver2
+		} else {
+			return 3 * PiOver2
+		}
+	}
+
+	if s.Numerator == 0 {
+		if s.Denominator >= 0 {
+			return 2 * math.Pi
+		} else {
+			return math.Pi
+		}
+	}
+
+	// Now that we've got the pesky division by zero risks out of the way, this becomes a simple arctangent
+	return math.Atan2(float64(s.Numerator), float64(s.Denominator))
 }
