@@ -55,6 +55,8 @@ func main() {
 	pt, count, _ := bestMonitoringStation(m)
 	// Part 1
 	fmt.Println(count)
+	fmt.Println(sw.Elapsed())
+	sw.Reset()
 	// Part 2
 	a := findByDestructionOrder(m, 200, &pt)
 	fmt.Println(a.X*100 + a.Y)
