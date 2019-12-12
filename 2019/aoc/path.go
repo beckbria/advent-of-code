@@ -33,7 +33,7 @@ type Point3 struct {
 }
 
 // ManhattanDistance returns the manhattan distance between tow points
-func (a *Point3) ManhattanDistance(b Point3) int64 {
+func (a *Point3) ManhattanDistance(b *Point3) int64 {
 	return Abs(a.X-b.X) + Abs(a.Y-b.Y) + Abs(a.Z-b.Z)
 }
 

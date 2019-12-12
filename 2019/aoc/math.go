@@ -115,6 +115,11 @@ func Gcd(x, y int64) int64 {
 	return x
 }
 
+// Lcm returns the least common multiple
+func Lcm(x, y int64) int64 {
+	return (x * y) / Gcd(x, y)
+}
+
 // Fraction represents a fraction with integer numerator and denominator
 type Fraction struct {
 	Numerator, Denominator int64
