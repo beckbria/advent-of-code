@@ -52,10 +52,10 @@ func countBlocks(p intcode.Program) int64 {
 }
 
 func finalGameScore(p intcode.Program) int64 {
-	// Insert tokens
-	p[0] = 2
 	// Fire up the game
 	c := intcode.NewComputer(p)
+	// Insert tokens
+	c.Memory[0] = 2
 	io := newGameIo([]int64{})
 	c.Io = io
 	// Play to completion
