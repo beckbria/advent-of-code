@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// Examples of program input and output from https://adventofcode.com/2019/day/10
+// Examples of program input and output from https://adventofcode.com/2019/day/12
 func TestGravity(t *testing.T) {
 	ms := readMoons([]string{
 		"<x=-1, y=0, z=2>",
