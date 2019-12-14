@@ -7,7 +7,7 @@ import (
 )
 
 // Examples of program input and output from https://adventofcode.com/2019/day/14
-func TestConvert1(t *testing.T) {
+func TestMinimumRequired1(t *testing.T) {
 	input := []string{
 		"9 ORE => 2 A",
 		"8 ORE => 3 B",
@@ -17,10 +17,10 @@ func TestConvert1(t *testing.T) {
 		"4 C, 1 A => 1 CA",
 		"2 AB, 3 BC, 4 CA => 1 FUEL"}
 	f := readFormulas(input)
-	assert.Equal(t, int64(165), f.convert("ORE", "FUEL"))
+	assert.Equal(t, int64(165), f.minimumRequired("ORE", "FUEL", 1))
 }
 
-func TestConvert2(t *testing.T) {
+func TestMinimumRequired2(t *testing.T) {
 	input := []string{
 		"157 ORE => 5 NZVS",
 		"165 ORE => 6 DCFZ",
@@ -32,10 +32,10 @@ func TestConvert2(t *testing.T) {
 		"165 ORE => 2 GPVTF",
 		"3 DCFZ, 7 NZVS, 5 HKGWZ, 10 PSHF => 8 KHKGT"}
 	f := readFormulas(input)
-	assert.Equal(t, int64(13312), f.convert("ORE", "FUEL"))
+	assert.Equal(t, int64(13312), f.minimumRequired("ORE", "FUEL", 1))
 }
 
-func TestConvert3(t *testing.T) {
+func TestMinimumRequired3(t *testing.T) {
 	input := []string{
 		"2 VPVL, 7 FWMGM, 2 CXFTF, 11 MNCFX => 1 STKFG",
 		"17 NVRVD, 3 JNWZP => 8 VPVL",
@@ -50,10 +50,10 @@ func TestConvert3(t *testing.T) {
 		"1 VJHF, 6 MNCFX => 4 RFSQX",
 		"176 ORE => 6 VJHF"}
 	f := readFormulas(input)
-	assert.Equal(t, int64(180697), f.convert("ORE", "FUEL"))
+	assert.Equal(t, int64(180697), f.minimumRequired("ORE", "FUEL", 1))
 }
 
-func TestConvert4(t *testing.T) {
+func TestMinimumRequired4(t *testing.T) {
 	input := []string{
 		"171 ORE => 8 CNZTR",
 		"7 ZLQW, 3 BMBT, 9 XCVML, 26 XMNCP, 1 WPTQ, 2 MZWV, 1 RJRHP => 4 PLWSL",
@@ -73,5 +73,5 @@ func TestConvert4(t *testing.T) {
 		"7 XCVML => 6 RJRHP",
 		"5 BHXH, 4 VRPVC => 5 LTCX"}
 	f := readFormulas(input)
-	assert.Equal(t, int64(2210736), f.convert("ORE", "FUEL"))
+	assert.Equal(t, int64(2210736), f.minimumRequired("ORE", "FUEL", 1))
 }
