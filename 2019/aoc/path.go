@@ -25,6 +25,16 @@ func (a *Point) Equals(b *Point) bool {
 	return a.X == b.X && a.Y == b.Y
 }
 
+// Neighbors returns a list of cells immediately adjacent to a point
+func (pt *Point) Neighbors() []Point {
+	return []Point{
+		Point{X: pt.X - 1, Y: pt.Y},
+		Point{X: pt.X + 1, Y: pt.Y},
+		Point{X: pt.X, Y: pt.Y - 1},
+		Point{X: pt.X, Y: pt.Y + 1},
+	}
+}
+
 // Point3 represents a point in 3D space
 type Point3 struct {
 	X int64
@@ -62,7 +72,6 @@ func (a *Rectangle) Intersection(b *Rectangle) Rectangle {
 
 // Intersects returns true if a rectangle intersects another
 func (a *Rectangle) Intersects(b *Rectangle) bool {
-	//return !((a.Left > b.Right) || (a.Right < b.Left) || (a.Top > b.Bottom) || (a.Bottom < b.Top))
 	i := a.Intersection(b)
 	return !i.IsEmpty()
 }

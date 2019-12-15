@@ -16,14 +16,14 @@ func main() {
 	sw := aoc.NewStopwatch()
 	// Part 1
 	m := buildMap(program)
-	fmt.Println(m.distanceToOxygen(&home) - 1) // Subtract 1 since you're already at the start line
-	fmt.Println(sw.Elapsed())
 	//m.print()
+	fmt.Println(m.distanceToOxygen(&home))
+	fmt.Println(sw.Elapsed())
 
 	// Part 2
 	sw.Reset()
 	m = buildMap(program)
-	fmt.Println(m.timeToOxygenation() - 1)
+	fmt.Println(m.timeToOxygenation())
 	fmt.Println(sw.Elapsed())
 }
 
@@ -34,6 +34,7 @@ const (
 	west  int64 = 3
 	east  int64 = 4
 
+	// The statuses returned by the drone
 	hitWall     int64 = 0
 	moved       int64 = 1
 	foundOxygen int64 = 2
@@ -84,6 +85,7 @@ func aocDirToDir(dir aoc.Direction) int64 {
 	}
 }
 
+// cell represents a single room in the maze
 type cell struct {
 	contents  rune
 	distance  int64
@@ -98,50 +100,37 @@ func newCell(c rune) *cell {
 
 type cellMap map[aoc.Point]*cell
 
-func (m cellMap) cellsWithUnexploredNeighbors() []aoc.Point {
-	u := []aoc.Point{}
-	for pt, c := range m {
-		if c.contents == wall {
-			continue
-		}
-		unexplored := false
-		for _, n := range neighbors(&pt) {
-			if !m.contains(&n) {
-				// We haven't mapped this neighbor yet
-				unexplored = true
-				break
-			}
-		}
-		if unexplored {
-			u = append(u, pt)
-		}
-	}
-
-	return u
-}
-
-func neighbors(pt *aoc.Point) []aoc.Point {
-	return []aoc.Point{
-		aoc.Point{X: pt.X - 1, Y: pt.Y},
-		aoc.Point{X: pt.X + 1, Y: pt.Y},
-		aoc.Point{X: pt.X, Y: pt.Y - 1},
-		aoc.Point{X: pt.X, Y: pt.Y + 1},
-	}
-}
-
-func (m cellMap) distanceToOxygen(start *aoc.Point) int {
+// oxygenLocation finds a point in the maze containing oxygen
+func (m cellMap) oxygenLocation() aoc.Point {
 	for pt, c := range m {
 		if c.contents == oxygen {
-			return len(m.shortestPath(start, &pt))
+			return pt
 		}
 	}
-	return -1
+	return aoc.Point{X: -1, Y: -1}
 }
 
-func (m cellMap) timeToOxygenation() int {
-	return -1
+// distanceToOxygen finds the distance to the oxygen from a location
+func (m cellMap) distanceToOxygen(start *aoc.Point) int64 {
+	pt := m.oxygenLocation()
+	m.findAllShortestPaths(start, &pt)
+	return m[pt].distance
 }
 
+// timeToOxygenation indicates how much time will pass before oxygen permeates the entire maze
+func (m cellMap) timeToOxygenation() int64 {
+	pt := m.oxygenLocation()
+	m.findAllShortestPaths(&pt, nil)
+	maxDistance := int64(0)
+	for _, c := range m {
+		if c.distance != infiniteDistance {
+			maxDistance = aoc.Max(maxDistance, c.distance)
+		}
+	}
+	return maxDistance
+}
+
+// print draws the map to stdout
 func (m cellMap) print() {
 	minX := infiniteDistance
 	minY := infiniteDistance
@@ -169,6 +158,7 @@ func (m cellMap) print() {
 	}
 }
 
+// shortestPath will return the shortest path between two points
 func (m cellMap) shortestPath(start, end *aoc.Point) []aoc.Point {
 	if debug {
 		fmt.Print("Navigating from ")
@@ -177,6 +167,36 @@ func (m cellMap) shortestPath(start, end *aoc.Point) []aoc.Point {
 		fmt.Println(end)
 	}
 
+	fakeEnd := false
+	if !m.contains(end) {
+		// We're navigating to an unexplored point; temporarily insert it into the map so we can navigate to it
+		m[*end] = newCell(hall)
+		fakeEnd = true
+	}
+
+	m.findAllShortestPaths(start, end)
+
+	// Walk the path back to the start
+	path := []aoc.Point{}
+	pt := *end
+	for pt != invalidPoint {
+		path = append(path, pt)
+		pt = m[pt].preceding
+	}
+	if debug {
+		fmt.Print("Path: ")
+		fmt.Println(path)
+	}
+	if fakeEnd {
+		delete(m, *end)
+	}
+	return path
+}
+
+// findAllShortestPaths will find the shortest path from a start location to all halls in the
+// map.  If end is non-nil, it will return early once it has found the shortest path to the end
+// location
+func (m cellMap) findAllShortestPaths(start, end *aoc.Point) {
 	for _, c := range m {
 		c.distance = infiniteDistance
 		c.visited = false
@@ -185,45 +205,26 @@ func (m cellMap) shortestPath(start, end *aoc.Point) []aoc.Point {
 	m[*start].distance = 0
 	m[*start].preceding = invalidPoint
 
-	fakeEnd := false
-	if !m.contains(end) {
-		// We're navigating to an unexplored point; temporarily insert it into the map so we can navigate to it
-		m[*end] = newCell(hall)
-		fakeEnd = true
-	}
-
 	for true {
 		// Find the closest unvisited point
 		var bestPoint aoc.Point
 		var bestCell *cell
 		for pt, c := range m {
-			if !c.visited && (bestCell == nil || c.distance < bestCell.distance) {
+			if !c.visited && c.contents != wall && (bestCell == nil || c.distance < bestCell.distance) {
 				bestPoint = pt
 				bestCell = c
 			}
 		}
 
-		bestCell.visited = true
-		if bestPoint == *end {
-			// Walk the path back to the start
-			path := []aoc.Point{}
-			for bestPoint != invalidPoint {
-				path = append(path, bestPoint)
-				bestPoint = m[bestPoint].preceding
-			}
-			if debug {
-				fmt.Print("Path: ")
-				fmt.Println(path)
-			}
-			if fakeEnd {
-				delete(m, *end)
-			}
-			return path
+		if bestCell == nil || (end != nil && bestPoint == *end) {
+			// We've visited all points
+			return
 		}
 
-		// Otherwise, add its neighbors
+		bestCell.visited = true
+		// Add its neighbors
 		d := bestCell.distance + 1
-		for _, n := range neighbors(&bestPoint) {
+		for _, n := range bestPoint.Neighbors() {
 			if c, found := m[n]; found && c.contents != wall {
 				if d < c.distance {
 					c.distance = d
@@ -232,37 +233,15 @@ func (m cellMap) shortestPath(start, end *aoc.Point) []aoc.Point {
 			}
 		}
 	}
-
-	return []aoc.Point{}
 }
 
-// returns true if the action caused the unit to move
-func (m cellMap) populate(pos aoc.Point, response int64) bool {
-
-	if debug {
-		fmt.Printf("Tried to move to [%d,%d], got %d\n", pos.X, pos.Y, response)
-	}
-
-	switch response {
-	case hitWall:
-		m[pos] = newCell(wall)
-		return false
-	case foundOxygen:
-		m[pos] = newCell(oxygen)
-		return true
-	case moved:
-		m[pos] = newCell(hall)
-		return true
-	}
-	log.Fatalf("Unexpected response: %d", response)
-	return false
-}
-
+// contains returns true if the map contains the specified point
 func (m cellMap) contains(pt *aoc.Point) bool {
 	_, found := m[*pt]
 	return found
 }
 
+// mazeRunner represents a class that interacts with an intcode program to explore and map a maze
 type mazeRunner struct {
 	c         intcode.Computer
 	io        *intcode.StreamInputOutput
@@ -271,6 +250,7 @@ type mazeRunner struct {
 	toExplore []aoc.Point
 }
 
+// newMazeRunner creates a new MazeRunner object for mapping and searching a maze
 func newMazeRunner(p intcode.Program) *mazeRunner {
 	mr := mazeRunner{
 		c:         intcode.NewComputer(p),
@@ -287,6 +267,7 @@ func newMazeRunner(p intcode.Program) *mazeRunner {
 	return &mr
 }
 
+// moveTo moves the drone to the specified location in the maze
 func (mr *mazeRunner) moveTo(pt *aoc.Point) {
 	if *pt != mr.pos {
 		path := mr.m.shortestPath(&mr.pos, pt)
@@ -319,6 +300,8 @@ func (mr *mazeRunner) moveTo(pt *aoc.Point) {
 	}
 }
 
+// probe attempts to move one space in a direction.  If it fails, it records the location of a wall.  If
+// it succeeds, it notes the location for future exploration and backtracks
 func (mr *mazeRunner) probe(dir int64) {
 	aocD := dirToAocDir(dir)
 	pt := aoc.Point{X: mr.pos.X + aocD.DeltaX(), Y: mr.pos.Y + aocD.DeltaY()}
@@ -331,7 +314,7 @@ func (mr *mazeRunner) probe(dir int64) {
 		mr.c.RunToNextInput()
 		if mr.io.LastOutput() != hitWall {
 			// We should look at this cell later
-			mr.toExplore = append(mr.toExplore, pt)
+			mr.toExplore = append([]aoc.Point{pt}, mr.toExplore...)
 			if debug {
 				fmt.Print(": Should Explore\n")
 			}
@@ -351,6 +334,7 @@ func (mr *mazeRunner) probe(dir int64) {
 	}
 }
 
+// explore goes to a location and adds its contents to the map
 func (mr *mazeRunner) explore(target *aoc.Point) {
 	mr.moveTo(target)
 	if mr.io.LastOutput() == foundOxygen {
@@ -364,11 +348,11 @@ func (mr *mazeRunner) explore(target *aoc.Point) {
 	}
 }
 
-// Use breadth-first search to fill out the map
+// buildMap uses depth-first search to fill out the map
 func buildMap(p intcode.Program) cellMap {
 	mr := newMazeRunner(p)
 
-	// We start in a hall, but the computer doesn't output anything to indicate that
+	// We start in a hall, but the computer doesn't output anything to indicate that.
 	// To avoid explore() crashing trying to read an output that doesn't exist, manually
 	// probe the initial position
 	for _, dir := range []int64{north, south, east, west} {
@@ -391,6 +375,8 @@ func buildMap(p intcode.Program) cellMap {
 	return mr.m
 }
 
+// pathToInstructions takes a path generated by shortestPath and converts it into
+// the drone instructions necessary to move to the start of the path
 func pathToInstructions(path []aoc.Point) []int64 {
 	inst := []int64{}
 	// The path starts at the destination, so go in reverse order
