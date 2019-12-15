@@ -216,7 +216,7 @@ func (m cellMap) shortestPath(start, end *aoc.Point) []aoc.Point {
 		// Otherwise, add its neighbors
 		d := bestCell.distance + 1
 		for _, n := range neighbors(&bestPoint) {
-			if c, found := m[n]; found {
+			if c, found := m[n]; found && c.contents != wall {
 				if d < c.distance {
 					c.distance = d
 					c.preceding = bestPoint
@@ -274,6 +274,7 @@ func newMazeRunner(p intcode.Program) *mazeRunner {
 		pos:       aoc.Point{X: 0, Y: 0},
 		m:         make(cellMap),
 		toExplore: []aoc.Point{}}
+	mr.io.Debug = debug
 	mr.toExplore = append(mr.toExplore, mr.pos)
 	mr.c.Io = mr.io
 	mr.m[mr.pos] = newCell(hall)

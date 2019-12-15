@@ -1,5 +1,7 @@
 package intcode
 
+import "fmt"
+
 // InputOutput represents the inputs and outputs to a computer
 type InputOutput interface {
 	// GetInput should return the next value input to the computer
@@ -43,11 +45,15 @@ type StreamInputOutput struct {
 	inputs         []int64
 	nextInputIndex int
 	Outputs        []int64
+	Debug          bool
 }
 
 // GetInput returns the provided input value
 func (io *StreamInputOutput) GetInput() int64 {
 	input := io.inputs[io.nextInputIndex]
+	if io.Debug {
+		fmt.Printf("Input: %d\n", input)
+	}
 	io.nextInputIndex++
 	return input
 }
@@ -59,6 +65,9 @@ func (io *StreamInputOutput) AppendInput(i int64) {
 
 // Output collects the output value into a slice for later use
 func (io *StreamInputOutput) Output(o int64) {
+	if io.Debug {
+		fmt.Printf("Output: %d\n", o)
+	}
 	io.Outputs = append(io.Outputs, o)
 }
 
