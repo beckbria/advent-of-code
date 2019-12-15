@@ -93,6 +93,20 @@ func (c *Computer) Run() bool {
 	return !c.crashed
 }
 
+// RunToNextInput runs the computer until its next input instruction
+func (c *Computer) RunToNextInput() bool {
+	for c.running {
+		_, brokeOnInput := c.step(true)
+		if brokeOnInput {
+			if debug {
+				fmt.Println("Broke on input")
+			}
+			return true
+		}
+	}
+	return false
+}
+
 // Set the computer into a crashed state
 func (c *Computer) crash() {
 	c.running = false
@@ -122,6 +136,13 @@ func (c *Computer) address(addr Address, mode ParameterMode) (Address, string) {
 // Step runs a single instruction in the program.  Returns true if the program is still running and false
 // if it has ended (due to termination or crash)
 func (c *Computer) Step() bool {
+	running, _ := c.step(false)
+	return running
+}
+
+// step runs a single instruction in the program.  Returns: First: true if the program is still running and false
+// if it has ended (due to termination or crash).  Second: True if it broke on an input instruction
+func (c *Computer) step(breakAtInput bool) (bool, bool) {
 	if c.running {
 		if debug {
 			fmt.Printf("IP %d\t", c.IP)
@@ -129,7 +150,7 @@ func (c *Computer) Step() bool {
 
 		op, rawOp, vals, modes, args, debugVals := c.readInstruction()
 		if c.DidCrash() {
-			return false
+			return false, false
 		}
 		if debug {
 			fmt.Printf("%d\t", rawOp)
@@ -156,6 +177,9 @@ func (c *Computer) Step() bool {
 			}
 			c.Memory[target] = vals[0] * vals[1]
 		case OpStore:
+			if breakAtInput {
+				return false, true
+			}
 			input := c.Io.GetInput()
 			target, debugTarget := c.address(args[0], modes[0])
 			if debug {
@@ -247,7 +271,7 @@ func (c *Computer) Step() bool {
 		}
 	}
 
-	return c.running
+	return c.running, false
 }
 
 // readInstruction parses the opcode at the instruction pointer and its parameters.
