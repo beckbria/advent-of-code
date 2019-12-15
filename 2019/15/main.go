@@ -15,15 +15,16 @@ func main() {
 
 	sw := aoc.NewStopwatch()
 	// Part 1
-	m := buildMap2(program)
-	fmt.Println(m.distanceToOxygen(&home))
+	m := buildMap(program)
+	fmt.Println(m.distanceToOxygen(&home) - 1) // Subtract 1 since you're already at the start line
 	fmt.Println(sw.Elapsed())
-	m.print()
+	//m.print()
 
 	// Part 2
-	//sw.Reset()
-	//fmt.Println(finalGameScore(program))
-	//fmt.Println(sw.Elapsed())
+	sw.Reset()
+	m = buildMap(program)
+	fmt.Println(m.timeToOxygenation() - 1)
+	fmt.Println(sw.Elapsed())
 }
 
 const (
@@ -137,6 +138,10 @@ func (m cellMap) distanceToOxygen(start *aoc.Point) int {
 	return -1
 }
 
+func (m cellMap) timeToOxygenation() int {
+	return -1
+}
+
 func (m cellMap) print() {
 	minX := infiniteDistance
 	minY := infiniteDistance
@@ -150,8 +155,11 @@ func (m cellMap) print() {
 	}
 	for y := minY; y <= maxY; y++ {
 		for x := minX; x <= maxX; x++ {
-			c, found := m[aoc.Point{X: x, Y: y}]
-			if found {
+			pt := aoc.Point{X: x, Y: y}
+			c, found := m[pt]
+			if pt == home {
+				fmt.Print("D")
+			} else if found {
 				fmt.Print(string(c.contents))
 			} else {
 				fmt.Print(".")
@@ -253,10 +261,6 @@ func (m cellMap) populate(pos aoc.Point, response int64) bool {
 func (m cellMap) contains(pt *aoc.Point) bool {
 	_, found := m[*pt]
 	return found
-}
-
-func buildMap(p intcode.Program) cellMap {
-	return buildMap2(p)
 }
 
 type mazeRunner struct {
@@ -361,7 +365,7 @@ func (mr *mazeRunner) explore(target *aoc.Point) {
 }
 
 // Use breadth-first search to fill out the map
-func buildMap2(p intcode.Program) cellMap {
+func buildMap(p intcode.Program) cellMap {
 	mr := newMazeRunner(p)
 
 	// We start in a hall, but the computer doesn't output anything to indicate that
@@ -385,94 +389,6 @@ func buildMap2(p intcode.Program) cellMap {
 	}
 
 	return mr.m
-}
-
-func buildMap1(p intcode.Program) cellMap {
-	pos := aoc.Point{X: 0, Y: 0}
-	m := make(cellMap)
-	m[pos] = newCell(hall)
-	c := intcode.NewComputer(p)
-	io := intcode.NewStreamInputOutput([]int64{})
-	c.Io = io
-
-	for pts := m.cellsWithUnexploredNeighbors(); len(pts) > 0; pts = m.cellsWithUnexploredNeighbors() {
-		for _, pt := range pts {
-			// Move to the point
-			if pt != pos {
-				path := m.shortestPath(&pos, &pt)
-				inst := pathToInstructions(path)
-				if debug {
-					fmt.Print("Instructions: ")
-					fmt.Println(inst)
-				}
-				for _, i := range inst {
-					io.AppendInput(i)
-					if i == east {
-						pos.X++
-					} else if i == west {
-						pos.X--
-					} else if i == north {
-						pos.Y--
-					} else if i == south {
-						pos.Y++
-					}
-					// Take the input
-					c.Step()
-					c.RunToNextInput()
-					if debug {
-						fmt.Print("Pos: ")
-						fmt.Println(pos)
-					}
-				}
-				if pos != pt {
-					log.Fatalf("Expected to be at [%d,%d], actually at [%d,%d]", pt.X, pt.Y, pos.X, pos.Y)
-				}
-			}
-
-			// Explore its neighbors
-			io.AppendInput(west)
-			c.Step()
-			c.RunToNextInput()
-			if m.populate(aoc.Point{X: pos.X - 1, Y: pos.Y}, io.LastOutput()) {
-				// Backtrack
-				io.AppendInput(east)
-				c.Step()
-				c.RunToNextInput()
-			}
-
-			io.AppendInput(east)
-			c.Step()
-			c.RunToNextInput()
-			if m.populate(aoc.Point{X: pos.X + 1, Y: pos.Y}, io.LastOutput()) {
-				// Backtrack
-				io.AppendInput(west)
-				c.Step()
-				c.RunToNextInput()
-			}
-
-			io.AppendInput(north)
-			c.Step()
-			c.RunToNextInput()
-			if m.populate(aoc.Point{X: pos.X, Y: pos.Y - 1}, io.LastOutput()) {
-				// Backtrack
-				io.AppendInput(south)
-				c.Step()
-				c.RunToNextInput()
-			}
-
-			io.AppendInput(south)
-			c.Step()
-			c.RunToNextInput()
-			if m.populate(aoc.Point{X: pos.X, Y: pos.Y + 1}, io.LastOutput()) {
-				// Backtrack
-				io.AppendInput(north)
-				c.Step()
-				c.RunToNextInput()
-			}
-		}
-	}
-
-	return m
 }
 
 func pathToInstructions(path []aoc.Point) []int64 {
