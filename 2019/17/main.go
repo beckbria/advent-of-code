@@ -97,8 +97,29 @@ func alignmentParams(p intcode.Program) int64 {
 func collectDust(p intcode.Program) int64 {
 	c := intcode.NewComputer(p)
 	c.Memory[0] = int64(2)
-	io := intcode.NewStreamInputOutput([]int64{})
+	// Manually compressed
+	input := robotProgram([]string{
+		"A,B,A,C,B,A,B,C,C,B", // Main program
+		"L,12,L,12,R,4",       // A
+		"R,10,R,6,R,4,R,4",    // B
+		"R,6,L,12,L,12"})      // C
+
+	io := intcode.NewStreamInputOutput(input)
 	c.Io = io
 	c.Run()
 	return io.LastOutput()
+}
+
+func robotProgram(routines []string) []int64 {
+	prog := []int64{}
+	for _, r := range routines {
+		for _, c := range []rune(r) {
+			prog = append(prog, int64(c))
+		}
+		prog = append(prog, newLine)
+	}
+	// Reject visual mode
+	prog = append(prog, int64('r'))
+	prog = append(prog, newLine)
+	return prog
 }
