@@ -42,6 +42,7 @@ func NewConstantInputOutput(input int64) *ConstantInputOutput {
 
 // StreamInputOutput represents an IO component which returns inputs from a stream until it is exhausted
 type StreamInputOutput struct {
+	initialInputs  []int64
 	inputs         []int64
 	nextInputIndex int
 	Outputs        []int64
@@ -73,6 +74,8 @@ func (io *StreamInputOutput) Output(o int64) {
 
 // Reset resets the output buffer
 func (io *StreamInputOutput) Reset() {
+	io.inputs = make([]int64, len(io.initialInputs))
+	copy(io.inputs, io.initialInputs)
 	io.Outputs = []int64{}
 	io.nextInputIndex = 0
 }
