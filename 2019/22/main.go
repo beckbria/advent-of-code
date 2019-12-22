@@ -21,7 +21,13 @@ func main() {
 
 	// Part 2
 	sw.Reset()
-
+	// 119315717514047 is prime
+	// It's WAY too large to ever be represented in memory, so obviously trying to do the shuffle
+	// the way we did part 1 is pointless.
+	// Hypothesis: The shuffle loops back on itself eventually.
+	d = newDeck(10007)
+	start, length := d.findCycle(inst)
+	fmt.Printf("Cycle of length %d starts at shuffle %d\n", length, start)
 	fmt.Println(sw.Elapsed())
 }
 
@@ -104,6 +110,23 @@ func (d deck) find(needle int) int {
 		}
 	}
 	return -1
+}
+
+// Returns the start of the cycle and the length of the cycle
+func (d deck) findCycle(inst []instruction) (int64, int64) {
+	seen := make(map[string]int64)
+	for i := int64(0); ; i++ {
+		if i%1000 == 0 {
+			fmt.Printf("iteration %d\n", i)
+		}
+		k := fmt.Sprint(d)
+		if start, found := seen[k]; found {
+			length := i - start
+			return start, length
+		}
+		seen[k] = i
+		d.shuffle(inst)
+	}
 }
 
 var (
