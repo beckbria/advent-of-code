@@ -15,12 +15,12 @@ func main() {
 
 	sw := aoc.NewStopwatch()
 	// Part 1
-	fmt.Println(firstTo255(p))
-	fmt.Println(sw.Elapsed())
+	//fmt.Println(firstTo255(p))
+	//fmt.Println(sw.Elapsed())
 
 	// Part 2
 	sw.Reset()
-	//fmt.Println(d.part2())
+	fmt.Println(duplicateNat(p))
 	fmt.Println(sw.Elapsed())
 }
 
@@ -76,6 +76,14 @@ func (io *networkIo) Output(o int64) {
 
 func (io *networkIo) Reset() {}
 
+func (io *networkIo) idle() bool {
+	//i := false
+	//io.inputMux.Lock()
+	return io.nextInputIndex >= len(io.inputs)
+	//io.inputMux.Unlock()
+	//return i
+}
+
 func newNetworkIo(r *router) *networkIo {
 	io := networkIo{Outputs: []int64{}, inputs: []int64{}, nextInputIndex: 0, rout: r}
 	return &io
@@ -107,6 +115,15 @@ func (r *router) hasLostMailFor(dest int64) bool {
 	return found
 }
 
+func (r *router) idle() bool {
+	for _, i := range r.io {
+		if !i.idle() {
+			return false
+		}
+	}
+	return true
+}
+
 func newRouter() *router {
 	r := router{lost: make(map[int64][]aoc.Point)}
 	for i := range r.io {
@@ -133,4 +150,38 @@ func firstTo255(p intcode.Program) int64 {
 	for !r.hasLostMailFor(255) {
 	}
 	return r.lost[255][0].Y
+}
+
+func duplicateNat(p intcode.Program) int64 {
+	r := newRouter()
+
+	// Create 50 computers
+	c := make([]intcode.Computer, 50)
+	for i := range c {
+		c[i] = intcode.NewComputer(p)
+		c[i].Io = r.io[i]
+		go func(c intcode.Computer) {
+			c.Run()
+		}(c[i])
+	}
+
+	// NAT loop
+	lastNat := aoc.Point{X: -1, Y: -1423}
+	for true {
+		oldLen := len(r.lost[255])
+		// Wait for idle
+		for !r.idle() {
+		}
+		// Did we repeat the Y value?
+		newLen := len(r.lost[255])
+		if newLen > oldLen {
+			nat := r.lost[255][newLen-1]
+			if lastNat.Y == nat.Y {
+				return lastNat.Y
+			}
+			// Otherwise resume the network
+			r.send(0, nat.X, nat.Y)
+		}
+	}
+	return -1
 }
