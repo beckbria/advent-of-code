@@ -115,6 +115,19 @@ func Gcd(x, y int64) int64 {
 	return x
 }
 
+// Pow returns a to the power of b using Knuth's binary powering algorithm
+func Pow(a, b int64) int64 {
+	p := int64(1)
+	for b > 0 {
+		if b&1 != 0 {
+			p *= a
+		}
+		b >>= 1
+		a *= a
+	}
+	return p
+}
+
 // Lcm returns the least common multiple
 func Lcm(x, y int64) int64 {
 	return (x * y) / Gcd(x, y)

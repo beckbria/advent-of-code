@@ -24,14 +24,21 @@ func main() {
 
 	// Part 2
 	sw.Reset()
+	fmt.Println(countAfter(b, 200))
 	fmt.Println(sw.Elapsed())
 }
 
-type bugs map[aoc.Point]bool
+// bugs represents a set of points occupied bugs in a system reminiscent of Conway's Game of Life
+type bugs map[aoc.Point3]bool
 
+// score calculates the score of a system of bugs.  In level 0 of the grid, each bug scores points
+// depending on 2 to the power of its location in the 5x5 grid
 func (b bugs) score() int64 {
 	score := int64(0)
 	for pt, bug := range b {
+		if pt.Z != 0 {
+			continue
+		}
 		if bug {
 			pow := 5*pt.Y + pt.X
 			if debugScore {
@@ -43,16 +50,12 @@ func (b bugs) score() int64 {
 	return score
 }
 
-func (b bugs) next() bugs {
+// next applies the life rules to determine which locations contain bugs after the next day
+func (b bugs) next(multiLevel bool) bugs {
 	newBugs := make(bugs)
-	for pt := range b.adjacent() {
+	for pt := range b.adjacent(multiLevel) {
 		count := 0
-		neighbors := []aoc.Point{
-			aoc.Point{X: pt.X - 1, Y: pt.Y},
-			aoc.Point{X: pt.X + 1, Y: pt.Y},
-			aoc.Point{X: pt.X, Y: pt.Y - 1},
-			aoc.Point{X: pt.X, Y: pt.Y + 1}}
-		for _, n := range neighbors {
+		for n := range pointAdjacent(&pt, multiLevel) {
 			if b[n] {
 				count++
 			}
@@ -73,13 +76,92 @@ func bugStr(isBug bool) string {
 	return "BUG"
 }
 
-// Returns a set of the points adjacent to bugs
-func (b bugs) adjacent() bugs {
+// pointAdjacent returns a set of all points adjacent to a point in the bug grid
+func pointAdjacent(pt *aoc.Point3, multiLevel bool) bugs {
 	adj := make(bugs)
-	for pt := range b {
-		for x := aoc.Max(0, pt.X-1); x <= aoc.Min(4, pt.X+1); x++ {
-			for y := aoc.Max(0, pt.Y-1); y <= aoc.Min(4, pt.Y+1); y++ {
-				adj[aoc.Point{X: x, Y: y}] = true
+
+	// Add the left neighbors
+	switch pt.X {
+	case 0:
+		if multiLevel {
+			adj[aoc.Point3{X: 1, Y: 2, Z: pt.Z - 1}] = true
+		}
+	case 3:
+		if multiLevel && pt.Y == 2 {
+			for y := int64(0); y < 5; y++ {
+				adj[aoc.Point3{X: 4, Y: y, Z: pt.Z + 1}] = true
+			}
+			break
+		}
+		fallthrough
+	default:
+		adj[aoc.Point3{X: pt.X - 1, Y: pt.Y, Z: pt.Z}] = true
+	}
+
+	// Add the right neighbors
+	switch pt.X {
+	case 4:
+		if multiLevel {
+			adj[aoc.Point3{X: 3, Y: 2, Z: pt.Z - 1}] = true
+		}
+	case 1:
+		if multiLevel && pt.Y == 2 {
+			for y := int64(0); y < 5; y++ {
+				adj[aoc.Point3{X: 0, Y: y, Z: pt.Z + 1}] = true
+			}
+			break
+		}
+		fallthrough
+	default:
+		adj[aoc.Point3{X: pt.X + 1, Y: pt.Y, Z: pt.Z}] = true
+	}
+
+	// Add the top neighbors
+	switch pt.Y {
+	case 0:
+		if multiLevel {
+			adj[aoc.Point3{X: 2, Y: 1, Z: pt.Z - 1}] = true
+		}
+	case 3:
+		if multiLevel && pt.X == 2 {
+			for x := int64(0); x < 5; x++ {
+				adj[aoc.Point3{X: x, Y: 4, Z: pt.Z + 1}] = true
+			}
+			break
+		}
+		fallthrough
+	default:
+		adj[aoc.Point3{X: pt.X, Y: pt.Y - 1, Z: pt.Z}] = true
+	}
+
+	// Add the bottom neighbors
+	switch pt.Y {
+	case 4:
+		if multiLevel {
+			adj[aoc.Point3{X: 2, Y: 3, Z: pt.Z - 1}] = true
+		}
+	case 1:
+		if multiLevel && pt.X == 2 {
+			for x := int64(0); x < 5; x++ {
+				adj[aoc.Point3{X: x, Y: 0, Z: pt.Z + 1}] = true
+			}
+			break
+		}
+		fallthrough
+	default:
+		adj[aoc.Point3{X: pt.X, Y: pt.Y + 1, Z: pt.Z}] = true
+	}
+
+	return adj
+}
+
+// adjacent returns a set of the points adjacent to bugs
+func (b bugs) adjacent(multiLevel bool) bugs {
+	adj := make(bugs)
+	for pt, isBug := range b {
+		if isBug {
+			for p := range pointAdjacent(&pt, multiLevel) {
+				adj[p] = true
 			}
 		}
 	}
@@ -90,7 +172,7 @@ func (b bugs) toString() string {
 	var ret strings.Builder
 	for y := int64(0); y < 5; y++ {
 		for x := int64(0); x < 5; x++ {
-			if b[aoc.Point{X: x, Y: y}] {
+			if b[aoc.Point3{X: x, Y: y, Z: 0}] {
 				ret.WriteRune('#')
 			} else {
 				ret.WriteRune('.')
@@ -106,17 +188,19 @@ func readBugs(input []string) bugs {
 	for y, row := range input {
 		for x, c := range []rune(row) {
 			if c == '#' {
-				b[aoc.Point{X: int64(x), Y: int64(y)}] = true
+				b[aoc.Point3{X: int64(x), Y: int64(y), Z: 0}] = true
 			}
 		}
 	}
 	return b
 }
 
+// firstDuplicate finds the first grid of bugs which is identical to a previously-known state.
+// It uses the single-level rules.
 func firstDuplicate(b bugs) bugs {
 	iteration := 0
 	seen := make(map[string]int)
-	for current := b; true; current = current.next() {
+	for current := b; true; current = current.next(false) {
 		if debug {
 			fmt.Printf("Iteration %d:\n", iteration)
 			fmt.Println(current.toString())
@@ -132,4 +216,19 @@ func firstDuplicate(b bugs) bugs {
 		iteration++
 	}
 	return make(bugs)
+}
+
+// countAfter returns the number of bugs present across all levels after a number of iterations
+func countAfter(b bugs, iterations int) int64 {
+	current := b
+	for i := 0; i < iterations; i++ {
+		current = current.next(true)
+	}
+	count := int64(0)
+	for _, isBug := range current {
+		if isBug {
+			count++
+		}
+	}
+	return count
 }
