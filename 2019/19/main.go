@@ -14,9 +14,9 @@ func main() {
 
 	sw := aoc.NewStopwatch()
 	// Part 1
-	fmt.Println(sw.Elapsed())
 	d := newTractorBeamDrone(p)
 	fmt.Println(d.part1())
+	fmt.Println(sw.Elapsed())
 
 	// Part 2
 	sw.Reset()
