@@ -99,7 +99,7 @@ func (c *Computer) RunToNextInput() bool {
 		_, brokeOnInput := c.step(true)
 		if brokeOnInput {
 			if debug {
-				fmt.Println("Broke on input")
+				fmt.Printf("Broke on input at IP %d\n", c.IP)
 			}
 			return true
 		}
