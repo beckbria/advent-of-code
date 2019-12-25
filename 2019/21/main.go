@@ -22,24 +22,29 @@ func main() {
 	for true {
 		c.RunToNextInput()
 		out := io.OutputAsString()
+
+		if !c.IsRunning() {
+			fmt.Println(io.Outputs[len(io.Outputs)-1])
+			break
+		}
+
 		if len(out) > 0 {
 			fmt.Println(out)
 			io.ClearOutput()
 		}
 
-		if !c.IsRunning() {
-			break
-		}
-
 		// Only take more input if the computer has processed all current input and shown output
 		if len(out) > 0 {
 			fmt.Print("> ")
-			text, _ := reader.ReadString('\n')
-			text = strings.Replace(text, "\n", "", -1)
-			if debug {
-				fmt.Printf("Read <<%s>>\n", text)
+			inst := ""
+			for inst != "WALK" && inst != "RUN" {
+				text, _ := reader.ReadString('\n')
+				inst = strings.Replace(text, "\n", "", -1)
+				if debug {
+					fmt.Printf("Read <<%s>>\n", inst)
+				}
+				io.AppendInput(inst)
 			}
-			io.AppendInput(text)
 		}
 		c.Step()
 	}

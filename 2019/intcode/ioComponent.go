@@ -128,3 +128,67 @@ func NewProducerConsumerInputOutput() *ProducerConsumerInputOutput {
 	io.Reset()
 	return &io
 }
+
+// ASCIIIo is an I/O component which reads and writes ASCII strings to an Intcode computer
+type ASCIIIo struct {
+	inputs         []int64
+	nextInputIndex int
+	Outputs        []int64
+}
+
+// GetInput returns the provided input value
+func (io *ASCIIIo) GetInput() int64 {
+	input := io.inputs[io.nextInputIndex]
+	if debug {
+		fmt.Printf("Read %d\n", input)
+	}
+	io.nextInputIndex++
+	return input
+}
+
+// AppendInput adds a string message to the input queue
+func (io *ASCIIIo) AppendInput(i string) {
+	chars := []int64{}
+	for _, r := range []rune(i) {
+		chars = append(chars, int64(r))
+	}
+	chars = append(chars, 10) // Trailing newline
+	io.inputs = append(io.inputs, chars...)
+}
+
+// Output collects the output value into a slice for later use
+func (io *ASCIIIo) Output(o int64) {
+	io.Outputs = append(io.Outputs, o)
+}
+
+// ClearOutput clears the output buffer
+func (io *ASCIIIo) ClearOutput() {
+	io.Outputs = []int64{}
+}
+
+// OutputAsString converts the output buffer into a string for display
+func (io *ASCIIIo) OutputAsString() string {
+	chars := []rune{}
+	for _, i := range io.Outputs {
+		if i == 10 {
+			chars = append(chars, '\n')
+		} else {
+			chars = append(chars, rune(i))
+		}
+	}
+	return string(chars)
+}
+
+// Reset resets the input and output buffers
+func (io *ASCIIIo) Reset() {
+	io.inputs = []int64{}
+	io.Outputs = []int64{}
+	io.nextInputIndex = 0
+}
+
+// NewASCIIIo creates a new ASCIIIo component
+func NewASCIIIo() *ASCIIIo {
+	a := ASCIIIo{}
+	a.Reset()
+	return &a
+}
