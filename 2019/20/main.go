@@ -15,13 +15,12 @@ func main() {
 	sw := aoc.NewStopwatch()
 	// Part 1
 	m := readMaze(input)
-	fmt.Println(m.distance("AA", "ZZ"))
-	// 658 is too low
+	fmt.Println(m.distance("AA", "ZZ", false))
 	fmt.Println(sw.Elapsed())
 
 	// Part 2
 	sw.Reset()
-
+	fmt.Println(m.distance("AA", "ZZ", true))
 	fmt.Println(sw.Elapsed())
 }
 
@@ -32,28 +31,40 @@ const (
 	infiniteDistance = int64(99999999)
 )
 
+var unknownPoint = aoc.Point{X: infiniteDistance, Y: infiniteDistance}
+
 type cell struct {
+	location aoc.Point
 	adjacent map[*cell]bool
 	distance int64
 }
 
-func newCell() *cell {
-	c := cell{adjacent: make(map[*cell]bool)}
+func newCell(pt aoc.Point) *cell {
+	c := cell{adjacent: make(map[*cell]bool), location: pt, distance: infiniteDistance}
 	return &c
+}
+
+type warp struct {
+	internal, external aoc.Point
+}
+
+func newWarp() *warp {
+	w := warp{internal: unknownPoint, external: unknownPoint}
+	return &w
 }
 
 type maze struct {
 	grid         map[aoc.Point]*cell
-	named        map[string][]aoc.Point
+	named        map[string]*warp
 	reverseNamed map[aoc.Point]string
 }
 
-func (m *maze) distance(fromName, toName string) int64 {
+func (m *maze) distance(fromName, toName string, threeD bool) int64 {
 	m.assertTerminus(fromName)
 	m.assertTerminus(toName)
 	m.resetDistance()
-	from := m.named[fromName][0]
-	to := m.named[toName][0]
+	from := m.named[fromName].external
+	to := m.named[toName].external
 
 	// Breadth-first search
 	m.grid[from].distance = 0
@@ -67,6 +78,9 @@ func (m *maze) distance(fromName, toName string) int64 {
 			if n.distance > nCost {
 				n.distance = nCost
 				toProcess.PushBack(n)
+				if n.location == to {
+					return m.grid[to].distance
+				}
 			}
 		}
 		toProcess.Remove(current)
@@ -79,8 +93,8 @@ func (m *maze) assertTerminus(name string) {
 	if _, found := m.named[name]; !found {
 		log.Fatalf("Unknown point %s\n", name)
 	}
-	if len(m.named[name]) != 1 {
-		log.Fatalf("Expected exactly one point for %s\n", name)
+	if m.named[name].internal != unknownPoint {
+		log.Fatalf("Expected external-only point for %s\n", name)
 	}
 }
 
@@ -91,7 +105,7 @@ func (m *maze) resetDistance() {
 }
 
 func newMaze() *maze {
-	m := maze{grid: make(map[aoc.Point]*cell), named: make(map[string][]aoc.Point), reverseNamed: make(map[aoc.Point]string)}
+	m := maze{grid: make(map[aoc.Point]*cell), named: make(map[string]*warp), reverseNamed: make(map[aoc.Point]string)}
 	return &m
 }
 
@@ -108,7 +122,8 @@ func readMaze(input []string) *maze {
 	for y, row := range grid {
 		for x, p := range row {
 			if p == hallway {
-				m.grid[aoc.Point{X: int64(x), Y: int64(y)}] = newCell()
+				pt := aoc.Point{X: int64(x), Y: int64(y)}
+				m.grid[pt] = newCell(pt)
 			}
 		}
 	}
@@ -119,6 +134,8 @@ func readMaze(input []string) *maze {
 			if aoc.IsUpper(byte(p)) {
 				label := ""
 				pt := aoc.Point{}
+				internal := true
+				internalThreshold := 5
 
 				// Is this a horizontal label?
 				if (x < (len(row) - 1)) && aoc.IsUpper(byte(grid[y][x+1])) {
@@ -131,6 +148,7 @@ func readMaze(input []string) *maze {
 					} else {
 						log.Fatalf("Could not find hallway attached to horizontal label %s [%d,%d]\n", label, x, y)
 					}
+					internal = x > internalThreshold && x < (len(row)-internalThreshold)
 				}
 
 				// Is this a vertical label?
@@ -147,6 +165,7 @@ func readMaze(input []string) *maze {
 					} else {
 						log.Fatalf("Could not find hallway attached to vertical label %s [%d,%d]\n", label, x, y)
 					}
+					internal = y > internalThreshold && y < (len(grid)-internalThreshold)
 				}
 
 				if len(label) > 0 {
@@ -154,9 +173,13 @@ func readMaze(input []string) *maze {
 						fmt.Printf("Found %s at [%d,%d]\n", label, pt.X, pt.Y)
 					}
 					if _, found := m.named[label]; !found {
-						m.named[label] = []aoc.Point{}
+						m.named[label] = newWarp()
 					}
-					m.named[label] = append(m.named[label], pt)
+					if internal {
+						m.named[label].internal = pt
+					} else {
+						m.named[label].external = pt
+					}
 					m.reverseNamed[pt] = label
 				}
 			}
@@ -170,12 +193,12 @@ func readMaze(input []string) *maze {
 
 		// Check any other named points
 		if label, found := m.reverseNamed[pt]; found {
-			for _, eq := range m.named[label] {
-				if eq == pt {
-					continue
-				}
-				//neighbors = append(neighbors, eq.Neighbors()...)
-				neighbors = append(neighbors, eq)
+			w := m.named[label]
+			if w.internal != pt {
+				neighbors = append(neighbors, w.internal)
+			}
+			if w.external != pt {
+				neighbors = append(neighbors, w.external)
 			}
 		}
 
@@ -185,7 +208,6 @@ func readMaze(input []string) *maze {
 				c.adjacent[nc] = true
 			}
 		}
-
 	}
 
 	return m
