@@ -5,7 +5,7 @@ import (
 	"math"
 	"sort"
 
-	"../aoc"
+	"../../aoc"
 )
 
 // https://adventofcode.com/2019/day/10

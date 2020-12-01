@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strconv"
 
-	"../aoc"
+	"../../aoc"
 )
 
 // A class for simulating an IntCode computer.  IntCode is an imaginary language used in the 2019
