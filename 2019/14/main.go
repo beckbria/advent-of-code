@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"strings"
 
-	"../aoc"
+	"../../aoc"
 )
 
 func main() {

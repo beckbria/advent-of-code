@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"../aoc"
+	"../../aoc"
 )
 
 func main() {

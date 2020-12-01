@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"../aoc"
+	"../../aoc"
 	"github.com/stretchr/testify/assert"
 )
 

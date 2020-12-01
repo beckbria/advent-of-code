@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"../aoc"
+	"../../aoc"
 )
 
 // ReadIntCode reads a program consisting of IntCode instructions - comma-separated integers

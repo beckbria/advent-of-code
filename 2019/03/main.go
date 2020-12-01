@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"../aoc"
+	"../../aoc"
 )
 
 // https://adventofcode.com/2019/day/3
