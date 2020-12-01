@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"../aoc"
+	"../../aoc"
 )
 
 func main() {

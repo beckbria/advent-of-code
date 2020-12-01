@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"../aoc"
+	"../../aoc"
 )
 
 const debug = false

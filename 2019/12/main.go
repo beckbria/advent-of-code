@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"../aoc"
+	"../../aoc"
 )
 
 var origin = aoc.Point3{X: 0, Y: 0, Z: 0}

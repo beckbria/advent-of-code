@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"../aoc"
+	"../../aoc"
 )
 
 const debug = false
@@ -31,15 +31,18 @@ const (
 	infiniteDistance = int64(99999999)
 )
 
-var unknownPoint = aoc.Point{X: infiniteDistance, Y: infiniteDistance}
+var (
+	unknownPoint  = aoc.Point{X: infiniteDistance, Y: infiniteDistance}
+	unknownPoint3 = aoc.Point3{X: infiniteDistance, Y: infiniteDistance, Z: infiniteDistance}
+)
 
 type cell struct {
-	location aoc.Point
+	location aoc.Point3
 	adjacent map[*cell]bool
 	distance int64
 }
 
-func newCell(pt aoc.Point) *cell {
+func newCell(pt aoc.Point3) *cell {
 	c := cell{adjacent: make(map[*cell]bool), location: pt, distance: infiniteDistance}
 	return &c
 }
@@ -57,6 +60,22 @@ type maze struct {
 	grid         map[aoc.Point]*cell
 	named        map[string]*warp
 	reverseNamed map[aoc.Point]string
+	searchGrid   map[aoc.Point3]*cell
+}
+
+func (m *maze) getCell(x, y, z int64) *cell {
+	pt := aoc.Point3{X: x, Y: y, Z: z}
+	if _, found := m.searchGrid[pt]; found {
+		pt0 := aoc.Point{X: x, Y: y}
+		if c0, found := m.grid[pt0]; !found {
+			log.Fatalf("Cannot create [%d,%d,%d]\n", x, y, z)
+		}
+
+		c := newCell(pt)
+
+		m.searchGrid[pt] = newCell(pt)
+	}
+	return m.searchGrid[pt]
 }
 
 func (m *maze) distance(fromName, toName string, threeD bool) int64 {
@@ -78,7 +97,7 @@ func (m *maze) distance(fromName, toName string, threeD bool) int64 {
 			if n.distance > nCost {
 				n.distance = nCost
 				toProcess.PushBack(n)
-				if n.location == to {
+				if n.location.X == to.X && n.location.Y == to.Y {
 					return m.grid[to].distance
 				}
 			}
@@ -123,7 +142,8 @@ func readMaze(input []string) *maze {
 		for x, p := range row {
 			if p == hallway {
 				pt := aoc.Point{X: int64(x), Y: int64(y)}
-				m.grid[pt] = newCell(pt)
+				pt3 := aoc.Point3{X: int64(x), Y: int64(y), Z: 0}
+				m.grid[pt] = newCell(pt3)
 			}
 		}
 	}

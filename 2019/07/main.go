@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"math"
 
-	"../aoc"
+	"../../aoc"
 	"../intcode"
 )
 
