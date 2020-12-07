@@ -16,7 +16,7 @@ const (
 
 var (
 	// Input format: "Step Y must be finished before step A can begin."
-	requirementRegEx = regexp.MustCompile("^Step (.) must be finished before step (.) can begin.")
+	requirementRegEx = regexp.MustCompile(`^Step (.) must be finished before step (.) can begin.`)
 )
 
 func check(e error) {

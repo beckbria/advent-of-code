@@ -48,7 +48,7 @@ type formulas struct {
 }
 
 var (
-	inputRegEx = regexp.MustCompile("^([0-9]+ [A-Z]+(, [0-9]+ [A-Z]+)*) => ([0-9]+ [A-Z]+)$")
+	inputRegEx = regexp.MustCompile(`^([0-9]+ [A-Z]+(, [0-9]+ [A-Z]+)*) => ([0-9]+ [A-Z]+)$`)
 )
 
 func readFormulas(input []string) formulas {

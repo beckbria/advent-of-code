@@ -18,7 +18,7 @@ const (
 
 var (
 	// Input format: "10 players; last marble is worth 1618 points"
-	fabricRegEx = regexp.MustCompile("^(\\d+) players; last marble is worth (\\d+) points$")
+	fabricRegEx = regexp.MustCompile(`^(\d+) players; last marble is worth (\d+) points$`)
 )
 
 func check(e error) {
@@ -107,7 +107,7 @@ func advanceTurn(game *gameState) {
 		// becomes the new current marble
 		moveCurrent(game, -7)
 		if debug {
-			fmt.Printf("Scoring Marble index %d (%d) for player %d\n", game.currentMarble, game.currentMarble.Value.(int64), game.nextPlayer)
+			fmt.Printf("Scoring Marble index %p (%d) for player %d\n", game.currentMarble, game.currentMarble.Value.(int64), game.nextPlayer)
 			fmt.Println(game.marbles)
 		}
 		game.scores[game.nextPlayer] += game.currentMarble.Value.(int64)

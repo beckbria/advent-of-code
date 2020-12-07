@@ -74,7 +74,7 @@ func part2(lines []string) int64 {
 }
 
 var (
-	inputRegEx = regexp.MustCompile("^([0-9]+)-([0-9]+) ([a-z]): ([a-z]+)$")
+	inputRegEx = regexp.MustCompile(`^([0-9]+)-([0-9]+) ([a-z]): ([a-z]+)$`)
 )
 
 func parsePasswords(lines []string) []password {

@@ -35,10 +35,10 @@ func (p *passport) AllPresent() bool {
 }
 
 var (
-	heightRegex = regexp.MustCompile("^([0-9]+)(cm|in)$")
-	hairRegex   = regexp.MustCompile("^#[0-9a-f]{6}$")
-	pidRegex    = regexp.MustCompile("^[0-9]{9}$")
-	eyeRegex    = regexp.MustCompile("^(amb|blu|brn|gry|grn|hzl|oth)$")
+	heightRegex = regexp.MustCompile(`^([0-9]+)(cm|in)$`)
+	hairRegex   = regexp.MustCompile(`^#[0-9a-f]{6}$`)
+	pidRegex    = regexp.MustCompile(`^[0-9]{9}$`)
+	eyeRegex    = regexp.MustCompile(`^(amb|blu|brn|gry|grn|hzl|oth)$`)
 )
 
 func (p *passport) Valid() bool {

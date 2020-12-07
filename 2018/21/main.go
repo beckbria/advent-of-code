@@ -15,8 +15,8 @@ const debug = false
 
 var (
 	// Input format: "# #"
-	ipRegEx   = regexp.MustCompile("^\\#ip (\\d+)$")
-	instRegEx = regexp.MustCompile("^([a-z]+) (\\d+) (\\d+) (\\d+)$")
+	ipRegEx   = regexp.MustCompile(`^\#ip (\d+)$`)
+	instRegEx = regexp.MustCompile(`^([a-z]+) (\d+) (\d+) (\d+)$`)
 )
 
 func check(e error) {

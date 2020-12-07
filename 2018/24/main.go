@@ -23,8 +23,8 @@ var (
 var (
 	// Input format: "956 units each with 7120 hit points (weak to bludgeoning, slashing) with an attack that does 71 radiation damage at initiative 7"
 	groupRegEx = regexp.MustCompile(
-		"^(\\d+) units each with (\\d+) hit points (\\(?.*\\)? ?)with an attack that does " +
-			"(\\d+) ([a-z]+) damage at initiative (\\d+)$")
+		`^(\d+) units each with (\d+) hit points (\(?.*\)? ?)with an attack that does ` +
+			`(\d+) ([a-z]+) damage at initiative (\d+)$`)
 
 	lastGroupID = 0
 )

@@ -138,7 +138,7 @@ func main() {
 }
 
 var (
-	inputRegEx = regexp.MustCompile("^<x=(-?\\d+), y=(-?\\d+), z=(-?\\d+)>$")
+	inputRegEx = regexp.MustCompile(`^<x=(-?\d+), y=(-?\d+), z=(-?\d+)>$`)
 )
 
 func readMoons(input []string) moons {

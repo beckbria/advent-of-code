@@ -12,7 +12,7 @@ import (
 
 var (
 	// Input format: "# #"
-	regEx = regexp.MustCompile("^(\\d+) (\\d+)$")
+	regEx = regexp.MustCompile(`^(\d+) (\d+)$`)
 )
 
 func check(e error) {

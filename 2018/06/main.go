@@ -18,7 +18,7 @@ func check(e error) {
 
 var (
 	// Input format: "X, Y"
-	pointRegEx = regexp.MustCompile("^(\\d+), (\\d+)$")
+	pointRegEx = regexp.MustCompile(`^(\d+), (\d+)$`)
 )
 
 // Point describes a point on a coordinate plane

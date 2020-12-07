@@ -45,7 +45,7 @@ type Reservoir struct {
 
 var (
 	// Input format: "# #"
-	inputRegEx = regexp.MustCompile("^([xy])=(\\d+), ([xy])=(\\d+)..(\\d+)$")
+	inputRegEx = regexp.MustCompile(`^([xy])=(\d+), ([xy])=(\d+)..(\d+)$`)
 )
 
 func check(e error) {

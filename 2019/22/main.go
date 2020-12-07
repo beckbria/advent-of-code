@@ -130,9 +130,9 @@ func (d deck) findCycle(inst []instruction) (int64, int64) {
 }
 
 var (
-	cutRegEx       = regexp.MustCompile("^cut (-?[0-9]+)$")
-	incrementRegEx = regexp.MustCompile("^deal with increment ([0-9]+)$")
-	stackRegEx     = regexp.MustCompile("^deal into new stack$")
+	cutRegEx       = regexp.MustCompile(`^cut (-?[0-9]+)$`)
+	incrementRegEx = regexp.MustCompile(`^deal with increment ([0-9]+)$`)
+	stackRegEx     = regexp.MustCompile(`^deal into new stack$`)
 )
 
 func parseInstructions(input []string) []instruction {

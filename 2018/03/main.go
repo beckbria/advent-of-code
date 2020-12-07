@@ -32,7 +32,7 @@ type point struct {
 
 var (
 	// Input format: "#id @ X,Y: WidthxHeight"
-	fabricRegEx = regexp.MustCompile("^#(\\d+) @ (\\d+),(\\d+): (\\d+)x(\\d+)$")
+	fabricRegEx = regexp.MustCompile(`^#(\d+) @ (\d+),(\d+): (\d+)x(\d+)$`)
 )
 
 // ReadFabric converts a line from the input file into a Fabric object

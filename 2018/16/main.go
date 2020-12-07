@@ -12,9 +12,9 @@ import (
 
 var (
 	// Input format: "# #"
-	beforeRegEx = regexp.MustCompile("^Before: \\[(\\d+), (\\d+), (\\d+), (\\d+)\\]$")
-	instRegEx   = regexp.MustCompile("^(\\d+) (\\d+) (\\d+) (\\d+)$")
-	afterRegEx  = regexp.MustCompile("^After:  \\[(\\d+), (\\d+), (\\d+), (\\d+)\\]$")
+	beforeRegEx = regexp.MustCompile(`^Before: \[(\d+), (\d+), (\d+), (\d+)\]$`)
+	instRegEx   = regexp.MustCompile(`^(\d+) (\d+) (\d+) (\d+)$`)
+	afterRegEx  = regexp.MustCompile(`^After:  \[(\d+), (\d+), (\d+), (\d+)\]$`)
 )
 
 func check(e error) {

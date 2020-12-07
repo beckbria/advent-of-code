@@ -12,9 +12,9 @@ import (
 
 var (
 	// Input format: "initial state: #.#.#...#..##..###.##.#...#.##.#....#..#.#....##.#.##...###.#...#######.....##.###.####.#....#.#..##"
-	stateRegEx = regexp.MustCompile("^initial state: ([.#]+)$")
+	stateRegEx = regexp.MustCompile(`^initial state: ([.#]+)$`)
 	// Input format: "#...# => #"
-	ruleRegEx = regexp.MustCompile("^([.#][.#][.#][.#][.#]) => ([.#])$")
+	ruleRegEx = regexp.MustCompile(`^([.#][.#][.#][.#][.#]) => ([.#])$`)
 )
 
 func check(e error) {

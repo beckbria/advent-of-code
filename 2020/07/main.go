@@ -34,8 +34,8 @@ type bagCount struct {
 }
 
 var (
-	inputRegex = regexp.MustCompile("^([a-z ]+) bags contain ([a-z0-9, ]+)\\.$")
-	bagRegex   = regexp.MustCompile("^(\\d+) ([a-z ]+) bag[s]?$")
+	inputRegex = regexp.MustCompile(`^([a-z ]+) bags contain ([a-z0-9, ]+)\.$`)
+	bagRegex   = regexp.MustCompile(`^(\d+) ([a-z ]+) bag[s]?$`)
 )
 
 // bagMaps creates lookup tables to see what bags contain (and are contained by)

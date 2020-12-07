@@ -19,7 +19,7 @@ const (
 
 var (
 	// Input format: "# #"
-	regEx = regexp.MustCompile("^(-?\\d+),(-?\\d+),(-?\\d+),(-?\\d+)$")
+	regEx = regexp.MustCompile(`^(-?\d+),(-?\d+),(-?\d+),(-?\d+)$`)
 )
 
 type spacetime struct {

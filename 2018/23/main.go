@@ -12,7 +12,7 @@ import (
 
 var (
 	// Input format: "# #"
-	nanobotRegEx = regexp.MustCompile("^pos=<(-?\\d+),(-?\\d+),(-?\\d+)>, r=(\\d+)$")
+	nanobotRegEx = regexp.MustCompile(`^pos=<(-?\d+),(-?\d+),(-?\d+)>, r=(\d+)$`)
 )
 
 type nanobot struct {
