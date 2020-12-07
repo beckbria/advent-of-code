@@ -38,6 +38,10 @@ var (
 	bagRegex   = regexp.MustCompile("^(\\d+) ([a-z ]+) bag[s]?$")
 )
 
+// bagMaps creates lookup tables to see what bags contain (and are contained by)
+// which bags.  Returns two maps: (contains, containedBy).
+// contains: Map from container color to a list of contents.
+// containedBy: Map from contained color to a list of container colors.
 func bagMaps(lines []string) (map[string][]bagCount, map[string][]string) {
 	contains, containedBy := make(map[string][]bagCount), make(map[string][]string)
 	for _, l := range lines {
@@ -67,6 +71,7 @@ func bagMaps(lines []string) (map[string][]bagCount, map[string][]string) {
 
 const targetBag = "shiny gold"
 
+// Step 1: How many bags can contain a shiny gold bag?
 func step1(containedBy map[string][]string) int {
 	canContain := containedBy[targetBag]
 	seen := make(map[string]bool)
@@ -84,6 +89,7 @@ func step1(containedBy map[string][]string) int {
 	return len(seen) - 1
 }
 
+// Step 2: How many bags musta shiny gold bag contain?
 func step2(contains map[string][]bagCount) int64 {
 	return countContents(targetBag, contains)
 }
