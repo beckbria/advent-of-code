@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"../../aoc"
-	"../cpu"
+	. "../cpu"
 )
 
 // https://adventofcode.com/2020/day/8
@@ -14,7 +14,7 @@ import (
 func main() {
 	sw := aoc.NewStopwatch()
 	fmt.Println("Step 1:")
-	instructions := cpu.ReadProgram("input.txt")
+	instructions := ReadProgram("input.txt")
 	fmt.Println(step1(instructions))
 	fmt.Println(sw.Elapsed())
 
@@ -25,21 +25,22 @@ func main() {
 }
 
 // Step 1: Value of the accumulator when it finds an infinite loop
-func step1(inst []cpu.Instruction) int {
-	c := cpu.NewComputer(inst)
+func step1(inst []Instruction) Data {
+	c := NewComputer(inst)
 	c.FindInfiniteLoop()
 	return c.Acc
 }
 
-// Step 2: How many bags musta shiny gold bag contain?
-func step2(inst []cpu.Instruction) int {
+// Step 2: One instruction must be altered to make the program terminate.
+// Which? What's the value of the accumulator when it terminates?
+func step2(inst []Instruction) Data {
 	for idx, i := range inst {
-		if i.Op == "acc" {
+		if i.Op == OpAcc {
 			continue
 		}
-		newProgram := append([]cpu.Instruction{}, inst...)
+		newProgram := append([]Instruction{}, inst...)
 		newProgram[idx].Op = inverseOp(i.Op)
-		c := cpu.NewComputer(newProgram)
+		c := NewComputer(newProgram)
 		looped := c.FindInfiniteLoop()
 		if !looped {
 			return c.Acc
@@ -48,13 +49,13 @@ func step2(inst []cpu.Instruction) int {
 	return -1
 }
 
-func inverseOp(op string) string {
+func inverseOp(op OpCode) OpCode {
 	switch op {
-	case "nop":
-		return "jmp"
-	case "jmp":
-		return "nop"
+	case OpNop:
+		return OpJmp
+	case OpJmp:
+		return OpNop
 	}
-	log.Fatalf("Unexpected inverse op: %q", op)
-	return ""
+	log.Fatalf("Unexpected inverse op: %d", op)
+	return OpNop
 }
