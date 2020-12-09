@@ -10,6 +10,12 @@ func Max(x, y int64) int64 {
 	return x
 }
 
+// MaxSlice returns the maximum value in a slice
+func MaxSlice(nums []int64) int64 {
+	_, max := MinAndMax(nums)
+	return max
+}
+
 // MaxInt returns the smaller of two numbers
 func MaxInt(x, y int) int {
 	if x < y {
@@ -26,12 +32,32 @@ func Min(x, y int64) int64 {
 	return y
 }
 
+// MinSlice returns the minimum value in a slice
+func MinSlice(nums []int64) int64 {
+	min, _ := MinAndMax(nums)
+	return min
+}
+
 // MinInt returns the smaller of two numberrs
 func MinInt(x, y int) int {
 	if x < y {
 		return x
 	}
 	return y
+}
+
+// MinAndMax returns the minimum and maximum values in a slice
+func MinAndMax(nums []int64) (int64, int64) {
+	min, max := nums[0], nums[0]
+	for _, n := range nums {
+		if n < min {
+			min = n
+		}
+		if n > max {
+			max = n
+		}
+	}
+	return min, max
 }
 
 // Abs returns the absolute value of a number
@@ -162,3 +188,17 @@ func (f *Fraction) Equals(g *Fraction) bool {
 
 // PiOver2 is a constant equal to Pi/2
 const PiOver2 = float64(math.Pi / 2)
+
+// FindSum2 finds two distinct numbers in a slice which sum to the target number
+// Returns whether a pair was found and the two numbers
+func FindSum2(nums []int64, target int64) (bool, int64, int64) {
+	for i, a := range nums {
+		for j := i + 1; j < len(nums); j++ {
+			b := nums[j]
+			if a+b == target {
+				return true, a, b
+			}
+		}
+	}
+	return false, 0, 0
+}

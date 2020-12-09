@@ -23,24 +23,26 @@ func main() {
 	fmt.Println(sw.Elapsed())
 }
 
+// Step 1: Find a number which is not the sum of any two of the n values preceding it
 func step1(nums []int64, depth int) int64 {
-	for i := 25; i < len(nums); i++ {
-		first, second := findSum2(nums[i-25:i], nums[i])
-		if first == second {
+	for i := depth; i < len(nums); i++ {
+		found, _, _ := aoc.FindSum2(nums[i-depth:i], nums[i])
+		if !found {
 			return nums[i]
 		}
 	}
 	return -1
 }
 
-// Step 2: How many bags musta shiny gold bag contain?
+// Step 2: Find a contiguous string of numbers which sum to a value.
+// There are more efficient ways, but N=1000, so O(N^2) runs in microseconds
 func step2(nums []int64, target int64) int64 {
 	for i := 0; i < len(nums); i++ {
 		sum := nums[i]
 		for j := i + 1; j < len(nums); j++ {
 			sum += nums[j]
 			if sum == target {
-				min, max := minAndMax(nums[i : j+1])
+				min, max := aoc.MinAndMax(nums[i : j+1])
 				return min + max
 			} else if sum > target {
 				break
@@ -48,32 +50,4 @@ func step2(nums []int64, target int64) int64 {
 		}
 	}
 	return int64(-1)
-}
-
-func minAndMax(nums []int64) (int64, int64) {
-	min := int64(9999999999999)
-	max := int64(-99999999999999)
-	for _, n := range nums {
-		if n < min {
-			min = n
-		}
-		if n > max {
-			max = n
-		}
-	}
-	return min, max
-}
-
-const notFound = -1
-
-func findSum2(nums []int64, target int64) (int64, int64) {
-	for i, a := range nums {
-		for j := i + 1; j < len(nums); j++ {
-			b := nums[j]
-			if a+b == target {
-				return a, b
-			}
-		}
-	}
-	return notFound, notFound
 }

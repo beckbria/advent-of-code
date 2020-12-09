@@ -15,7 +15,7 @@ const notFound = int64(-1)
 func main() {
 	nums := aoc.ReadFileNumbers("input.txt")
 	sw := aoc.NewStopwatch()
-	a, b := findSum2(nums, int64(2020))
+	_, a, b := aoc.FindSum2(nums, int64(2020))
 	fmt.Println("Step 1:")
 	fmt.Println(a * b)
 	fmt.Println(sw.Elapsed())
@@ -26,18 +26,6 @@ func main() {
 	fmt.Println(c * d * e)
 
 	fmt.Println(sw.Elapsed())
-}
-
-func findSum2(nums []int64, target int64) (int64, int64) {
-	for i, a := range nums {
-		for j := i + 1; j < len(nums); j++ {
-			b := nums[j]
-			if a+b == target {
-				return a, b
-			}
-		}
-	}
-	return notFound, notFound
 }
 
 func findSum3(nums []int64, target int64) (int64, int64, int64) {
