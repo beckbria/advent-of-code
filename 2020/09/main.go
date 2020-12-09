@@ -7,7 +7,7 @@ import (
 )
 
 // https://adventofcode.com/2020/day/9
-// TODO: Find numbers that sum to other numbers
+// Find numbers that sum to other numbers
 
 func main() {
 	nums := aoc.ReadFileNumbers("input.txt")

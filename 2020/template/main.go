@@ -35,7 +35,6 @@ func step1(lines []string) int {
 	return -1
 }
 
-// Step 2: How many bags musta shiny gold bag contain?
 func step2(lines []string) int64 {
 	return -1
 }
