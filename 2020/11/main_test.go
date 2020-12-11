@@ -98,27 +98,27 @@ var round6 = []string{
 }
 
 func TestAdvance(t *testing.T) {
-	g := NewGame(initial)
+	g := newGame(initial)
 	g.advance1()
-	assert.Equal(t, true, g.equals(NewGame(round1)))
+	assert.True(t, g.equals(newGame(round1)))
 	g.advance1()
-	assert.Equal(t, true, g.equals(NewGame(round2)))
+	assert.True(t, g.equals(newGame(round2)))
 	g.advance1()
-	assert.Equal(t, true, g.equals(NewGame(round3)))
+	assert.True(t, g.equals(newGame(round3)))
 	g.advance1()
-	assert.Equal(t, true, g.equals(NewGame(round4)))
+	assert.True(t, g.equals(newGame(round4)))
 	g.advance1()
-	assert.Equal(t, true, g.equals(NewGame(round5)))
+	assert.True(t, g.equals(newGame(round5)))
 	g.advance1()
-	assert.Equal(t, true, g.equals(NewGame(round6)))
+	assert.True(t, g.equals(newGame(round6)))
 }
 
 func TestStep1(t *testing.T) {
-	g := NewGame(initial)
+	g := newGame(initial)
 	assert.Equal(t, 37, step1(g))
 }
 
 func TestStep2(t *testing.T) {
-	g := NewGame(initial)
+	g := newGame(initial)
 	assert.Equal(t, 26, step2(g))
 }

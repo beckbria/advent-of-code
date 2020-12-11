@@ -13,13 +13,13 @@ func main() {
 	lines := aoc.ReadFileLines("input.txt")
 	sw := aoc.NewStopwatch()
 	fmt.Println("Step 1:")
-	g := NewGame(lines)
+	g := newGame(lines)
 	fmt.Println(step1(g))
 	fmt.Println(sw.Elapsed())
 
 	sw.Reset()
 	fmt.Println("Step 2:")
-	g = NewGame(lines)
+	g = newGame(lines)
 	fmt.Println(step2(g))
 	fmt.Println(sw.Elapsed())
 }
@@ -122,7 +122,7 @@ func (g *game) equals(g2 *game) bool {
 	if len(g.grid) != len(g2.grid) {
 		return false
 	}
-	for ridx, _ := range g.grid {
+	for ridx := range g.grid {
 		if len(g.grid[ridx]) != len(g2.grid[ridx]) {
 			return false
 		}
@@ -166,7 +166,7 @@ func (g *game) print() {
 	}
 }
 
-func NewGame(rows []string) *game {
+func newGame(rows []string) *game {
 	g := game{}
 	g.grid = make([][]rune, len(rows))
 	for ridx, r := range rows {
