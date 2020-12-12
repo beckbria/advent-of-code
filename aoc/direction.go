@@ -5,14 +5,15 @@ type Direction int
 
 // The four directions (and their compass equivalents)
 const (
-	Right Direction = 0
-	Up    Direction = 90
-	Left  Direction = 180
-	Down  Direction = 270
-	East  Direction = Right
-	North Direction = Up
-	West  Direction = Left
-	South Direction = Down
+	Right   Direction = 0
+	Up      Direction = 90
+	Left    Direction = 180
+	Down    Direction = 270
+	East    Direction = Right
+	North   Direction = Up
+	West    Direction = Left
+	South   Direction = Down
+	Forward Direction = 1000
 )
 
 // Ccw returns a direction rotated 90 degrees counterclockwise
