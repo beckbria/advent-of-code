@@ -7,9 +7,9 @@ import (
 )
 
 func TestStep1(t *testing.T) {
-	assert.Equal(t, step1([]string{}), -1)
+	assert.Equal(t, -1, step1([]string{}))
 }
 
 func TestStep2(t *testing.T) {
-	assert.Equal(t, step2([]string{}), -1)
+	assert.Equal(t, -1, step2([]string{}))
 }
