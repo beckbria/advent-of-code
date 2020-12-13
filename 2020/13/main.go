@@ -21,7 +21,7 @@ func main() {
 
 	sw.Reset()
 	fmt.Println("Step 2:")
-	fmt.Println(step2Naive(departures, int64(100000000000000)))
+	fmt.Println(step2(departures))
 	fmt.Println(sw.Elapsed())
 }
 
@@ -74,6 +74,9 @@ SEARCH:
 	}
 }
 
+// calcOffset calculates the offsets of the various divisors.  Returns a map from divisor to its
+// index relative to the maximum divisor, the maximum divisor, and the index of *that* divisor in
+// the original list
 func calcOffset(departures []int64) (map[int64]int64, int64, int64) {
 	offset := make(map[int64]int64)
 	maxMultiple := int64(-1)
@@ -98,4 +101,51 @@ func calcOffset(departures []int64) (map[int64]int64, int64, int64) {
 	}
 
 	return offset, maxMultiple, maxMultipleIdx
+}
+
+func crtRemainders(departures []int64) map[int64]int64 {
+	offset := make(map[int64]int64)
+	for i, bus := range departures {
+		if bus == skip {
+			continue
+		}
+		offset[bus] = (bus*5 - int64(i)) % bus % bus
+	}
+	return offset
+}
+
+func step2(departures []int64) int64 {
+	// Use the Chinese Remainder theorem
+	crt := crtRemainders(departures)
+	allBuses := int64(1)
+	for b := range crt {
+		allBuses *= b
+	}
+
+	time := int64(0)
+	for mod, rem := range crt {
+		otherBuses := allBuses / mod
+		// We can increment the answer by the product of the other buses without affecting its value modulo the other buses
+		inv := modularInverse(otherBuses, mod)
+		time += rem * inv * otherBuses
+	}
+
+	return time % allBuses
+}
+
+func modularInverse(n, base int64) int64 {
+	// https://en.wikipedia.org/wiki/Modular_multiplicative_inverse#Using_Euler's_theorem
+	// A^-1 mod m is equal to A^(m-2) mod m
+	return modularPower(n%base, base-2, base)
+}
+
+func modularPower(n, pow, mod int64) int64 {
+	// https://en.wikipedia.org/wiki/Modular_exponentiation#Right-to-left_binary_method
+	if pow == 0 {
+		return 1
+	} else if pow%2 == 1 {
+		return (n * modularPower(n, pow-1, mod) % mod)
+	} else {
+		return modularPower((n*n)%mod, pow/2, mod)
+	}
 }

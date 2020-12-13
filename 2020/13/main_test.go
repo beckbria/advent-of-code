@@ -18,3 +18,8 @@ func TestStep2Naive(t *testing.T) {
 	assert.Equal(t, int64(1068781), step2Naive(departures, 0))
 	assert.Equal(t, int64(1202161486), step2Naive([]int64{1789, 37, 47, 1889}, 0))
 }
+
+func TestStep2(t *testing.T) {
+	assert.Equal(t, int64(1068781), step2(departures))
+	assert.Equal(t, int64(1202161486), step2([]int64{1789, 37, 47, 1889}))
+}
