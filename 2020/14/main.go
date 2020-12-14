@@ -54,11 +54,11 @@ func readInstructions(lines []string) []instruction {
 	return inst
 }
 
-const fullAndMask = uint64(0xffffffffffffffff)
+const fullAndMask = ^uint64(0)
 
 func generateMasks(mask string) (uint64, uint64) {
-	andMask := fullAndMask
 	orMask := uint64(0)
+	andMask := ^orMask
 
 	for i := 0; i < len(mask); i++ {
 		bit := uint64(1) << (len(mask) - (i + 1))
@@ -75,8 +75,8 @@ func generateMasks(mask string) (uint64, uint64) {
 
 // step1 applies the provided mask to the values being written to memory
 func step1(inst []instruction) uint64 {
-	andMask := fullAndMask
 	orMask := uint64(0)
+	andMask := ^orMask
 	mem := make(map[uint64]uint64)
 	for _, i := range inst {
 		if len(i.mask) > 0 {
