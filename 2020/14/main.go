@@ -24,6 +24,12 @@ func main() {
 	fmt.Println("Step 2:")
 	fmt.Println(step2(inst))
 	fmt.Println(sw.Elapsed())
+
+	sw.Reset()
+	fmt.Println("Step 2 (Parallel):")
+	fmt.Println(step2Parallel(inst))
+	fmt.Println(sw.Elapsed())
+
 }
 
 var (
@@ -137,4 +143,57 @@ func maskedAddressesImpl(addr uint64, mask string) []uint64 {
 	zero := addr & ^bit
 	one := addr | bit
 	return append(maskedAddressesImpl(zero, newMask), maskedAddressesImpl(one, newMask)...)
+}
+
+// step2 applies the provided mask to the addresses being written to
+func step2Parallel(inst []instruction) uint64 {
+	mask := ""
+	mem := make(map[uint64]uint64)
+	for _, i := range inst {
+		if len(i.mask) > 0 {
+			mask = i.mask
+		} else {
+			for _, a := range maskedAddressesParallel(i.addr, mask) {
+				mem[a] = i.value
+			}
+		}
+	}
+
+	sum := uint64(0)
+	for _, v := range mem {
+		sum += v
+	}
+	return sum
+}
+
+func maskedAddressesParallel(addr uint64, mask string) []uint64 {
+	// Set any 1 bits to 1
+	for i, c := range []rune(mask) {
+		if c == '1' {
+			bit := uint64(1) << (len(mask) - (i + 1))
+			addr |= bit
+		}
+	}
+
+	a := make(chan []uint64)
+	go maskedAddressesParallelImpl(a, addr, mask)
+	return <-a
+}
+
+func maskedAddressesParallelImpl(done chan []uint64, addr uint64, mask string) {
+	x := strings.Index(mask, "X")
+	if x == -1 {
+		done <- []uint64{addr}
+		return
+	}
+	// Otherwise, try both values
+	newMask := mask[0:x] + "0" + mask[x+1:]
+	bit := uint64(1) << (len(mask) - (x + 1))
+	zero := addr & ^bit
+	one := addr | bit
+	za, zo := make(chan []uint64), make(chan []uint64)
+	go maskedAddressesParallelImpl(za, zero, newMask)
+	go maskedAddressesParallelImpl(zo, one, newMask)
+
+	done <- append(<-za, (<-zo)...)
 }

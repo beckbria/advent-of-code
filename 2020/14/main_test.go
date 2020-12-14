@@ -25,3 +25,13 @@ func TestStep2(t *testing.T) {
 	})
 	assert.Equal(t, uint64(208), step2(input))
 }
+
+func TestStep2Parallel(t *testing.T) {
+	input := readInstructions([]string{
+		"mask = 000000000000000000000000000000X1001X",
+		"mem[42] = 100",
+		"mask = 00000000000000000000000000000000X0XX",
+		"mem[26] = 1",
+	})
+	assert.Equal(t, uint64(208), step2Parallel(input))
+}
