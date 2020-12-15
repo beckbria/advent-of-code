@@ -30,12 +30,12 @@ func main() {
 func memoryGame(input []int64, finalTurn int64) int64 {
 	seen := make(map[int64]int64)
 	for i, n := range input {
-		seen[n] = int64(i + 1) // The first turn is turn 1, not turn 0
+		seen[n] = int64(i)
 	}
 	last := seen[int64(len(seen)-1)]
 	wasNew := true
 	delta := int64(0)
-	for i := len(seen) + 1; int64(i) <= finalTurn; i++ {
+	for i := len(seen); int64(i) < finalTurn; i++ {
 		last = delta
 		if wasNew {
 			last = 0
