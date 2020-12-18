@@ -9,8 +9,8 @@ import (
 	"../../aoc"
 )
 
-// https://adventofcode.com/2020/day/#
-// TODO: Description
+// https://adventofcode.com/2020/day/18
+// It's Math, Jim, but not as we know it
 
 func main() {
 	lines := aoc.ReadFileLines("input.txt")
