@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"sort"
 	"strings"
 
 	"../../aoc"
 )
 
-// https://adventofcode.com/2020/day/#
-// TODO: Description
+// https://adventofcode.com/2020/day/21
+// Determine which ingredients cause which allergeies
 
 type set map[string]bool
 
@@ -31,12 +32,13 @@ func main() {
 	sw := aoc.NewStopwatch()
 	fmt.Println("Step 1:")
 	r := parseRecipes(lines)
-	fmt.Println(step1(r))
+	count, cause := step1(r)
+	fmt.Println(count)
 	fmt.Println(sw.Elapsed())
 
 	sw.Reset()
 	fmt.Println("Step 2:")
-	fmt.Println(step2(r))
+	fmt.Println(step2(cause))
 	fmt.Println(sw.Elapsed())
 }
 
@@ -67,7 +69,7 @@ func parseRecipe(line string) *recipe {
 
 const debug = true
 
-func step1(recipes []*recipe) int64 {
+func step1(recipes []*recipe) (int64, map[string]string) {
 	allergens := make(map[string]set)
 	allIngredients := make(set)
 	safeIngredients := make(set)
@@ -128,9 +130,19 @@ ALLERGENS:
 			}
 		}
 	}
-	return count
+	return count, cause
 }
 
-func step2(recipes []*recipe) int64 {
-	return -1
+// Takes map from allergen to effect
+func step2(cause map[string]string) string {
+	var allergens []string
+	for k := range cause {
+		allergens = append(allergens, k)
+	}
+	sort.Strings(allergens)
+	var answer []string
+	for _, a := range allergens {
+		answer = append(answer, cause[a])
+	}
+	return strings.Join(answer, ",")
 }
