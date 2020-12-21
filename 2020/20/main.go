@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"regexp"
+	"sort"
 	"strconv"
 
 	"../../aoc"
@@ -204,7 +205,7 @@ func findCorners(tiles map[int64]*tile) map[int64]*tile {
 
 const debug = true
 
-func placeTiles(tiles map[int64]*tile) [][]bool {
+/*func placeTiles(tiles map[int64]*tile) [][]bool {
 	dimensions := int(math.Sqrt(float64(len(tiles))))
 	if dimensions*dimensions != len(tiles) {
 		log.Fatalf("Not a square grid")
@@ -244,8 +245,8 @@ func placeTiles(tiles map[int64]*tile) [][]bool {
 	}
 
 	// Arbitrarily pick a first corner
-	sq[top][left] = 
-}
+	sq[top][left] =
+}*/
 
 var seaMonster = [][]rune{
 	[]rune("                  # "),
@@ -280,6 +281,17 @@ func findSeaMonsters(picture [][]bool) map[aoc.Point]bool {
 	return monsters
 }
 
+const width = 4
+
+func printTiles(tiles map[int64]*tile) {
+	var ids aoc.Int64Slice
+	for id := range tiles {
+		ids = append(ids, id)
+	}
+	sort.Sort(ids)
+
+}
+
 func step1(tiles map[int64]*tile) int64 {
 	corners := findCorners(tiles)
 	product := int64(1)
@@ -290,7 +302,7 @@ func step1(tiles map[int64]*tile) int64 {
 }
 
 func step2(tiles map[int64]*tile) int64 {
-	origPicture := placeTiles(tiles)
+	/*origPicture := placeTiles(tiles)
 	picture := tile{grid: origPicture, id: -1, used: true}
 	monsters := make(map[aoc.Point]bool)
 	for it := 0; true; it++ {
@@ -316,6 +328,7 @@ func step2(tiles map[int64]*tile) int64 {
 				count++
 			}
 		}
-	}
-	return count
+	}*/
+	printTiles(tiles, "tiles.txt")
+	return -1
 }
