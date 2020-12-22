@@ -99,12 +99,12 @@ func (d *deck) score() int64 {
 // String generates a visual representation of a deck's contents
 func (d *deck) String() string {
 	var b strings.Builder
+	b.Grow(len(d.cards) * 4)
 	d.stringBuild(&b)
 	return b.String()
 }
 
 func (d *deck) stringBuild(b *strings.Builder) {
-	b.Grow(len(d.cards) * 4)
 	for i, n := range d.cards {
 		fmt.Fprintf(b, "%d", n)
 		if i < (len(d.cards) - 1) {
