@@ -23,11 +23,11 @@ var input = []string{
 }
 
 func TestStep1(t *testing.T) {
-	decks := parseDecks(input)
-	assert.Equal(t, int64(306), step1(decks))
+	d := parseDecks(input)
+	assert.Equal(t, int64(306), step1(d))
 }
 
 func TestStep2(t *testing.T) {
-	decks := parseDecks(input)
-	assert.Equal(t, int64(291), step2(decks))
+	d := parseDecks(input)
+	assert.Equal(t, int64(291), step2(d))
 }
