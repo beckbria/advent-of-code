@@ -96,17 +96,21 @@ func (d *deck) score() int64 {
 	return score
 }
 
-// toString generates a visual representation of a deck's contents
-func (d *deck) toString() string {
+// String generates a visual representation of a deck's contents
+func (d *deck) String() string {
 	var b strings.Builder
-	b.Grow(len(d.cards) * 3)
+	d.stringBuild(&b)
+	return b.String()
+}
+
+func (d *deck) stringBuild(b *strings.Builder) {
+	b.Grow(len(d.cards) * 4)
 	for i, n := range d.cards {
-		fmt.Fprintf(&b, "%d", n)
+		fmt.Fprintf(b, "%d", n)
 		if i < (len(d.cards) - 1) {
 			b.WriteString(", ")
 		}
 	}
-	return b.String()
 }
 
 // drawResult reprsents the cards drawn by each player in a round.  Includes an unused value at
@@ -148,9 +152,13 @@ func (d decks) finished() bool {
 	return d[1].isEmpty() || d[2].isEmpty()
 }
 
-// hash returns a string indication of the current deck values
-func (d decks) hash() string {
-	return d[1].toString() + "/" + d[2].toString()
+func (d decks) String() string {
+	var b strings.Builder
+	b.Grow((len(d[1].cards) + len(d[2].cards)) * 4)
+	d[1].stringBuild(&b)
+	b.WriteRune('/')
+	d[2].stringBuild(&b)
+	return b.String()
 }
 
 // add adds the two cards drawn in a round to the winner's deck
@@ -206,10 +214,10 @@ func recursiveCombat(d decks) int {
 	for !d.finished() {
 		if debug {
 			fmt.Printf("\n-- Round %d (Game %d) --\n", round, game)
-			fmt.Printf("Player 1's deck: %s\n", d[1].toString())
-			fmt.Printf("Player 2's deck: %s\n", d[2].toString())
+			fmt.Printf("Player 1's deck: %s\n", d[1])
+			fmt.Printf("Player 2's deck: %s\n", d[2])
 		}
-		h := d.hash()
+		h := d.String()
 		if _, found := seenGames[h]; found {
 			// Infinite loop prevention rule
 			if debug {
@@ -250,8 +258,8 @@ func recursiveCombat(d decks) int {
 	if debug {
 		if game == 1 {
 			fmt.Printf("\n== Post-game results ==\n")
-			fmt.Printf("Player 1's deck: %s\n", d[1].toString())
-			fmt.Printf("Player 2's deck: %s\n", d[2].toString())
+			fmt.Printf("Player 1's deck: %s\n", d[1])
+			fmt.Printf("Player 2's deck: %s\n", d[2])
 		}
 		fmt.Printf("The winner of game %d is player %d!\n", game, winner)
 	}
