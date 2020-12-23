@@ -12,7 +12,10 @@ import (
 )
 
 // https://adventofcode.com/2020/day/#
-// TODO: Description
+// Assemble a jigsaw puzzle printed on transparency paper and look at the picture
+
+// Enable debug output
+const debug = true
 
 func main() {
 	lines := aoc.ReadFileLines("input.txt")
@@ -24,17 +27,53 @@ func main() {
 
 	sw.Reset()
 	fmt.Println("Step 2:")
-	//fmt.Println(step2(lines))
+	fmt.Println(step2(tiles))
 	fmt.Println(sw.Elapsed())
 }
 
-type tile struct {
-	id   int64
-	grid [][]bool
-	used bool
+// valuePair represents the two possible representations of a set of bits
+// (current order or reversed)
+type valuePair [2]int64
+
+func (v valuePair) current() int64 {
+	return v[0]
 }
 
-func binaryAndReversed(s string) []int64 {
+func (v valuePair) flipped() int64 {
+	return v[1]
+}
+
+func (v valuePair) flip() {
+	v[0], v[1] = v[1], v[0]
+}
+
+func (v valuePair) min() int64 {
+	return aoc.Min(v[0], v[1])
+}
+
+type tile struct {
+	id                    int64    // The identifier of the tile
+	grid                  [][]bool // The pixels that make up the tile
+	up, down, left, right valuePair
+	used                  bool // Has this tile been assembled in a picture?
+}
+
+func newTile(id int64, lines []string) *tile {
+	t := tile{id: id, grid: make([][]bool, 0), used: false}
+	for i, l := range lines {
+		if len(l) != len(lines) {
+			log.Fatalf("Unexpected line: %q\n", l)
+		}
+		t.grid = append(t.grid, make([]bool, 0))
+		for _, v := range []rune(l) {
+			t.grid[i] = append(t.grid[i], v == '#')
+		}
+	}
+	t.calculateSides()
+	return &t
+}
+
+func binaryAndReversed(s string) valuePair {
 	forward, _ := strconv.ParseInt(s, 2, 64)
 	bits := []rune(s)
 	ls := len(s)
@@ -42,55 +81,32 @@ func binaryAndReversed(s string) []int64 {
 		bits[i], bits[ls-(1+i)] = bits[ls-(1+i)], bits[i]
 	}
 	reverse, _ := strconv.ParseInt(string(bits), 2, 64)
-	return []int64{forward, reverse}
+	return [2]int64{forward, reverse}
 }
 
-func (t *tile) top() []int64 {
-	bits := ""
+func bit(b bool) string {
+	if b {
+		return "1"
+	}
+	return "0"
+}
+
+func (t *tile) calculateSides() {
+	u, d, l, r := "", "", "", ""
 	for _, b := range t.grid[0] {
-		val := "0"
-		if b {
-			val = "1"
-		}
-		bits = bits + val
+		u += bit(b)
 	}
-	return binaryAndReversed(bits)
-}
-
-func (t *tile) left() []int64 {
-	bits := ""
-	for _, r := range t.grid {
-		val := "0"
-		if r[0] {
-			val = "1"
-		}
-		bits = bits + val
-	}
-	return binaryAndReversed(bits)
-}
-
-func (t *tile) right() []int64 {
-	bits := ""
-	for _, r := range t.grid {
-		val := "0"
-		if r[len(r)-1] {
-			val = "1"
-		}
-		bits = bits + val
-	}
-	return binaryAndReversed(bits)
-}
-
-func (t *tile) bottom() []int64 {
-	bits := ""
+	t.up = binaryAndReversed(u)
 	for _, b := range t.grid[len(t.grid)-1] {
-		val := "0"
-		if b {
-			val = "1"
-		}
-		bits = bits + val
+		d += bit(b)
 	}
-	return binaryAndReversed(bits)
+	t.down = binaryAndReversed(d)
+	for _, row := range t.grid {
+		l += bit(row[0])
+		r += bit(row[len(row)-1])
+	}
+	t.left = binaryAndReversed(l)
+	t.right = binaryAndReversed(r)
 }
 
 func (t *tile) cw() {
@@ -108,6 +124,7 @@ func (t *tile) cw() {
 	}
 
 	t.grid = rot
+	t.right, t.down, t.left, t.up = t.up, t.right, t.down, t.left
 }
 
 func (t *tile) ccw() {
@@ -123,6 +140,8 @@ func (t *tile) flipVertical() {
 			t.grid[y][x], t.grid[lg-1-y][x] = t.grid[lg-1-y][x], t.grid[y][x]
 		}
 	}
+	t.left.flip()
+	t.right.flip()
 }
 
 func (t *tile) flipHorizontal() {
@@ -132,39 +151,30 @@ func (t *tile) flipHorizontal() {
 			t.grid[y][x], t.grid[y][ly-1-x] = t.grid[y][ly-1-x], t.grid[y][x]
 		}
 	}
+	t.up.flip()
+	t.down.flip()
 }
 
 var (
 	inputRegex = regexp.MustCompile(`^Tile (\d+):$`)
 )
 
-func parseTiles(lines []string) map[int64]*tile {
-	tiles := make(map[int64]*tile)
+type tiles map[int64]*tile
+
+func parseTiles(lines []string) tiles {
+	t := make(tiles)
 	for i := 0; i < len(lines); i += 12 {
 		tokens := inputRegex.FindStringSubmatch(lines[i])
 		id, _ := strconv.ParseInt(tokens[1], 10, 64)
-		tiles[id] = parseTile(id, lines[i+1:i+11])
+		t[id] = newTile(id, lines[i+1:i+11])
 	}
-	return tiles
+	return t
 }
 
-func parseTile(id int64, lines []string) *tile {
-	t := tile{id: id, grid: make([][]bool, 0)}
-	for i, l := range lines {
-		if len(l) != len(lines) {
-			log.Fatalf("Unexpected line: %q\n", l)
-		}
-		t.grid = append(t.grid, make([]bool, 0))
-		for _, v := range []rune(l) {
-			t.grid[i] = append(t.grid[i], v == '#')
-		}
-	}
-	return &t
-}
-
-func findCorners(tiles map[int64]*tile) map[int64]*tile {
-	dimensions := int(math.Sqrt(float64(len(tiles))))
-	if dimensions*dimensions != len(tiles) {
+// findEdges returns the edges and corners
+func (ts tiles) findEdges() (tiles, tiles) {
+	dimensions := int(math.Sqrt(float64(len(ts))))
+	if dimensions*dimensions != len(ts) {
 		log.Fatalf("Not a square grid")
 	}
 
@@ -178,9 +188,9 @@ func findCorners(tiles map[int64]*tile) map[int64]*tile {
 
 	// Find unique patterns and mark them as the edges
 	tileEdges := make(map[int64][]*tile)
-	for _, t := range tiles {
-		for _, s := range [][]int64{t.top(), t.left(), t.right(), t.bottom()} {
-			val := aoc.Min(s[0], s[1])
+	for _, t := range ts {
+		for _, s := range []valuePair{t.up, t.left, t.right, t.down} {
+			val := s.min()
 			if tileEdges[val] == nil {
 				tileEdges[val] = make([]*tile, 0)
 			}
@@ -190,7 +200,7 @@ func findCorners(tiles map[int64]*tile) map[int64]*tile {
 
 	edges := make(map[int64]*tile)
 	corners := make(map[int64]*tile)
-	for _, te := range tileEdges {
+	for e, te := range tileEdges {
 		if len(te) == 1 {
 			t := te[0]
 			if _, found := edges[t.id]; found {
@@ -198,55 +208,31 @@ func findCorners(tiles map[int64]*tile) map[int64]*tile {
 			}
 			edges[t.id] = t
 		}
+		if debug && len(te) > 2 {
+			// See if all common edges are unique to a pair of tiles.
+			// Testing on the input indicates they are
+			fmt.Printf("Found %d hits for pattern %d (tiles ", len(te), e)
+			for _, t := range te {
+				fmt.Printf("%d ", t.id)
+			}
+			fmt.Println(")")
+		}
+	}
+	for id := range corners {
+		delete(edges, id)
 	}
 
-	return corners
+	return edges, corners
 }
 
-const debug = true
-
-/*func placeTiles(tiles map[int64]*tile) [][]bool {
-	dimensions := int(math.Sqrt(float64(len(tiles))))
-	if dimensions*dimensions != len(tiles) {
-		log.Fatalf("Not a square grid")
+func (ts tiles) String() string {
+	var ids aoc.Int64Slice
+	for id := range ts {
+		ids = append(ids, id)
 	}
-
-	// Find unique patterns and mark them as the edges
-	tileEdges := make(map[int64][]*tile)
-	for _, t := range tiles {
-		for _, s := range [][]int64{t.top(), t.left(), t.right(), t.bottom()} {
-			val := aoc.Min(s[0], s[1])
-			if tileEdges[val] == nil {
-				tileEdges[val] = make([]*tile, 0)
-			}
-			tileEdges[val] = append(tileEdges[val], t)
-		}
-	}
-
-	edges := make(map[int64]*tile)
-	corners := make(map[int64]*tile)
-	for _, te := range tileEdges {
-		if len(te) == 1 {
-			t := te[0]
-			if _, found := edges[t.id]; found {
-				corners[t.id] = t
-			}
-			edges[t.id] = t
-		}
-	}
-
-	top, left, right, bottom := 0, 0, dimensions-1, dimensions-1
-	sq := make([][]int64, dimensions)
-	for i := range sq {
-		sq[i] = make([]int64, dimensions)
-		for j := range sq[i] {
-			sq[i][j] = -1
-		}
-	}
-
-	// Arbitrarily pick a first corner
-	sq[top][left] =
-}*/
+	sort.Sort(ids)
+	return ""
+}
 
 var seaMonster = [][]rune{
 	[]rune("                  # "),
@@ -261,7 +247,7 @@ func findSeaMonsters(picture [][]bool) map[aoc.Point]bool {
 		for x := 0; x <= len(picture[y])-len(seaMonster[0]); x++ {
 			for yd := 0; yd < len(seaMonster); yd++ {
 				for xd := 0; xd < len(seaMonster[0]); xd++ {
-					if seaMonster[y][x] != '#' {
+					if seaMonster[yd][xd] != '#' {
 						continue
 					}
 					if !picture[y+yd][x+xd] {
@@ -273,7 +259,9 @@ func findSeaMonsters(picture [][]bool) map[aoc.Point]bool {
 			// This is a valid sea monster.  Loop back through and mark all of the spots
 			for yd := 0; yd < len(seaMonster); yd++ {
 				for xd := 0; xd < len(seaMonster[0]); xd++ {
-					monsters[aoc.Point{X: int64(x + xd), Y: int64(y + yd)}] = true
+					if seaMonster[yd][xd] == '#' {
+						monsters[aoc.Point{X: int64(x + xd), Y: int64(y + yd)}] = true
+					}
 				} // xd
 			} // yd
 		} // x
@@ -283,17 +271,8 @@ func findSeaMonsters(picture [][]bool) map[aoc.Point]bool {
 
 const width = 4
 
-func printTiles(tiles map[int64]*tile) {
-	var ids aoc.Int64Slice
-	for id := range tiles {
-		ids = append(ids, id)
-	}
-	sort.Sort(ids)
-
-}
-
-func step1(tiles map[int64]*tile) int64 {
-	corners := findCorners(tiles)
+func step1(t tiles) int64 {
+	_, corners := t.findEdges()
 	product := int64(1)
 	for id := range corners {
 		product *= id
@@ -301,7 +280,7 @@ func step1(tiles map[int64]*tile) int64 {
 	return product
 }
 
-func step2(tiles map[int64]*tile) int64 {
+func step2(ts tiles) int64 {
 	/*origPicture := placeTiles(tiles)
 	picture := tile{grid: origPicture, id: -1, used: true}
 	monsters := make(map[aoc.Point]bool)
