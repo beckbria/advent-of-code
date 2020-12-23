@@ -116,20 +116,20 @@ func (t *tile) ccw() {
 	t.cw()
 }
 
-func (t *tile) flipHorizontal() {
+func (t *tile) flipVertical() {
 	for x := range t.grid[0] {
 		lg := len(t.grid)
-		for i := 0; i < (lg / 2); i++ {
-			t.grid[i][x], t.grid[lg-1-i][x] = t.grid[lg-1-i][x], t.grid[i][x]
+		for y := 0; y < (lg / 2); y++ {
+			t.grid[y][x], t.grid[lg-1-y][x] = t.grid[lg-1-y][x], t.grid[y][x]
 		}
 	}
 }
 
-func (t *tile) flipVertical() {
+func (t *tile) flipHorizontal() {
 	for y := range t.grid {
 		ly := len(t.grid[y])
-		for i := 0; i < (ly / 2); i++ {
-			t.grid[y][i], t.grid[y][ly-1-i] = t.grid[y][ly-1-i], t.grid[y][i]
+		for x := 0; x < (ly / 2); x++ {
+			t.grid[y][x], t.grid[y][ly-1-x] = t.grid[y][ly-1-x], t.grid[y][x]
 		}
 	}
 }
@@ -151,7 +151,7 @@ func parseTiles(lines []string) map[int64]*tile {
 func parseTile(id int64, lines []string) *tile {
 	t := tile{id: id, grid: make([][]bool, 0)}
 	for i, l := range lines {
-		if len(l) != 10 {
+		if len(l) != len(lines) {
 			log.Fatalf("Unexpected line: %q\n", l)
 		}
 		t.grid = append(t.grid, make([]bool, 0))
@@ -329,6 +329,6 @@ func step2(tiles map[int64]*tile) int64 {
 			}
 		}
 	}*/
-	printTiles(tiles, "tiles.txt")
+	//printTiles(tiles, "tiles.txt")
 	return -1
 }
