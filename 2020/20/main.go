@@ -14,7 +14,7 @@ import (
 // Assemble a jigsaw puzzle printed on transparency paper and look at the picture
 
 // Enable debug output
-const debug = true
+const debug = false
 
 func main() {
 	lines := aoc.ReadFileLines("input.txt")
@@ -566,8 +566,6 @@ func findSeaMonsters(picture [][]bool) map[aoc.Point]bool {
 	return monsters
 }
 
-const width = 4
-
 func step1(t tiles) int64 {
 	_, corners, _ := t.findEdges()
 	product := int64(1)
@@ -585,7 +583,6 @@ func step2(ts tiles) int64 {
 		if len(monsters) > 0 {
 			if debug {
 				fmt.Printf("Found %d monster squares on iteration %d\n", len(monsters), it)
-				fmt.Println(monsters)
 			}
 			break
 		}
