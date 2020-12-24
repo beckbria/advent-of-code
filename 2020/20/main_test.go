@@ -178,7 +178,7 @@ func TestFlip(t *testing.T) {
 
 func TestFindEdges(t *testing.T) {
 	ts := parseTiles(input)
-	edges, corners := ts.findEdges()
+	edges, corners, _ := ts.findEdges()
 	var c []int64
 	for id := range corners {
 		c = append(c, id)
