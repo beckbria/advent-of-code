@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2019/lib"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -16,10 +16,10 @@ func TestGravity(t *testing.T) {
 		"<x=3, y=5, z=-1>"})
 	ms.step()
 
-	assert.Equal(t, ms[0].v, aoc.Point3{X: 3, Y: -1, Z: -1})
-	assert.Equal(t, ms[1].v, aoc.Point3{X: 1, Y: 3, Z: 3})
-	assert.Equal(t, ms[2].v, aoc.Point3{X: -3, Y: 1, Z: -3})
-	assert.Equal(t, ms[3].v, aoc.Point3{X: -1, Y: -3, Z: 1})
+	assert.Equal(t, ms[0].v, lib.Point3{X: 3, Y: -1, Z: -1})
+	assert.Equal(t, ms[1].v, lib.Point3{X: 1, Y: 3, Z: 3})
+	assert.Equal(t, ms[2].v, lib.Point3{X: -3, Y: 1, Z: -3})
+	assert.Equal(t, ms[3].v, lib.Point3{X: -1, Y: -3, Z: 1})
 }
 
 func TestStep(t *testing.T) {
@@ -32,15 +32,15 @@ func TestStep(t *testing.T) {
 		ms.step()
 	}
 
-	assert.Equal(t, ms[0].v, aoc.Point3{X: -3, Y: -2, Z: 1})
-	assert.Equal(t, ms[1].v, aoc.Point3{X: -1, Y: 1, Z: 3})
-	assert.Equal(t, ms[2].v, aoc.Point3{X: 3, Y: 2, Z: -3})
-	assert.Equal(t, ms[3].v, aoc.Point3{X: 1, Y: -1, Z: -1})
+	assert.Equal(t, ms[0].v, lib.Point3{X: -3, Y: -2, Z: 1})
+	assert.Equal(t, ms[1].v, lib.Point3{X: -1, Y: 1, Z: 3})
+	assert.Equal(t, ms[2].v, lib.Point3{X: 3, Y: 2, Z: -3})
+	assert.Equal(t, ms[3].v, lib.Point3{X: 1, Y: -1, Z: -1})
 
-	assert.Equal(t, ms[0].p, aoc.Point3{X: 2, Y: 1, Z: -3})
-	assert.Equal(t, ms[1].p, aoc.Point3{X: 1, Y: -8, Z: 0})
-	assert.Equal(t, ms[2].p, aoc.Point3{X: 3, Y: -6, Z: 1})
-	assert.Equal(t, ms[3].p, aoc.Point3{X: 2, Y: 0, Z: 4})
+	assert.Equal(t, ms[0].p, lib.Point3{X: 2, Y: 1, Z: -3})
+	assert.Equal(t, ms[1].p, lib.Point3{X: 1, Y: -8, Z: 0})
+	assert.Equal(t, ms[2].p, lib.Point3{X: 3, Y: -6, Z: 1})
+	assert.Equal(t, ms[3].p, lib.Point3{X: 2, Y: 0, Z: 4})
 }
 
 func TestEnergy(t *testing.T) {

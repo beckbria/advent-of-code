@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sync"
 
-	"../../aoc"
-	"../intcode"
+	"github.com/beckbria/advent-of-code/2019/lib"
+	"github.com/beckbria/advent-of-code/2019/intcode"
 )
 
 const debug = false
@@ -13,7 +13,7 @@ const debug = false
 func main() {
 	p := intcode.ReadIntCode("input.txt")
 
-	sw := aoc.NewStopwatch()
+	sw := lib.NewStopwatch()
 	// Part 1
 	//fmt.Println(firstTo255(p))
 	//fmt.Println(sw.Elapsed())
@@ -91,7 +91,7 @@ func newNetworkIo(r *router) *networkIo {
 
 type router struct {
 	io      [50]*networkIo
-	lost    map[int64][]aoc.Point
+	lost    map[int64][]lib.Point
 	lostMux sync.Mutex
 }
 
@@ -101,9 +101,9 @@ func (r *router) send(dest, x, y int64) {
 	} else {
 		r.lostMux.Lock()
 		if _, found := r.lost[dest]; !found {
-			r.lost[dest] = []aoc.Point{}
+			r.lost[dest] = []lib.Point{}
 		}
-		r.lost[dest] = append(r.lost[dest], aoc.Point{X: x, Y: y})
+		r.lost[dest] = append(r.lost[dest], lib.Point{X: x, Y: y})
 		r.lostMux.Unlock()
 	}
 }
@@ -125,7 +125,7 @@ func (r *router) idle() bool {
 }
 
 func newRouter() *router {
-	r := router{lost: make(map[int64][]aoc.Point)}
+	r := router{lost: make(map[int64][]lib.Point)}
 	for i := range r.io {
 		r.io[i] = newNetworkIo(&r)
 		// Assign the initial network address
@@ -166,7 +166,7 @@ func duplicateNat(p intcode.Program) int64 {
 	}
 
 	// NAT loop
-	lastNat := aoc.Point{X: -1, Y: -1423}
+	lastNat := lib.Point{X: -1, Y: -1423}
 	for true {
 		oldLen := len(r.lost[255])
 		// Wait for idle

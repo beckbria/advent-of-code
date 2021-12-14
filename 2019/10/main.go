@@ -5,7 +5,7 @@ import (
 	"math"
 	"sort"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2019/lib"
 )
 
 // https://adventofcode.com/2019/day/10
@@ -21,13 +21,13 @@ type starMap [][]rune
 
 // asteroidSet is a hash set of asteroid locations.  The key is the location.
 // The value can be used to store the destruction order
-type asteroidSet map[aoc.Point]int
+type asteroidSet map[lib.Point]int
 
 func (a asteroidSet) put(x, y, order int) {
-	a[aoc.Point{X: int64(x), Y: int64(y)}] = order
+	a[lib.Point{X: int64(x), Y: int64(y)}] = order
 }
 
-func (a asteroidSet) canSee(from, to *aoc.Point) bool {
+func (a asteroidSet) canSee(from, to *lib.Point) bool {
 	if from.Equals(to) {
 		return false
 	}
@@ -40,7 +40,7 @@ func (a asteroidSet) canSee(from, to *aoc.Point) bool {
 			continue
 		}
 		s := from.SlopeTo(&target)
-		if aoc.SameSlope(&s, &slope) && from.ManhattanDistance(&target) < from.ManhattanDistance(to) {
+		if lib.SameSlope(&s, &slope) && from.ManhattanDistance(&target) < from.ManhattanDistance(to) {
 			return false
 		}
 	}
@@ -49,9 +49,9 @@ func (a asteroidSet) canSee(from, to *aoc.Point) bool {
 }
 
 func main() {
-	input := aoc.ReadFileLines("input.txt")
+	input := lib.ReadFileLines("input.txt")
 	m := newMap(input)
-	sw := aoc.NewStopwatch()
+	sw := lib.NewStopwatch()
 	pt, count, _ := bestMonitoringStation(m)
 	// Part 1
 	fmt.Println(count)
@@ -74,11 +74,11 @@ func newMap(input []string) starMap {
 // bestMonitoringStation finds the best position for a monitoring
 // station.  It returns its x coordinate, y coordinate, and the number
 // of asteroids which can be seen
-func bestMonitoringStation(m starMap) (aoc.Point, int, map[aoc.Point]int) {
+func bestMonitoringStation(m starMap) (lib.Point, int, map[lib.Point]int) {
 	bestCount := 0
-	bestLocation := aoc.Point{X: -1, Y: -1}
+	bestLocation := lib.Point{X: -1, Y: -1}
 	a := findAsteroids(m)
-	counts := make(map[aoc.Point]int)
+	counts := make(map[lib.Point]int)
 
 	for monitor := range a {
 		count := 0
@@ -109,7 +109,7 @@ func findAsteroids(m starMap) asteroidSet {
 	return a
 }
 
-func findByDestructionOrder(m starMap, desiredOrder int, from *aoc.Point) aoc.Point {
+func findByDestructionOrder(m starMap, desiredOrder int, from *lib.Point) lib.Point {
 	// Compute the angle in degrees of each star and go around and around, marking them as destroyed
 	do := destructionOrder(m, from)
 	for a, order := range do {
@@ -117,15 +117,15 @@ func findByDestructionOrder(m starMap, desiredOrder int, from *aoc.Point) aoc.Po
 			return a
 		}
 	}
-	return aoc.Point{X: -1, Y: -1}
+	return lib.Point{X: -1, Y: -1}
 }
 
-func destructionOrder(m starMap, from *aoc.Point) asteroidSet {
+func destructionOrder(m starMap, from *lib.Point) asteroidSet {
 	order := findAsteroids(m)
 
 	angles := []float64{}
 	// Maps from angle to a slice of points.  These slices will later be sorted by distance from the laser
-	pointsByAngle := make(map[float64][]aoc.Point, 0)
+	pointsByAngle := make(map[float64][]lib.Point, 0)
 
 	for a := range order {
 		if from.Equals(&a) {
@@ -134,9 +134,9 @@ func destructionOrder(m starMap, from *aoc.Point) asteroidSet {
 		slope := from.SlopeTo(&a)
 		// negative y is actually up
 		slope.Numerator = -slope.Numerator
-		angle := aoc.SlopeToRadians(&slope)
+		angle := lib.SlopeToRadians(&slope)
 		// We want to start at the vertical and go clockwise, so play with the numbers a bit
-		for angle <= aoc.PiOver2 {
+		for angle <= lib.PiOver2 {
 			angle += 2 * math.Pi
 		}
 		angle = -angle
@@ -146,7 +146,7 @@ func destructionOrder(m starMap, from *aoc.Point) asteroidSet {
 		}
 
 		if _, found := pointsByAngle[angle]; !found {
-			pointsByAngle[angle] = make([]aoc.Point, 0)
+			pointsByAngle[angle] = make([]lib.Point, 0)
 			angles = append(angles, angle)
 		}
 		pointsByAngle[angle] = append(pointsByAngle[angle], a)

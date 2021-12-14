@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"../../aoc"
-	"../intcode"
+	"github.com/beckbria/advent-of-code/2019/lib"
+	"github.com/beckbria/advent-of-code/2019/intcode"
 )
 
 // https://adventofcode.com/2019/day/2
@@ -18,7 +18,7 @@ const debug = false
 
 func main() {
 	program := intcode.ReadIntCode("input.txt")
-	sw := aoc.NewStopwatch()
+	sw := lib.NewStopwatch()
 
 	// Step 1 but with an IntCode computer
 	step1 := make([]int64, len(program))

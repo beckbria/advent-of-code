@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"log"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2019/lib"
 )
 
 const debug = false
 
 func main() {
-	input := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	input := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	// Part 1
 	m := readMaze(input)
 	fmt.Println(m.distance("AA", "ZZ", false))
@@ -32,23 +32,23 @@ const (
 )
 
 var (
-	unknownPoint  = aoc.Point{X: infiniteDistance, Y: infiniteDistance}
-	unknownPoint3 = aoc.Point3{X: infiniteDistance, Y: infiniteDistance, Z: infiniteDistance}
+	unknownPoint  = lib.Point{X: infiniteDistance, Y: infiniteDistance}
+	unknownPoint3 = lib.Point3{X: infiniteDistance, Y: infiniteDistance, Z: infiniteDistance}
 )
 
 type cell struct {
-	location aoc.Point3
+	location lib.Point3
 	adjacent map[*cell]bool
 	distance int64
 }
 
-func newCell(pt aoc.Point3) *cell {
+func newCell(pt lib.Point3) *cell {
 	c := cell{adjacent: make(map[*cell]bool), location: pt, distance: infiniteDistance}
 	return &c
 }
 
 type warp struct {
-	internal, external aoc.Point
+	internal, external lib.Point
 }
 
 func newWarp() *warp {
@@ -57,21 +57,19 @@ func newWarp() *warp {
 }
 
 type maze struct {
-	grid         map[aoc.Point]*cell
+	grid         map[lib.Point]*cell
 	named        map[string]*warp
-	reverseNamed map[aoc.Point]string
-	searchGrid   map[aoc.Point3]*cell
+	reverseNamed map[lib.Point]string
+	searchGrid   map[lib.Point3]*cell
 }
 
 func (m *maze) getCell(x, y, z int64) *cell {
-	pt := aoc.Point3{X: x, Y: y, Z: z}
+	pt := lib.Point3{X: x, Y: y, Z: z}
 	if _, found := m.searchGrid[pt]; found {
-		pt0 := aoc.Point{X: x, Y: y}
-		if c0, found := m.grid[pt0]; !found {
+		pt0 := lib.Point{X: x, Y: y}
+		if _, found := m.grid[pt0]; !found {
 			log.Fatalf("Cannot create [%d,%d,%d]\n", x, y, z)
 		}
-
-		c := newCell(pt)
 
 		m.searchGrid[pt] = newCell(pt)
 	}
@@ -124,7 +122,7 @@ func (m *maze) resetDistance() {
 }
 
 func newMaze() *maze {
-	m := maze{grid: make(map[aoc.Point]*cell), named: make(map[string]*warp), reverseNamed: make(map[aoc.Point]string)}
+	m := maze{grid: make(map[lib.Point]*cell), named: make(map[string]*warp), reverseNamed: make(map[lib.Point]string)}
 	return &m
 }
 
@@ -141,8 +139,8 @@ func readMaze(input []string) *maze {
 	for y, row := range grid {
 		for x, p := range row {
 			if p == hallway {
-				pt := aoc.Point{X: int64(x), Y: int64(y)}
-				pt3 := aoc.Point3{X: int64(x), Y: int64(y), Z: 0}
+				pt := lib.Point{X: int64(x), Y: int64(y)}
+				pt3 := lib.Point3{X: int64(x), Y: int64(y), Z: 0}
 				m.grid[pt] = newCell(pt3)
 			}
 		}
@@ -151,14 +149,14 @@ func readMaze(input []string) *maze {
 	// Read any named points
 	for y, row := range grid {
 		for x, p := range row {
-			if aoc.IsUpper(byte(p)) {
+			if lib.IsUpper(byte(p)) {
 				label := ""
-				pt := aoc.Point{}
+				pt := lib.Point{}
 				internal := true
 				internalThreshold := 5
 
 				// Is this a horizontal label?
-				if (x < (len(row) - 1)) && aoc.IsUpper(byte(grid[y][x+1])) {
+				if (x < (len(row) - 1)) && lib.IsUpper(byte(grid[y][x+1])) {
 					label = string([]rune{grid[y][x], grid[y][x+1]})
 					pt.Y = int64(y)
 					if x > 0 && grid[y][x-1] == hallway { // Are we attached to the space to the left?
@@ -172,7 +170,7 @@ func readMaze(input []string) *maze {
 				}
 
 				// Is this a vertical label?
-				if y < (len(grid)-1) && aoc.IsUpper(byte(grid[y+1][x])) {
+				if y < (len(grid)-1) && lib.IsUpper(byte(grid[y+1][x])) {
 					if len(label) > 0 {
 						log.Fatalf("Found Horizontal+Vertical label at [%d,%d]\n", x, y)
 					}

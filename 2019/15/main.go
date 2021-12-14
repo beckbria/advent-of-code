@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"../../aoc"
-	"../intcode"
+	"github.com/beckbria/advent-of-code/2019/lib"
+	"github.com/beckbria/advent-of-code/2019/intcode"
 )
 
 const debug = false
@@ -13,7 +13,7 @@ const debug = false
 func main() {
 	program := intcode.ReadIntCode("input.txt")
 
-	sw := aoc.NewStopwatch()
+	sw := lib.NewStopwatch()
 	// Part 1
 	m := buildMap(program)
 	//m.print()
@@ -47,21 +47,21 @@ const (
 )
 
 var (
-	invalidPoint = aoc.Point{X: infiniteDistance, Y: infiniteDistance}
-	home         = aoc.Point{X: 0, Y: 0}
+	invalidPoint = lib.Point{X: infiniteDistance, Y: infiniteDistance}
+	home         = lib.Point{X: 0, Y: 0}
 )
 
 // dirToAocDir maps the drone direction to our direction class
-func dirToAocDir(dir int64) aoc.Direction {
+func dirToAocDir(dir int64) lib.Direction {
 	switch dir {
 	case north:
-		return aoc.North
+		return lib.North
 	case south:
-		return aoc.South
+		return lib.South
 	case east:
-		return aoc.East
+		return lib.East
 	case west:
-		return aoc.West
+		return lib.West
 	default:
 		log.Fatalf("Unexpected direction: %d\n", dir)
 		return -1
@@ -69,15 +69,15 @@ func dirToAocDir(dir int64) aoc.Direction {
 }
 
 // aocDirToDir maps our direction class to the drone instruction
-func aocDirToDir(dir aoc.Direction) int64 {
+func aocDirToDir(dir lib.Direction) int64 {
 	switch dir {
-	case aoc.North:
+	case lib.North:
 		return north
-	case aoc.South:
+	case lib.South:
 		return south
-	case aoc.East:
+	case lib.East:
 		return east
-	case aoc.West:
+	case lib.West:
 		return west
 	default:
 		log.Fatalf("Unexpected direction: %d\n", dir)
@@ -89,7 +89,7 @@ func aocDirToDir(dir aoc.Direction) int64 {
 type cell struct {
 	contents  rune
 	distance  int64
-	preceding aoc.Point
+	preceding lib.Point
 	visited   bool
 }
 
@@ -98,20 +98,20 @@ func newCell(c rune) *cell {
 	return &cl
 }
 
-type cellMap map[aoc.Point]*cell
+type cellMap map[lib.Point]*cell
 
 // oxygenLocation finds a point in the maze containing oxygen
-func (m cellMap) oxygenLocation() aoc.Point {
+func (m cellMap) oxygenLocation() lib.Point {
 	for pt, c := range m {
 		if c.contents == oxygen {
 			return pt
 		}
 	}
-	return aoc.Point{X: -1, Y: -1}
+	return lib.Point{X: -1, Y: -1}
 }
 
 // distanceToOxygen finds the distance to the oxygen from a location
-func (m cellMap) distanceToOxygen(start *aoc.Point) int64 {
+func (m cellMap) distanceToOxygen(start *lib.Point) int64 {
 	pt := m.oxygenLocation()
 	m.findAllShortestPaths(start, &pt)
 	return m[pt].distance
@@ -124,7 +124,7 @@ func (m cellMap) timeToOxygenation() int64 {
 	maxDistance := int64(0)
 	for _, c := range m {
 		if c.distance != infiniteDistance {
-			maxDistance = aoc.Max(maxDistance, c.distance)
+			maxDistance = lib.Max(maxDistance, c.distance)
 		}
 	}
 	return maxDistance
@@ -137,14 +137,14 @@ func (m cellMap) print() {
 	maxX := -infiniteDistance
 	maxY := -infiniteDistance
 	for pt := range m {
-		minX = aoc.Min(minX, pt.X)
-		maxX = aoc.Max(maxX, pt.X)
-		minY = aoc.Min(minY, pt.Y)
-		maxY = aoc.Max(maxY, pt.Y)
+		minX = lib.Min(minX, pt.X)
+		maxX = lib.Max(maxX, pt.X)
+		minY = lib.Min(minY, pt.Y)
+		maxY = lib.Max(maxY, pt.Y)
 	}
 	for y := minY; y <= maxY; y++ {
 		for x := minX; x <= maxX; x++ {
-			pt := aoc.Point{X: x, Y: y}
+			pt := lib.Point{X: x, Y: y}
 			c, found := m[pt]
 			if pt == home {
 				fmt.Print("D")
@@ -159,7 +159,7 @@ func (m cellMap) print() {
 }
 
 // shortestPath will return the shortest path between two points
-func (m cellMap) shortestPath(start, end *aoc.Point) []aoc.Point {
+func (m cellMap) shortestPath(start, end *lib.Point) []lib.Point {
 	if debug {
 		fmt.Print("Navigating from ")
 		fmt.Print(start)
@@ -177,7 +177,7 @@ func (m cellMap) shortestPath(start, end *aoc.Point) []aoc.Point {
 	m.findAllShortestPaths(start, end)
 
 	// Walk the path back to the start
-	path := []aoc.Point{}
+	path := []lib.Point{}
 	pt := *end
 	for pt != invalidPoint {
 		path = append(path, pt)
@@ -196,7 +196,7 @@ func (m cellMap) shortestPath(start, end *aoc.Point) []aoc.Point {
 // findAllShortestPaths will find the shortest path from a start location to all halls in the
 // map.  If end is non-nil, it will return early once it has found the shortest path to the end
 // location
-func (m cellMap) findAllShortestPaths(start, end *aoc.Point) {
+func (m cellMap) findAllShortestPaths(start, end *lib.Point) {
 	for _, c := range m {
 		c.distance = infiniteDistance
 		c.visited = false
@@ -207,7 +207,7 @@ func (m cellMap) findAllShortestPaths(start, end *aoc.Point) {
 
 	for true {
 		// Find the closest unvisited point
-		var bestPoint aoc.Point
+		var bestPoint lib.Point
 		var bestCell *cell
 		for pt, c := range m {
 			if !c.visited && c.contents != wall && (bestCell == nil || c.distance < bestCell.distance) {
@@ -236,7 +236,7 @@ func (m cellMap) findAllShortestPaths(start, end *aoc.Point) {
 }
 
 // contains returns true if the map contains the specified point
-func (m cellMap) contains(pt *aoc.Point) bool {
+func (m cellMap) contains(pt *lib.Point) bool {
 	_, found := m[*pt]
 	return found
 }
@@ -245,9 +245,9 @@ func (m cellMap) contains(pt *aoc.Point) bool {
 type mazeRunner struct {
 	c         intcode.Computer
 	io        *intcode.StreamInputOutput
-	pos       aoc.Point
+	pos       lib.Point
 	m         cellMap
-	toExplore []aoc.Point
+	toExplore []lib.Point
 }
 
 // newMazeRunner creates a new MazeRunner object for mapping and searching a maze
@@ -255,9 +255,9 @@ func newMazeRunner(p intcode.Program) *mazeRunner {
 	mr := mazeRunner{
 		c:         intcode.NewComputer(p),
 		io:        intcode.NewStreamInputOutput([]int64{}),
-		pos:       aoc.Point{X: 0, Y: 0},
+		pos:       lib.Point{X: 0, Y: 0},
 		m:         make(cellMap),
-		toExplore: []aoc.Point{}}
+		toExplore: []lib.Point{}}
 	mr.io.Debug = debug
 	mr.toExplore = append(mr.toExplore, mr.pos)
 	mr.c.Io = mr.io
@@ -268,7 +268,7 @@ func newMazeRunner(p intcode.Program) *mazeRunner {
 }
 
 // moveTo moves the drone to the specified location in the maze
-func (mr *mazeRunner) moveTo(pt *aoc.Point) {
+func (mr *mazeRunner) moveTo(pt *lib.Point) {
 	if *pt != mr.pos {
 		path := mr.m.shortestPath(&mr.pos, pt)
 		for _, i := range pathToInstructions(path) {
@@ -304,7 +304,7 @@ func (mr *mazeRunner) moveTo(pt *aoc.Point) {
 // it succeeds, it notes the location for future exploration and backtracks
 func (mr *mazeRunner) probe(dir int64) {
 	aocD := dirToAocDir(dir)
-	pt := aoc.Point{X: mr.pos.X + aocD.DeltaX(), Y: mr.pos.Y + aocD.DeltaY()}
+	pt := lib.Point{X: mr.pos.X + aocD.DeltaX(), Y: mr.pos.Y + aocD.DeltaY()}
 	if debug {
 		fmt.Printf("At [%d,%d], probing [%d,%d]", mr.pos.X, mr.pos.Y, pt.X, pt.Y)
 	}
@@ -314,7 +314,7 @@ func (mr *mazeRunner) probe(dir int64) {
 		mr.c.RunToNextInput()
 		if mr.io.LastOutput() != hitWall {
 			// We should look at this cell later
-			mr.toExplore = append([]aoc.Point{pt}, mr.toExplore...)
+			mr.toExplore = append([]lib.Point{pt}, mr.toExplore...)
 			if debug {
 				fmt.Print(": Should Explore\n")
 			}
@@ -335,7 +335,7 @@ func (mr *mazeRunner) probe(dir int64) {
 }
 
 // explore goes to a location and adds its contents to the map
-func (mr *mazeRunner) explore(target *aoc.Point) {
+func (mr *mazeRunner) explore(target *lib.Point) {
 	mr.moveTo(target)
 	if mr.io.LastOutput() == foundOxygen {
 		mr.m[*target] = newCell(oxygen)
@@ -377,7 +377,7 @@ func buildMap(p intcode.Program) cellMap {
 
 // pathToInstructions takes a path generated by shortestPath and converts it into
 // the drone instructions necessary to move to the start of the path
-func pathToInstructions(path []aoc.Point) []int64 {
+func pathToInstructions(path []lib.Point) []int64 {
 	inst := []int64{}
 	// The path starts at the destination, so go in reverse order
 	for i := len(path) - 2; i >= 0; i-- {

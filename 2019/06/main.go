@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2019/lib"
 )
 
 const debug = false
@@ -37,8 +37,8 @@ func newBody(name string) *body {
 type bodySet map[string]*body
 
 func main() {
-	lines := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	lines := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	bodies := parseBodies(lines)
 	// Part 1
 	fmt.Println(totalOrbits(bodies))

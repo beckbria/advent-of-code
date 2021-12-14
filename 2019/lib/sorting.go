@@ -1,4 +1,4 @@
-package aoc
+package lib
 
 // Go quirks: sort.Sort doesn't understand byte arrays, and you can't implement
 // Len/Less/Swap on []byte (or []int64, or.... you get the point) directly.  So

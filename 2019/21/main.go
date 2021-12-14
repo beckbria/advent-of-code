@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"../intcode"
+	"github.com/beckbria/advent-of-code/2019/intcode"
 )
 
 const debug = false

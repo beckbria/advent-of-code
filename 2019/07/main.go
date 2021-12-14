@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"math"
 
-	"../../aoc"
-	"../intcode"
+	"github.com/beckbria/advent-of-code/2019/lib"
+	"github.com/beckbria/advent-of-code/2019/intcode"
 )
 
 // https://adventofcode.com/2019/day/7
@@ -16,7 +16,7 @@ const ampCount = 5
 
 func main() {
 	program := intcode.ReadIntCode("input.txt")
-	sw := aoc.NewStopwatch()
+	sw := lib.NewStopwatch()
 	// Part 1
 	maxSignal, _ := maxThrusterSignal(program)
 	fmt.Println(maxSignal)
@@ -37,7 +37,7 @@ func maxThrusterSignal(program intcode.Program) (int64, []int64) {
 	}
 
 	// Iterate through all computer orders
-	for ok := true; ok; ok = aoc.NextPermutation(phases) {
+	for ok := true; ok; ok = lib.NextPermutation(phases) {
 		previousOutput := int64(0)
 		for i := 0; i < ampCount; i++ {
 			amps[i].Reset()
@@ -67,7 +67,7 @@ func maxThrusterSignalLoopback(program intcode.Program) (int64, []int64) {
 	}
 
 	// Iterate through all phase orders
-	for ok := true; ok; ok = aoc.NextPermutation(phases) {
+	for ok := true; ok; ok = lib.NextPermutation(phases) {
 		io := []*intcode.StreamInputOutput{}
 		for i := 0; i < ampCount; i++ {
 			amps[i].Reset()

@@ -1,4 +1,4 @@
-package aoc
+package lib
 
 // Direction represents a cardinal direction
 type Direction int

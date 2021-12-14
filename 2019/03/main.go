@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"strings"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2019/lib"
 )
 
 // https://adventofcode.com/2019/day/3
@@ -26,12 +26,12 @@ type path struct {
 	distance  int
 }
 
-type wire map[aoc.Point]int
+type wire map[lib.Point]int
 
 func main() {
-	lines := aoc.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("input.txt")
 
-	sw := aoc.NewStopwatch()
+	sw := lib.NewStopwatch()
 	optimalManhattan, optimalCost := bestValues(lines[0], lines[1])
 	fmt.Println(optimalManhattan)
 	fmt.Println(optimalCost)
@@ -48,12 +48,12 @@ func bestValues(first, second string) (int64, int) {
 
 	crosses := intersection(firstPoints, secondPoints)
 	// Find the shortest Manhattan Distance
-	home := aoc.Point{X: 0, Y: 0}
+	home := lib.Point{X: 0, Y: 0}
 	optimalManhattan := int64(99999999)
 	optimalCost := 99999999
 	for pt, distance := range crosses {
-		optimalManhattan = aoc.Min(optimalManhattan, home.ManhattanDistance(pt))
-		optimalCost = aoc.MinInt(optimalCost, distance)
+		optimalManhattan = lib.Min(optimalManhattan, home.ManhattanDistance(&pt))
+		optimalCost = lib.MinInt(optimalCost, distance)
 	}
 	return optimalManhattan, optimalCost
 }
@@ -95,7 +95,7 @@ func pathToWire(trace []path) wire {
 			totalDistance++
 			x += xDelta
 			y += yDelta
-			key := aoc.Point{X: int64(x), Y: int64(y)}
+			key := lib.Point{X: int64(x), Y: int64(y)}
 			if oldVal, found := points[key]; !found || totalDistance < oldVal {
 				points[key] = totalDistance
 			}

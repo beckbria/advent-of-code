@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2019/lib"
 )
 
 // https://adventofcode.com/2019/day/4
@@ -15,7 +15,7 @@ import (
 // (Part 2) the two adjacent matching digits are not part of a larger group of matching digits.
 
 func main() {
-	sw := aoc.NewStopwatch()
+	sw := lib.NewStopwatch()
 	start := 145852
 	end := 616942
 	fmt.Println(len(validPasswords(start, end, false)))
@@ -34,7 +34,7 @@ func validPasswords(start, end int, part2 bool) []int {
 }
 
 func validPassword(pw int, part2 bool) bool {
-	d := aoc.DigitsInt(pw)
+	d := lib.DigitsInt(pw)
 	if d[0] > d[1] || d[1] > d[2] || d[2] > d[3] || d[3] > d[4] || d[4] > d[5] {
 		return false
 	}

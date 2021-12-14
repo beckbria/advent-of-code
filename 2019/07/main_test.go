@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"../intcode"
+	"github.com/beckbria/advent-of-code/2019/intcode"
 
 	"github.com/stretchr/testify/assert"
 )

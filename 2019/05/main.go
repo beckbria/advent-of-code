@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"../../aoc"
-	"../intcode"
+	"github.com/beckbria/advent-of-code/2019/lib"
+	"github.com/beckbria/advent-of-code/2019/intcode"
 )
 
 // https://adventofcode.com/2019/day/5
@@ -13,7 +13,7 @@ import (
 
 func main() {
 	program := intcode.ReadIntCode("input.txt")
-	sw := aoc.NewStopwatch()
+	sw := lib.NewStopwatch()
 	io1 := intcode.NewConstantInputOutput(1)
 	c := intcode.NewComputer(program)
 	c.Io = io1

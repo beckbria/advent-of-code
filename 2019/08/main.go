@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2019/lib"
 )
 
 // https://adventofcode.com/2019/day/8
@@ -43,8 +43,8 @@ func newLayer(height, width int) *layer {
 }
 
 func main() {
-	input := aoc.ReadFileLines("input.txt")[0]
-	sw := aoc.NewStopwatch()
+	input := lib.ReadFileLines("input.txt")[0]
+	sw := lib.NewStopwatch()
 	layers := readLayers(input, 6, 25)
 	fmt.Println(bestLayerScore(layers))
 	image := composeImage(layers)

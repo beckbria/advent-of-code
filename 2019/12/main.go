@@ -5,14 +5,14 @@ import (
 	"regexp"
 	"strconv"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2019/lib"
 )
 
-var origin = aoc.Point3{X: 0, Y: 0, Z: 0}
+var origin = lib.Point3{X: 0, Y: 0, Z: 0}
 
 type moon struct {
-	p aoc.Point3 // Position
-	v aoc.Point3 // Velocity
+	p lib.Point3 // Position
+	v lib.Point3 // Velocity
 }
 
 func (m *moon) energy() int64 {
@@ -36,18 +36,18 @@ func (m *moon) gravitate(n *moon) {
 }
 
 // Return a pair of the X position and velocity for use as a map key
-func (m *moon) x() aoc.Point {
-	return aoc.Point{X: m.p.X, Y: m.v.X}
+func (m *moon) x() lib.Point {
+	return lib.Point{X: m.p.X, Y: m.v.X}
 }
 
 // Return a pair of the Y position and velocity for use as a map key
-func (m *moon) y() aoc.Point {
-	return aoc.Point{X: m.p.Y, Y: m.v.Y}
+func (m *moon) y() lib.Point {
+	return lib.Point{X: m.p.Y, Y: m.v.Y}
 }
 
 // Return a pair of the Z position and velocity for use as a map key
-func (m *moon) z() aoc.Point {
-	return aoc.Point{X: m.p.Z, Y: m.v.Z}
+func (m *moon) z() lib.Point {
+	return lib.Point{X: m.p.Z, Y: m.v.Z}
 }
 
 // Very simplistic gravity model.  If two bodies are in the same plane they don't move,
@@ -80,8 +80,8 @@ func (ms moons) energy() int64 {
 }
 
 // Return a pair of the X position and velocity for use as a map key
-func (ms moons) x() [4]aoc.Point {
-	pts := [4]aoc.Point{}
+func (ms moons) x() [4]lib.Point {
+	pts := [4]lib.Point{}
 	for i := range ms {
 		pts[i] = ms[i].x()
 	}
@@ -89,8 +89,8 @@ func (ms moons) x() [4]aoc.Point {
 }
 
 // Return a pair of the Y position and velocity for use as a map key
-func (ms moons) y() [4]aoc.Point {
-	pts := [4]aoc.Point{}
+func (ms moons) y() [4]lib.Point {
+	pts := [4]lib.Point{}
 	for i := range ms {
 		pts[i] = ms[i].y()
 	}
@@ -98,8 +98,8 @@ func (ms moons) y() [4]aoc.Point {
 }
 
 // Return a pair of the Z position and velocity for use as a map key
-func (ms moons) z() [4]aoc.Point {
-	pts := [4]aoc.Point{}
+func (ms moons) z() [4]lib.Point {
+	pts := [4]lib.Point{}
 	for i := range ms {
 		pts[i] = ms[i].z()
 	}
@@ -120,8 +120,8 @@ func (ms moons) step() {
 }
 
 func main() {
-	input := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	input := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	// Part 1
 	m := readMoons(input)
 	for i := 0; i < 1000; i++ {
@@ -146,11 +146,11 @@ func readMoons(input []string) moons {
 	for _, s := range input {
 		tokens := inputRegEx.FindStringSubmatch(s)
 		x, err := strconv.Atoi(tokens[1])
-		aoc.Check(err)
+		lib.Check(err)
 		y, err := strconv.Atoi(tokens[2])
-		aoc.Check(err)
+		lib.Check(err)
 		z, err := strconv.Atoi(tokens[3])
-		m = append(m, moon{p: aoc.Point3{X: int64(x), Y: int64(y), Z: int64(z)}, v: origin})
+		m = append(m, moon{p: lib.Point3{X: int64(x), Y: int64(y), Z: int64(z)}, v: origin})
 	}
 	return m
 }
@@ -164,12 +164,12 @@ const (
 
 func firstCycle(ms moons) int64 {
 	// Find the period for each moon individually, then figure out when they'll all line up
-	seen := make([]map[[4]aoc.Point]int64, numAxes)
+	seen := make([]map[[4]lib.Point]int64, numAxes)
 	start := make([]int64, numAxes)
 	period := make([]int64, numAxes)
 
 	for i := 0; i < numAxes; i++ {
-		seen[i] = make(map[[4]aoc.Point]int64)
+		seen[i] = make(map[[4]lib.Point]int64)
 	}
 	seen[xAxis][ms.x()] = 0
 	seen[yAxis][ms.y()] = 0
@@ -214,5 +214,5 @@ func firstCycle(ms moons) int64 {
 
 // Returns the least common multiple of 3 numbers
 func lcm3(x, y, z int64) int64 {
-	return aoc.Lcm(x, aoc.Lcm(y, z))
+	return lib.Lcm(x, lib.Lcm(y, z))
 }

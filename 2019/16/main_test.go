@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2019/lib"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -15,7 +15,7 @@ func TestReadDigits(t *testing.T) {
 
 func TestModulo(t *testing.T) {
 	assert.Equal(t, 7, 37%10)
-	assert.Equal(t, int64(7), aoc.Abs(-17%10))
+	assert.Equal(t, int64(7), lib.Abs(-17%10))
 }
 
 func TestPattern(t *testing.T) {

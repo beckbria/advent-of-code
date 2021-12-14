@@ -8,12 +8,12 @@ import (
 	"strconv"
 	"strings"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2019/lib"
 )
 
 func main() {
-	input := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	input := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	// Part 1
 	f := readFormulas(input)
 	fmt.Println(f.minimumRequired("ORE", "FUEL", 1))
@@ -74,7 +74,7 @@ func readComponents(cl string) map[string]int64 {
 	for _, c := range strings.Split(cl, ", ") {
 		pieces := strings.Split(c, " ")
 		n, err := strconv.ParseInt(pieces[0], 10, 64)
-		aoc.Check(err)
+		lib.Check(err)
 		comps[pieces[1]] = n
 	}
 

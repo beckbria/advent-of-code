@@ -5,12 +5,12 @@ import (
 	"strconv"
 	"strings"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2019/lib"
 )
 
 // ReadIntCode reads a program consisting of IntCode instructions - comma-separated integers
 func ReadIntCode(fileName string) []Instruction {
-	lines := aoc.ReadFileLines(fileName)
+	lines := lib.ReadFileLines(fileName)
 	if len(lines) > 1 {
 		log.Fatalf("ReadIntCode expects a single line of input")
 	}
@@ -20,7 +20,7 @@ func ReadIntCode(fileName string) []Instruction {
 // ReadIntCodePrograms reads a series of IntCode programs, one per line
 func ReadIntCodePrograms(fileName string) []Program {
 	programs := make([][]Instruction, 0)
-	for _, line := range aoc.ReadFileLines(fileName) {
+	for _, line := range lib.ReadFileLines(fileName) {
 		programs = append(programs, ParseProgram(line))
 	}
 	return programs

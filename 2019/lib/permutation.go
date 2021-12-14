@@ -1,4 +1,4 @@
-package aoc
+package lib
 
 // NextPermutation sets a slice to its next lexographic permutation.  Returns true if it found another permutation
 func NextPermutation(arr []int64) bool {

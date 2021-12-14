@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2019/lib"
 )
 
 const (
@@ -14,8 +14,8 @@ const (
 )
 
 func main() {
-	input := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	input := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	// Part 1
 	b := readBugs(input)
 	dup := firstDuplicate(b)
@@ -29,7 +29,7 @@ func main() {
 }
 
 // bugs represents a set of points occupied bugs in a system reminiscent of Conway's Game of Life
-type bugs map[aoc.Point3]bool
+type bugs map[lib.Point3]bool
 
 // score calculates the score of a system of bugs.  In level 0 of the grid, each bug scores points
 // depending on 2 to the power of its location in the 5x5 grid
@@ -42,9 +42,9 @@ func (b bugs) score() int64 {
 		if bug {
 			pow := 5*pt.Y + pt.X
 			if debugScore {
-				fmt.Printf("[%d,%d] == 2**%d == %d\n", pt.X, pt.Y, pow, aoc.Pow(2, pow))
+				fmt.Printf("[%d,%d] == 2**%d == %d\n", pt.X, pt.Y, pow, lib.Pow(2, pow))
 			}
-			score += aoc.Pow(2, pow)
+			score += lib.Pow(2, pow)
 		}
 	}
 	return score
@@ -77,79 +77,79 @@ func bugStr(isBug bool) string {
 }
 
 // pointAdjacent returns a set of all points adjacent to a point in the bug grid
-func pointAdjacent(pt *aoc.Point3, multiLevel bool) bugs {
+func pointAdjacent(pt *lib.Point3, multiLevel bool) bugs {
 	adj := make(bugs)
 
 	// Add the left neighbors
 	switch pt.X {
 	case 0:
 		if multiLevel {
-			adj[aoc.Point3{X: 1, Y: 2, Z: pt.Z - 1}] = true
+			adj[lib.Point3{X: 1, Y: 2, Z: pt.Z - 1}] = true
 		}
 	case 3:
 		if multiLevel && pt.Y == 2 {
 			for y := int64(0); y < 5; y++ {
-				adj[aoc.Point3{X: 4, Y: y, Z: pt.Z + 1}] = true
+				adj[lib.Point3{X: 4, Y: y, Z: pt.Z + 1}] = true
 			}
 			break
 		}
 		fallthrough
 	default:
-		adj[aoc.Point3{X: pt.X - 1, Y: pt.Y, Z: pt.Z}] = true
+		adj[lib.Point3{X: pt.X - 1, Y: pt.Y, Z: pt.Z}] = true
 	}
 
 	// Add the right neighbors
 	switch pt.X {
 	case 4:
 		if multiLevel {
-			adj[aoc.Point3{X: 3, Y: 2, Z: pt.Z - 1}] = true
+			adj[lib.Point3{X: 3, Y: 2, Z: pt.Z - 1}] = true
 		}
 	case 1:
 		if multiLevel && pt.Y == 2 {
 			for y := int64(0); y < 5; y++ {
-				adj[aoc.Point3{X: 0, Y: y, Z: pt.Z + 1}] = true
+				adj[lib.Point3{X: 0, Y: y, Z: pt.Z + 1}] = true
 			}
 			break
 		}
 		fallthrough
 	default:
-		adj[aoc.Point3{X: pt.X + 1, Y: pt.Y, Z: pt.Z}] = true
+		adj[lib.Point3{X: pt.X + 1, Y: pt.Y, Z: pt.Z}] = true
 	}
 
 	// Add the top neighbors
 	switch pt.Y {
 	case 0:
 		if multiLevel {
-			adj[aoc.Point3{X: 2, Y: 1, Z: pt.Z - 1}] = true
+			adj[lib.Point3{X: 2, Y: 1, Z: pt.Z - 1}] = true
 		}
 	case 3:
 		if multiLevel && pt.X == 2 {
 			for x := int64(0); x < 5; x++ {
-				adj[aoc.Point3{X: x, Y: 4, Z: pt.Z + 1}] = true
+				adj[lib.Point3{X: x, Y: 4, Z: pt.Z + 1}] = true
 			}
 			break
 		}
 		fallthrough
 	default:
-		adj[aoc.Point3{X: pt.X, Y: pt.Y - 1, Z: pt.Z}] = true
+		adj[lib.Point3{X: pt.X, Y: pt.Y - 1, Z: pt.Z}] = true
 	}
 
 	// Add the bottom neighbors
 	switch pt.Y {
 	case 4:
 		if multiLevel {
-			adj[aoc.Point3{X: 2, Y: 3, Z: pt.Z - 1}] = true
+			adj[lib.Point3{X: 2, Y: 3, Z: pt.Z - 1}] = true
 		}
 	case 1:
 		if multiLevel && pt.X == 2 {
 			for x := int64(0); x < 5; x++ {
-				adj[aoc.Point3{X: x, Y: 0, Z: pt.Z + 1}] = true
+				adj[lib.Point3{X: x, Y: 0, Z: pt.Z + 1}] = true
 			}
 			break
 		}
 		fallthrough
 	default:
-		adj[aoc.Point3{X: pt.X, Y: pt.Y + 1, Z: pt.Z}] = true
+		adj[lib.Point3{X: pt.X, Y: pt.Y + 1, Z: pt.Z}] = true
 	}
 
 	return adj
@@ -172,7 +172,7 @@ func (b bugs) toString() string {
 	var ret strings.Builder
 	for y := int64(0); y < 5; y++ {
 		for x := int64(0); x < 5; x++ {
-			if b[aoc.Point3{X: x, Y: y, Z: 0}] {
+			if b[lib.Point3{X: x, Y: y, Z: 0}] {
 				ret.WriteRune('#')
 			} else {
 				ret.WriteRune('.')
@@ -188,7 +188,7 @@ func readBugs(input []string) bugs {
 	for y, row := range input {
 		for x, c := range []rune(row) {
 			if c == '#' {
-				b[aoc.Point3{X: int64(x), Y: int64(y), Z: 0}] = true
+				b[lib.Point3{X: int64(x), Y: int64(y), Z: 0}] = true
 			}
 		}
 	}

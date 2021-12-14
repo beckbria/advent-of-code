@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"os"
 
-	"../../aoc"
-	"../intcode"
+	"github.com/beckbria/advent-of-code/2019/lib"
+	"github.com/beckbria/advent-of-code/2019/intcode"
 )
 
 func main() {
 	program := intcode.ReadIntCode("input.txt")
 
-	sw := aoc.NewStopwatch()
+	sw := lib.NewStopwatch()
 	// Part 1
 	fmt.Println(countBlocks(program))
 	fmt.Println(sw.Elapsed())
@@ -38,9 +38,9 @@ func countBlocks(p intcode.Program) int64 {
 	io := intcode.NewConstantInputOutput(0)
 	c.Io = io
 	c.Run()
-	screen := make(map[aoc.Point]tile)
+	screen := make(map[lib.Point]tile)
 	for i := 0; i < len(io.Outputs); i += 3 {
-		screen[aoc.Point{X: io.Outputs[i], Y: io.Outputs[i+1]}] = tile(io.Outputs[i+2])
+		screen[lib.Point{X: io.Outputs[i], Y: io.Outputs[i+1]}] = tile(io.Outputs[i+2])
 	}
 	count := int64(0)
 	for _, v := range screen {
@@ -70,7 +70,7 @@ type gameIo struct {
 	inputs         []int64
 	nextInputIndex int
 	Outputs        []int64
-	screen         map[aoc.Point]tile
+	screen         map[lib.Point]tile
 	score          int64
 }
 
@@ -89,7 +89,7 @@ func (io *gameIo) updateGameState() {
 		if x == -1 && y == 0 {
 			io.score = io.Outputs[i+2]
 		} else {
-			io.screen[aoc.Point{X: x, Y: y}] = tile(io.Outputs[i+2])
+			io.screen[lib.Point{X: x, Y: y}] = tile(io.Outputs[i+2])
 		}
 	}
 }
@@ -153,14 +153,14 @@ func (io *gameIo) drawScreen() {
 	maxX := int64(-9999)
 	maxY := int64(-9999)
 	for pt := range io.screen {
-		minX = aoc.Min(minX, pt.X)
-		maxX = aoc.Max(maxX, pt.X)
-		minY = aoc.Min(minY, pt.Y)
-		maxY = aoc.Max(maxY, pt.Y)
+		minX = lib.Min(minX, pt.X)
+		maxX = lib.Max(maxX, pt.X)
+		minY = lib.Min(minY, pt.Y)
+		maxY = lib.Max(maxY, pt.Y)
 	}
 	for y := minY; y <= maxY; y++ {
 		for x := minX; x <= maxX; x++ {
-			t := io.screen[aoc.Point{X: x, Y: y}]
+			t := io.screen[lib.Point{X: x, Y: y}]
 			switch t {
 			case empty:
 				fmt.Print(" ")
@@ -197,6 +197,6 @@ func (io *gameIo) Reset() {
 
 // newGameIo creates an IO component which returns a fixed series of inputs
 func newGameIo(initialInput []int64) *gameIo {
-	io := gameIo{Outputs: []int64{}, inputs: initialInput, nextInputIndex: 0, screen: make(map[aoc.Point]tile)}
+	io := gameIo{Outputs: []int64{}, inputs: initialInput, nextInputIndex: 0, screen: make(map[lib.Point]tile)}
 	return &io
 }

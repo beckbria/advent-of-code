@@ -3,12 +3,12 @@ package main
 import (
 	"fmt"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2019/lib"
 )
 
 func main() {
-	input := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	input := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	// Part 1
 	digits := readDigits(input[0])
 	fmt.Println(readDigitSlice(fft(digits, 100)[:8]))
@@ -46,7 +46,7 @@ func fftRound(digits []int64) []int64 {
 		for j := 0; j < len(digits); j++ {
 			sum += digits[j] * p[j]
 		}
-		result[i] = aoc.Abs(sum % 10)
+		result[i] = lib.Abs(sum % 10)
 	}
 
 	return result
@@ -81,7 +81,7 @@ func part2(baseDigits []int64) int {
 		sum := int64(0)
 		for i := len(digits) - 1; i >= 0; i-- {
 			sum += digits[i]
-			digits[i] = aoc.Abs(sum) % 10
+			digits[i] = lib.Abs(sum) % 10
 		}
 	}
 

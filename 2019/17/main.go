@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"../../aoc"
-	"../intcode"
+	"github.com/beckbria/advent-of-code/2019/lib"
+	"github.com/beckbria/advent-of-code/2019/intcode"
 )
 
 const debug = false
@@ -12,7 +12,7 @@ const debug = false
 func main() {
 	p := intcode.ReadIntCode("input.txt")
 
-	sw := aoc.NewStopwatch()
+	sw := lib.NewStopwatch()
 	// Part 1
 	fmt.Println(sw.Elapsed())
 	fmt.Println(alignmentParams(p))

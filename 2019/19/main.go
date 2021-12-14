@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"../../aoc"
-	"../intcode"
+	"github.com/beckbria/advent-of-code/2019/lib"
+	"github.com/beckbria/advent-of-code/2019/intcode"
 )
 
 const debug = false
@@ -12,7 +12,7 @@ const debug = false
 func main() {
 	p := intcode.ReadIntCode("input.txt")
 
-	sw := aoc.NewStopwatch()
+	sw := lib.NewStopwatch()
 	// Part 1
 	d := newTractorBeamDrone(p)
 	fmt.Println(d.part1())
@@ -25,14 +25,14 @@ func main() {
 }
 
 type drone struct {
-	grid map[aoc.Point]bool
+	grid map[lib.Point]bool
 	c    intcode.Computer
 	io   *intcode.StreamInputOutput
 }
 
 func newTractorBeamDrone(p intcode.Program) *drone {
 	d := drone{
-		grid: make(map[aoc.Point]bool),
+		grid: make(map[lib.Point]bool),
 		c:    intcode.NewComputer(p),
 		io:   intcode.NewStreamInputOutput([]int64{})}
 	d.c.Io = d.io
@@ -44,7 +44,7 @@ const (
 	moving     = 1
 )
 
-func (d *drone) probe(pt *aoc.Point) bool {
+func (d *drone) probe(pt *lib.Point) bool {
 	if v, found := d.grid[*pt]; found {
 		return v
 	}
@@ -66,7 +66,7 @@ func (d *drone) part1() int64 {
 	threshold := int64(49)
 	for x := int64(0); x <= threshold; x++ {
 		for y := int64(0); y <= threshold; y++ {
-			pt := aoc.Point{X: x, Y: y}
+			pt := lib.Point{X: x, Y: y}
 			if d.probe(&pt) {
 				count++
 			}
@@ -98,7 +98,7 @@ YLOOP:
 	for y := yStart; y <= yEnd; y++ {
 		foundStart := false
 		for x := xStart; x <= xEnd; x++ {
-			pt := aoc.Point{X: x, Y: y}
+			pt := lib.Point{X: x, Y: y}
 			d.probe(&pt)
 			r := d.grid[pt]
 			if foundStart && !r {
@@ -113,12 +113,12 @@ YLOOP:
 		}
 	}
 
-	home := aoc.Point{X: 0, Y: 0}
-	best := aoc.Point{X: 999999, Y: 999999}
+	home := lib.Point{X: 0, Y: 0}
+	best := lib.Point{X: 999999, Y: 999999}
 
 	for y := yStart; y <= yEnd; y++ {
 		for x := xStart; x <= xEnd; x++ {
-			pt := aoc.Point{X: x, Y: y}
+			pt := lib.Point{X: x, Y: y}
 			if d.square(x, y, int64(100)) && pt.ManhattanDistance(&home) < best.ManhattanDistance(&home) {
 				fmt.Println(pt)
 				best = pt
@@ -132,7 +132,7 @@ YLOOP:
 func (d *drone) square(x, y, size int64) bool {
 	for X := x; X < x+size; X++ {
 		for Y := y; Y < y+size; Y++ {
-			if !d.grid[aoc.Point{X: X, Y: Y}] {
+			if !d.grid[lib.Point{X: X, Y: Y}] {
 				return false
 			}
 		}
@@ -146,15 +146,15 @@ func (d *drone) print() {
 	minY := int64(9999999)
 	maxY := int64(-9999999)
 	for pt := range d.grid {
-		minX = aoc.Min(minX, pt.X)
-		maxX = aoc.Max(maxX, pt.X)
-		minY = aoc.Min(minY, pt.Y)
-		maxY = aoc.Max(maxY, pt.Y)
+		minX = lib.Min(minX, pt.X)
+		maxX = lib.Max(maxX, pt.X)
+		minY = lib.Min(minY, pt.Y)
+		maxY = lib.Max(maxY, pt.Y)
 	}
 	fmt.Printf("mX:%d, MX:%d, mY:%d, MY: %d\n", minX, maxX, minY, maxY)
 	for y := minY; y <= maxY; y++ {
 		for x := minX; x <= maxX; x++ {
-			if d.grid[aoc.Point{X: x, Y: y}] {
+			if d.grid[lib.Point{X: x, Y: y}] {
 				fmt.Print("#")
 			} else {
 				fmt.Print(".")

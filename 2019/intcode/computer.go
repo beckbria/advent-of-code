@@ -6,7 +6,7 @@ import (
 	"sort"
 	"strconv"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2019/lib"
 )
 
 // A class for simulating an IntCode computer.  IntCode is an imaginary language used in the 2019
@@ -346,7 +346,7 @@ func (c *Computer) memoryContents() string {
 				addresses = append(addresses, addr)
 			}
 		}
-		sort.Sort(aoc.Int64Slice(addresses))
+		sort.Sort(lib.Int64Slice(addresses))
 		// Display them
 		for _, addr := range addresses {
 			m += "\n" + strconv.FormatInt(addr, 10) + ": " + strconv.FormatInt(c.Memory[addr], 10)

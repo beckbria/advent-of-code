@@ -6,12 +6,12 @@ import (
 	"regexp"
 	"strconv"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2019/lib"
 )
 
 func main() {
-	input := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	input := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	// Part 1
 	d := newDeck(10007)
 	inst := parseInstructions(input)
@@ -147,7 +147,7 @@ func parseInstructions(input []string) []instruction {
 		tokens = cutRegEx.FindStringSubmatch(s)
 		if tokens != nil {
 			val, err := strconv.Atoi(tokens[1])
-			aoc.Check(err)
+			lib.Check(err)
 			inst = append(inst, instruction{op: cut, value: val})
 			continue
 		}
@@ -155,7 +155,7 @@ func parseInstructions(input []string) []instruction {
 		tokens = incrementRegEx.FindStringSubmatch(s)
 		if tokens != nil {
 			val, err := strconv.Atoi(tokens[1])
-			aoc.Check(err)
+			lib.Check(err)
 			inst = append(inst, instruction{op: dealIncrement, value: val})
 			continue
 		}
