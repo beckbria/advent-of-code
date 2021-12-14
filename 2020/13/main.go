@@ -5,15 +5,15 @@ import (
 	"strconv"
 	"strings"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/13
 // Bus schedules
 
 func main() {
-	lines := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	lines := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	start, departures := parseSchedule(lines)
 	fmt.Println(step1(start, departures))

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/22
@@ -16,8 +16,8 @@ import (
 const debug = false
 
 func main() {
-	lines := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	lines := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	d := parseDecks(lines)
 	fmt.Println(step1(d))

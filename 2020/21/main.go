@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/21
@@ -28,8 +28,8 @@ func newRecipe() *recipe {
 }
 
 func main() {
-	lines := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	lines := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	r := parseRecipes(lines)
 	count, cause := step1(r)

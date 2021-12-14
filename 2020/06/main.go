@@ -3,15 +3,15 @@ package main
 import (
 	"fmt"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/6
 // Parse survey inputs
 
 func main() {
-	lines := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	lines := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	fmt.Println(step1(lines))
 	fmt.Println(sw.Elapsed())

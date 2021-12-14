@@ -6,15 +6,15 @@ import (
 	"strconv"
 	"strings"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/#
 // Reverse-engineer the format of a ticket
 
 func main() {
-	lines := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	lines := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	rules, yours, others := parseInput(lines)
 	answer1, invalidIndexes := step1(rules, others)

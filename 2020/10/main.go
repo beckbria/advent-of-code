@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"sort"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/10
 // Daisy chaining power adapters
 
 func main() {
-	nums := aoc.ReadFileNumbers("input.txt")
-	sw := aoc.NewStopwatch()
+	nums := lib.ReadFileNumbers("input.txt")
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	fmt.Println(step1(nums))
 	fmt.Println(sw.Elapsed())
@@ -23,7 +23,7 @@ func main() {
 	fmt.Println(sw.Elapsed())
 }
 
-func step1(nums aoc.Int64Slice) int {
+func step1(nums lib.Int64Slice) int {
 	sort.Sort(nums)
 	ones := 0
 	threes := 1
@@ -42,7 +42,7 @@ func step1(nums aoc.Int64Slice) int {
 
 const outlet = int64(0)
 
-func step2(nums aoc.Int64Slice) int64 {
+func step2(nums lib.Int64Slice) int64 {
 	sort.Sort(nums)
 	pre := make(map[int64][]int64)
 	for i := 0; i < len(nums); i++ {

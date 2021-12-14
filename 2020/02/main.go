@@ -5,15 +5,15 @@ import (
 	"regexp"
 	"strconv"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/2
 // Validate passwords against a schema
 
 func main() {
-	lines := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	lines := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	fmt.Println(part1(lines))
 	fmt.Println(sw.Elapsed())

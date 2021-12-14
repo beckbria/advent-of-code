@@ -6,15 +6,15 @@ import (
 	"strconv"
 	"strings"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/19
 // RegEx engine
 
 func main() {
-	lines := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	lines := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	rules, values := parseInput(lines)
 	fmt.Println(step1(rules, values))
@@ -134,7 +134,7 @@ func compileImpl(rules map[int]*rule, compiled map[int]string, ruleID int) strin
 func step1(rules map[int]*rule, lines []string) int {
 	pattern := compile(rules, 0)
 	re, err := regexp.Compile("^" + pattern + "$")
-	aoc.Check(err)
+	lib.Check(err)
 	count := 0
 	for _, l := range lines {
 		if re.MatchString(l) {
@@ -150,7 +150,7 @@ func step2(rules map[int]*rule, lines []string) int {
 	rules[11].patterns = [][]int{[]int{42, 31}, []int{42, 11, 31}}
 	pattern := compile(rules, 0)
 	re, err := regexp.Compile("^" + pattern + "$")
-	aoc.Check(err)
+	lib.Check(err)
 	count := 0
 	for _, l := range lines {
 		if re.MatchString(l) {

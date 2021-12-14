@@ -4,15 +4,15 @@ import (
 	"fmt"
 	"log"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/24
 // Hex-grid pathfinding that becomes the game of life again, plus parsing without delimiters
 
 func main() {
-	lines := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	lines := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	inst := parseInstructions(lines)
 	s1, grid := step1(inst)
@@ -66,7 +66,7 @@ func parseInst(s string) []string {
 	return inst
 }
 
-type hex aoc.Point3
+type hex lib.Point3
 
 const (
 	e  = "e"

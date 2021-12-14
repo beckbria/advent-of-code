@@ -6,15 +6,15 @@ import (
 	"regexp"
 	"strconv"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/#
 // A ship driving around the ocean
 
 func main() {
-	moves := readMoves(aoc.ReadFileLines("input.txt"))
-	sw := aoc.NewStopwatch()
+	moves := readMoves(lib.ReadFileLines("input.txt"))
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	fmt.Println(step1(moves))
 	fmt.Println(sw.Elapsed())
@@ -30,7 +30,7 @@ var (
 )
 
 type move struct {
-	dir       aoc.Direction
+	dir       lib.Direction
 	dirString string
 	dist      int64
 	rotate    bool
@@ -47,31 +47,31 @@ func readMoves(lines []string) []move {
 	return m
 }
 
-func parseDir(dir string) (bool, aoc.Direction) {
+func parseDir(dir string) (bool, lib.Direction) {
 	switch dir {
 	case "L":
-		return true, aoc.Left
+		return true, lib.Left
 	case "R":
-		return true, aoc.Right
+		return true, lib.Right
 	case "N":
-		return false, aoc.North
+		return false, lib.North
 	case "S":
-		return false, aoc.South
+		return false, lib.South
 	case "W":
-		return false, aoc.West
+		return false, lib.West
 	case "E":
-		return false, aoc.East
+		return false, lib.East
 	case "F":
-		return false, aoc.Forward
+		return false, lib.Forward
 	}
 	log.Fatalln("Unknown direction")
-	return false, aoc.Forward
+	return false, lib.Forward
 }
 
 func step1(moves []move) int64 {
-	home := aoc.Point{X: 0, Y: 0}
-	here := aoc.Point{X: 0, Y: 0}
-	facing := aoc.East
+	home := lib.Point{X: 0, Y: 0}
+	here := lib.Point{X: 0, Y: 0}
+	facing := lib.East
 	for _, m := range moves {
 		if m.rotate {
 			facing = rotate(facing, m)
@@ -91,17 +91,17 @@ func intAbs(x int) int {
 	return x
 }
 
-func distance(facing aoc.Direction, m move) (int64, int64) {
+func distance(facing lib.Direction, m move) (int64, int64) {
 	dir := m.dir
-	if dir == aoc.Forward {
+	if dir == lib.Forward {
 		dir = facing
 	}
 	return dir.DeltaX() * m.dist, dir.DeltaY() * m.dist
 }
 
-func rotate(facing aoc.Direction, m move) aoc.Direction {
+func rotate(facing lib.Direction, m move) lib.Direction {
 	amount := m.dist
-	if m.dir == aoc.Left {
+	if m.dir == lib.Left {
 		for amount > 0 {
 			facing = facing.Ccw()
 			amount -= 90
@@ -116,18 +116,18 @@ func rotate(facing aoc.Direction, m move) aoc.Direction {
 }
 
 func step2(moves []move) int64 {
-	home := aoc.Point{X: 0, Y: 0}
-	here := aoc.Point{X: 0, Y: 0}
-	waypoint := aoc.Point{X: 10, Y: 1}
+	home := lib.Point{X: 0, Y: 0}
+	here := lib.Point{X: 0, Y: 0}
+	waypoint := lib.Point{X: 10, Y: 1}
 	for _, m := range moves {
 		if m.rotate {
 			rotateWaypoint(&waypoint, m)
 		} else {
-			if m.dir == aoc.Forward {
+			if m.dir == lib.Forward {
 				here.X += m.dist * waypoint.X
 				here.Y += m.dist * waypoint.Y
 			} else {
-				xd, yd := distance(aoc.North, m)
+				xd, yd := distance(lib.North, m)
 				waypoint.X += xd
 				waypoint.Y -= yd // North = -1 for graphical coordinates
 			}
@@ -136,7 +136,7 @@ func step2(moves []move) int64 {
 	return here.ManhattanDistance(&home)
 }
 
-func rotateWaypoint(w *aoc.Point, m move) {
+func rotateWaypoint(w *lib.Point, m move) {
 	amount := m.dist % 360
 
 	if amount == 0 {
@@ -148,11 +148,11 @@ func rotateWaypoint(w *aoc.Point, m move) {
 		w.Y = -w.Y
 	}
 
-	if (amount == 90 && m.dir == aoc.Left) || (amount == 270 && m.dir == aoc.Right) {
+	if (amount == 90 && m.dir == lib.Left) || (amount == 270 && m.dir == lib.Right) {
 		x, y := w.X, w.Y
 		w.X = -y
 		w.Y = x
-	} else if (amount == 90 && m.dir == aoc.Right) || (amount == 270 && m.dir == aoc.Left) {
+	} else if (amount == 90 && m.dir == lib.Right) || (amount == 270 && m.dir == lib.Left) {
 		x, y := w.X, w.Y
 		w.X = y
 		w.Y = -x

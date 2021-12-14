@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/1
@@ -13,9 +13,9 @@ import (
 const notFound = int64(-1)
 
 func main() {
-	nums := aoc.ReadFileNumbers("input.txt")
-	sw := aoc.NewStopwatch()
-	_, a, b := aoc.FindSum2(nums, int64(2020))
+	nums := lib.ReadFileNumbers("input.txt")
+	sw := lib.NewStopwatch()
+	_, a, b := lib.FindSum2(nums, int64(2020))
 	fmt.Println("Step 1:")
 	fmt.Println(a * b)
 	fmt.Println(sw.Elapsed())

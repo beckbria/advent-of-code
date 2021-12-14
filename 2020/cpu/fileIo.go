@@ -4,12 +4,12 @@ import (
 	"strconv"
 	"strings"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // ReadProgram reads a program consisting of CPU instructions, one per line, from a file
 func ReadProgram(fileName string) []Instruction {
-	lines := aoc.ReadFileLines(fileName)
+	lines := lib.ReadFileLines(fileName)
 	return ParseProgram(lines)
 }
 
@@ -20,7 +20,7 @@ func ParseProgram(lines []string) []Instruction {
 		tokens := strings.Split(l, " ")
 		i := Instruction{Op: opFromString(tokens[0])}
 		val, err := strconv.Atoi(tokens[1])
-		aoc.Check(err)
+		lib.Check(err)
 		i.Num = Data(val)
 		inst = append(inst, i)
 	}

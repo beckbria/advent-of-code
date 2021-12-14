@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -224,17 +224,17 @@ func TestFindSeaMonsters(t *testing.T) {
 	})
 
 	monsters := findSeaMonsters(tile.grid)
-	expected := make(map[aoc.Point]bool)
-	expectMonster(expected, aoc.Point{X: 2, Y: 2})
-	expectMonster(expected, aoc.Point{X: 1, Y: 16})
+	expected := make(map[lib.Point]bool)
+	expectMonster(expected, lib.Point{X: 2, Y: 2})
+	expectMonster(expected, lib.Point{X: 1, Y: 16})
 	assert.True(t, reflect.DeepEqual(monsters, expected))
 }
 
-func expectMonster(expected map[aoc.Point]bool, origin aoc.Point) {
+func expectMonster(expected map[lib.Point]bool, origin lib.Point) {
 	for y, line := range seaMonster {
 		for x, c := range line {
 			if c == '#' {
-				expected[aoc.Point{X: origin.X + int64(x), Y: origin.Y + int64(y)}] = true
+				expected[lib.Point{X: origin.X + int64(x), Y: origin.Y + int64(y)}] = true
 			}
 		}
 	}

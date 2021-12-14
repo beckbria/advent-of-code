@@ -3,15 +3,15 @@ package main
 import (
 	"fmt"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/#
 // The game of life simulator we all expected
 
 func main() {
-	lines := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	lines := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	g := newGame(lines)
 	fmt.Println(step1(g))
@@ -89,15 +89,15 @@ func (g *game) adjacent(row, col int) int {
 	return o
 }
 
-var directions = []aoc.Point{
-	aoc.Point{X: -1, Y: -1},
-	aoc.Point{X: -1, Y: 0},
-	aoc.Point{X: -1, Y: 1},
-	aoc.Point{X: 0, Y: -1},
-	aoc.Point{X: 0, Y: 1},
-	aoc.Point{X: 1, Y: -1},
-	aoc.Point{X: 1, Y: 0},
-	aoc.Point{X: 1, Y: 1},
+var directions = []lib.Point{
+	lib.Point{X: -1, Y: -1},
+	lib.Point{X: -1, Y: 0},
+	lib.Point{X: -1, Y: 1},
+	lib.Point{X: 0, Y: -1},
+	lib.Point{X: 0, Y: 1},
+	lib.Point{X: 1, Y: -1},
+	lib.Point{X: 1, Y: 0},
+	lib.Point{X: 1, Y: 1},
 }
 
 func (g *game) sightlines(row, col int) int {

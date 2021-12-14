@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strconv"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/#
@@ -17,8 +17,8 @@ import (
 const debug = false
 
 func main() {
-	lines := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	lines := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	tiles := parseTiles(lines)
 	fmt.Println(step1(tiles))
@@ -47,7 +47,7 @@ func (v valuePair) flip() {
 }
 
 func (v valuePair) min() int64 {
-	return aoc.Min(v[0], v[1])
+	return lib.Min(v[0], v[1])
 }
 
 func (v valuePair) compatible(v2 valuePair) bool {
@@ -182,22 +182,22 @@ func (t *tile) trim() {
 	}
 }
 
-func (t *tile) side(dir aoc.Direction) valuePair {
+func (t *tile) side(dir lib.Direction) valuePair {
 	switch dir {
-	case aoc.Up:
+	case lib.Up:
 		return t.up
-	case aoc.Down:
+	case lib.Down:
 		return t.down
-	case aoc.Left:
+	case lib.Left:
 		return t.left
-	case aoc.Right:
+	case lib.Right:
 		return t.right
 	}
 	log.Fatalf("Invalid direction: %d", int64(dir))
 	return valuePair{}
 }
 
-func (t *tile) rotateExteriorEdges(dir []aoc.Direction, tileEdges map[int64][]*tile) {
+func (t *tile) rotateExteriorEdges(dir []lib.Direction, tileEdges map[int64][]*tile) {
 	for matchedAll := false; !matchedAll; {
 		matchedAll = true
 		for _, d := range dir {
@@ -210,7 +210,7 @@ func (t *tile) rotateExteriorEdges(dir []aoc.Direction, tileEdges map[int64][]*t
 	}
 }
 
-func (t *tile) rotateValueTo(val valuePair, dir aoc.Direction) {
+func (t *tile) rotateValueTo(val valuePair, dir lib.Direction) {
 	for !t.side(dir).compatible(val) {
 		t.cw()
 	}
@@ -308,14 +308,14 @@ func (ts tiles) assemble() *tile {
 	}
 
 	// Helper values for rotation
-	toUpLeft := []aoc.Direction{aoc.Up, aoc.Left}
-	toUp := []aoc.Direction{aoc.Up}
-	toUpRight := []aoc.Direction{aoc.Up, aoc.Right}
-	toLeft := []aoc.Direction{aoc.Left}
-	toRight := []aoc.Direction{aoc.Right}
-	toDownLeft := []aoc.Direction{aoc.Down, aoc.Left}
-	toDown := []aoc.Direction{aoc.Down}
-	toDownRight := []aoc.Direction{aoc.Down, aoc.Right}
+	toUpLeft := []lib.Direction{lib.Up, lib.Left}
+	toUp := []lib.Direction{lib.Up}
+	toUpRight := []lib.Direction{lib.Up, lib.Right}
+	toLeft := []lib.Direction{lib.Left}
+	toRight := []lib.Direction{lib.Right}
+	toDownLeft := []lib.Direction{lib.Down, lib.Left}
+	toDown := []lib.Direction{lib.Down}
+	toDownRight := []lib.Direction{lib.Down, lib.Right}
 
 	// Rotate the corner so that its unique edges are at the top and the left
 	pic[0][0].rotateExteriorEdges(toUpLeft, tileEdges)
@@ -483,7 +483,7 @@ func (ts tiles) assemble() *tile {
 				if t.used {
 					continue
 				}
-				t.rotateValueTo(up, aoc.Up)
+				t.rotateValueTo(up, lib.Up)
 				if !t.left.compatible(left) {
 					t.flipHorizontal()
 					if !t.left.compatible(left) {
@@ -534,8 +534,8 @@ var seaMonster = [][]rune{
 	[]rune(" #  #  #  #  #  #   "),
 }
 
-func findSeaMonsters(picture [][]bool) map[aoc.Point]bool {
-	monsters := make(map[aoc.Point]bool)
+func findSeaMonsters(picture [][]bool) map[lib.Point]bool {
+	monsters := make(map[lib.Point]bool)
 	for y := 0; y <= len(picture)-len(seaMonster); y++ {
 	PICTURE:
 		for x := 0; x <= len(picture[y])-len(seaMonster[0]); x++ {
@@ -557,7 +557,7 @@ func findSeaMonsters(picture [][]bool) map[aoc.Point]bool {
 			for yd := 0; yd < len(seaMonster); yd++ {
 				for xd := 0; xd < len(seaMonster[0]); xd++ {
 					if seaMonster[yd][xd] == '#' {
-						monsters[aoc.Point{X: int64(x + xd), Y: int64(y + yd)}] = true
+						monsters[lib.Point{X: int64(x + xd), Y: int64(y + yd)}] = true
 					}
 				} // xd
 			} // yd
@@ -577,7 +577,7 @@ func step1(t tiles) int64 {
 
 func step2(ts tiles) int64 {
 	picture := ts.assemble()
-	monsters := make(map[aoc.Point]bool)
+	monsters := make(map[lib.Point]bool)
 	for it := 0; true; it++ {
 		monsters = findSeaMonsters(picture.grid)
 		if len(monsters) > 0 {
@@ -600,7 +600,7 @@ func step2(ts tiles) int64 {
 	count := int64(0)
 	for y, r := range picture.grid {
 		for x, c := range r {
-			if c && !monsters[aoc.Point{X: int64(x), Y: int64(y)}] {
+			if c && !monsters[lib.Point{X: int64(x), Y: int64(y)}] {
 				count++
 			}
 		}

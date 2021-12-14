@@ -3,14 +3,14 @@ package main
 import (
 	"fmt"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/23
 // A cup shuffle game
 
 func main() {
-	sw := aoc.NewStopwatch()
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	fmt.Println(step1(364297581, 100))
 	fmt.Println(sw.Elapsed())

@@ -5,15 +5,15 @@ import (
 	"math"
 	"sort"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/5
 // Parse seats on an airplane
 
 func main() {
-	lines := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	lines := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	seats := parseSeats(lines)
 	fmt.Println(highestID(seats))

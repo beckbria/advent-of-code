@@ -3,15 +3,15 @@ package main
 import (
 	"fmt"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/9
 // Find numbers that sum to other numbers
 
 func main() {
-	nums := aoc.ReadFileNumbers("input.txt")
-	sw := aoc.NewStopwatch()
+	nums := lib.ReadFileNumbers("input.txt")
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	step1Answer := step1(nums, 25)
 	fmt.Println(step1Answer)
@@ -26,7 +26,7 @@ func main() {
 // Step 1: Find a number which is not the sum of any two of the n values preceding it
 func step1(nums []int64, depth int) int64 {
 	for i := depth; i < len(nums); i++ {
-		found, _, _ := aoc.FindSum2(nums[i-depth:i], nums[i])
+		found, _, _ := lib.FindSum2(nums[i-depth:i], nums[i])
 		if !found {
 			return nums[i]
 		}
@@ -42,7 +42,7 @@ func step2(nums []int64, target int64) int64 {
 		for j := i + 1; j < len(nums); j++ {
 			sum += nums[j]
 			if sum == target {
-				min, max := aoc.MinAndMax(nums[i : j+1])
+				min, max := lib.MinAndMax(nums[i : j+1])
 				return min + max
 			} else if sum > target {
 				break

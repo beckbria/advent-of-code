@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/25
@@ -12,7 +12,7 @@ import (
 var data = []int64{8458505, 16050997}
 
 func main() {
-	sw := aoc.NewStopwatch()
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	_, _, key := step1(data)
 	fmt.Println(key)

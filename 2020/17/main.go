@@ -3,15 +3,15 @@ package main
 import (
 	"fmt"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/17
 // Hey, look, it's another Game of Life.  I forget how this was even themed.
 
 func main() {
-	lines := aoc.ReadFileLines("input.txt")
-	sw := aoc.NewStopwatch()
+	lines := lib.ReadFileLines("input.txt")
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	fmt.Println(step1(lines))
 	fmt.Println(sw.Elapsed())
@@ -48,14 +48,14 @@ func (g *grid) extremities() (int64, int64, int64, int64, int64, int64, int64, i
 	minX, maxX, minY, maxY, minZ, maxZ, minW, maxW := int64(0), int64(0), int64(0), int64(0), int64(0), int64(0), int64(0), int64(0)
 	for k, v := range *g {
 		if v {
-			minX = aoc.Min(minX, k.X)
-			maxX = aoc.Max(maxX, k.X)
-			minY = aoc.Min(minY, k.Y)
-			maxY = aoc.Max(maxY, k.Y)
-			minZ = aoc.Min(minZ, k.Z)
-			maxZ = aoc.Max(maxZ, k.Z)
-			minW = aoc.Min(minW, k.W)
-			maxW = aoc.Max(maxW, k.W)
+			minX = lib.Min(minX, k.X)
+			maxX = lib.Max(maxX, k.X)
+			minY = lib.Min(minY, k.Y)
+			maxY = lib.Max(maxY, k.Y)
+			minZ = lib.Min(minZ, k.Z)
+			maxZ = lib.Max(maxZ, k.Z)
+			minW = lib.Min(minW, k.W)
+			maxW = lib.Max(maxW, k.W)
 		}
 	}
 	return minX, maxX, minY, maxY, minZ, maxZ, minW, maxW

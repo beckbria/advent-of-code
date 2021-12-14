@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"../../aoc"
+	"github.com/beckbria/advent-of-code/2020/lib"
 )
 
 // https://adventofcode.com/2020/day/15
@@ -14,7 +14,7 @@ import (
 var input = []int64{15, 12, 0, 14, 3, 1}
 
 func main() {
-	sw := aoc.NewStopwatch()
+	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	fmt.Println(memoryGame(input, 2020))
 	fmt.Println(sw.Elapsed())
