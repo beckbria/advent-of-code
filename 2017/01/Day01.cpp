@@ -1,4 +1,4 @@
-#include "Problems.h"
+#include "2017/lib/Helpers.h"
 /*
 --- Day 1: Inverse Captcha ---
 
@@ -53,41 +53,49 @@ For example:
 
 What is the solution to your new captcha?
 */
-namespace Day1 {
-int sumRepeatingDigits(const std::string& s)
+namespace Day1
 {
-    if (s.size() < 1) return 0;
+    int sumRepeatingDigits(const std::string &s)
+    {
+        if (s.size() < 1)
+            return 0;
 
-    char previous = s[s.size() - 1];
-    int sum = 0;
-    for (char c : s) {
-        if (c == previous) {
-            sum += (c - '0');
+        char previous = s[s.size() - 1];
+        int sum = 0;
+        for (char c : s)
+        {
+            if (c == previous)
+            {
+                sum += (c - '0');
+            }
+            previous = c;
         }
-        previous = c;
+        return sum;
     }
-    return sum;
-}
 
-int sumHalfwayAroundDigits(const std::string& s)
-{
-    if (s.size() < 1) return 0;
+    int sumHalfwayAroundDigits(const std::string &s)
+    {
+        if (s.size() < 1)
+            return 0;
 
-    int sum = 0;
-    int offset = s.size() / 2;
-    for (size_t i = 0; i < s.size(); ++i) {
-        int oppositeIndex = (i + offset) % s.size();
-        if (s[i] == s[oppositeIndex]) {
-            sum += (s[i] - '0');
+        int sum = 0;
+        int offset = s.size() / 2;
+        for (size_t i = 0; i < s.size(); ++i)
+        {
+            int oppositeIndex = (i + offset) % s.size();
+            if (s[i] == s[oppositeIndex])
+            {
+                sum += (s[i] - '0');
+            }
         }
+        return sum;
     }
-    return sum;
-}
 } // namespace Day1
 
 void Day1ATests()
 {
-    const struct {
+    const struct
+    {
         std::string input;
         int answer;
     } testCases[] = {
@@ -96,10 +104,12 @@ void Day1ATests()
         {"1", 1},
         {"", 0},
         {"11111", 5},
-        {"91212129", 9} };
-    for (auto &t : testCases) {
+        {"91212129", 9}};
+    for (auto &t : testCases)
+    {
         int const count = Day1::sumRepeatingDigits(t.input);
-        if (count != t.answer) {
+        if (count != t.answer)
+        {
             std::cerr << "TEST 1A FAILED: " << t.input << " => " << count << " (expected " << t.answer << ")" << std::endl;
         }
     }
@@ -107,7 +117,8 @@ void Day1ATests()
 
 void Day1BTests()
 {
-    const struct {
+    const struct
+    {
         std::string input;
         int answer;
     } testCases[] = {
@@ -115,10 +126,12 @@ void Day1BTests()
         {"1221", 0},
         {"123425", 4},
         {"123123", 12},
-        {"12131415", 4} };
-    for (auto &t : testCases) {
+        {"12131415", 4}};
+    for (auto &t : testCases)
+    {
         int const count = Day1::sumHalfwayAroundDigits(t.input);
-        if (count != t.answer) {
+        if (count != t.answer)
+        {
             std::cerr << "TEST 1B FAILED: " << t.input << " => " << count << " (expected " << t.answer << ")" << std::endl;
         }
     }
@@ -136,5 +149,12 @@ void Day1Problems()
     const auto end = std::chrono::steady_clock::now();
     std::cout << repeating << std::endl;
     std::cout << halfway << std::endl;
-    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl
+              << std::endl;
+}
+
+int main()
+{
+    Day1Problems();
+    return 0;
 }

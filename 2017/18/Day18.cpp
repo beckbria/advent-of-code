@@ -1,4 +1,4 @@
-#include "Problems.h"
+#include "2017/lib/Helpers.h"
 /*
 --- Day 18: Duet ---
 
@@ -91,294 +91,329 @@ all three values and then stopped at the first rcv before program 1 executed eve
 
 Once both of your programs have terminated (regardless of what caused them to do so), how many times did program 1 send a value?
 */
-namespace Day18 {
-
-// The registers are represented by single letters in instructions, but stored as 0-26 internally
-inline constexpr unsigned int RegisterIndex(char c) { return (c - 'a'); }
-
-enum class OperandType {
-    Invalid,
-    Integer,
-    Register
-};
-
-class Operand {
-public:
-    Operand(OperandType op, int64_t val) : type(op), value(val) {}
-    Operand(const std::string& s);
-    Operand() {}
-    int64_t Value() const { return value; }
-    bool IsRegister() const { return type == OperandType::Register; }
-protected:
-    OperandType type = OperandType::Invalid;
-    int64_t value = 0;
-};
-
-Operand::Operand(const std::string& s)
+namespace Day18
 {
-    // Registers must be a single character
-    if ((s.size() == 1) && (s[0] >= 'a') && (s[0] <= 'z')) {
-        type = OperandType::Register;
-        value = RegisterIndex(s[0]);
-    } else {
-        type = OperandType::Integer;
-        value = std::stoi(s);
-    }
-}
 
-class RegisterBank {
-public:
-    int64_t Evaluate(const Operand& op) const;
-    int64_t& operator[] (int x) { return m_register.at(x); }
+    // The registers are represented by single letters in instructions, but stored as 0-26 internally
+    inline constexpr unsigned int RegisterIndex(char c) { return (c - 'a'); }
 
-private:
-    std::array<int64_t, 26> m_register = {};
-};
-
-int64_t RegisterBank::Evaluate(const Operand& op) const
-{
-    if (op.IsRegister()) {
-        return m_register.at(static_cast<int>(op.Value()));
-    } else {
-        return op.Value();
-    }
-}
-
-enum class OpCode {
-    Invalid,
-    Sound,
-    Set,
-    Add,
-    Multiply,
-    Modulo,
-    Recover,
-    JumpIfGreaterThanZero
-};
-
-struct Instruction {
-    Instruction(const std::string& inst);
-    OpCode type;
-    std::array<Operand, 2> operand;
-};
-
-Instruction::Instruction(const std::string& inst)
-{
-    auto tokens = Helpers::Tokenize(inst);
-
-    // Parse the type
-    static const struct {
-        std::string token;
-        OpCode opcode;
-    } typeLookup[] = {
-        { "snd", OpCode::Sound },
-        { "set", OpCode::Set },
-        { "add", OpCode::Add },
-        { "mul", OpCode::Multiply },
-        { "mod", OpCode::Modulo },
-        { "rcv", OpCode::Recover },
-        { "jgz", OpCode::JumpIfGreaterThanZero },
+    enum class OperandType
+    {
+        Invalid,
+        Integer,
+        Register
     };
-    type = OpCode::Invalid;
-    for (const auto& t : typeLookup) {
-        if (tokens[0] == t.token) type = t.opcode;
-    }
-    if (type == OpCode::Invalid) std::cerr << "Unexpected Instruction: " << tokens[0] << std::endl;
 
-    // Parse the opcodes
-    operand[0] = Operand(tokens[1]);
-    if (tokens.size() > 2) {
-        operand[1] = Operand(tokens[2]);
-    }
-}
+    class Operand
+    {
+    public:
+        Operand(OperandType op, int64_t val) : type(op), value(val) {}
+        Operand(const std::string &s);
+        Operand() {}
+        int64_t Value() const { return value; }
+        bool IsRegister() const { return type == OperandType::Register; }
 
-class Program {
-public:
-    Program(std::vector<Instruction>& instructions) : m_instructions(instructions) {}
-    bool Complete() const;
-    bool Blocked() const { return m_blocked; }
-    int64_t Evaluate(const Operand& op) const { return m_registers.Evaluate(op); }
-    void RunInstruction();
-    void SetSndHandler(std::function<void(int64_t)> handler) { m_sndHandler = handler; }
-    void SetRcvHandler(std::function<void(int64_t)> handler) { m_rcvHandler = handler; }
+    protected:
+        OperandType type = OperandType::Invalid;
+        int64_t value = 0;
+    };
 
-protected:
-    void Snd(const Instruction& inst);
-    virtual bool Rcv(const Instruction& inst);      // Returns whether the program is now blocked waiting for a receive
-    void Set(const Instruction& inst);
-    void Add(const Instruction& inst);
-    void Mul(const Instruction& inst);
-    void Mod(const Instruction& inst);
-    void Jgz(const Instruction& inst);
-
-    int64_t m_programCounter = 0;
-    bool m_blocked = false;
-    std::vector<Instruction> m_instructions;
-    RegisterBank m_registers;
-    std::function<void(int64_t)> m_sndHandler;
-    std::function<void(int64_t)> m_rcvHandler;
-};
-
-bool Program::Complete() const
-{
-    return (m_programCounter < 0) || (m_programCounter >= static_cast<int>(m_instructions.size()));
-}
-
-void Program::RunInstruction()
-{
-    if (!Complete()) {
-        m_blocked = false;
-        auto& current = m_instructions[static_cast<int>(m_programCounter++)];
-        switch (current.type) {
-        case OpCode::Sound:
-            Snd(current);
-            break;
-        case OpCode::Set:
-            Set(current);
-            break;
-        case OpCode::Add:
-            Add(current);
-            break;
-        case OpCode::Multiply:
-            Mul(current);
-            break;
-        case OpCode::Modulo:
-            Mod(current);
-            break;
-        case OpCode::Recover:
-            m_blocked = Rcv(current);
-            // If we're now blocked, we should stay on this instruction until we're unblocked
-            if (m_blocked) --m_programCounter;
-            break;
-        case OpCode::JumpIfGreaterThanZero:
-            Jgz(current);
-            break;
+    Operand::Operand(const std::string &s)
+    {
+        // Registers must be a single character
+        if ((s.size() == 1) && (s[0] >= 'a') && (s[0] <= 'z'))
+        {
+            type = OperandType::Register;
+            value = RegisterIndex(s[0]);
+        }
+        else
+        {
+            type = OperandType::Integer;
+            value = std::stoi(s);
         }
     }
-}
 
-void Program::Set(const Instruction& inst)
-{
-    m_registers[static_cast<int>(inst.operand[0].Value())] = Evaluate(inst.operand[1]);
-}
+    class RegisterBank
+    {
+    public:
+        int64_t Evaluate(const Operand &op) const;
+        int64_t &operator[](int x) { return m_register.at(x); }
 
-void Program::Add(const Instruction& inst) {
-    const auto reg = static_cast<int>(inst.operand[0].Value());
-    m_registers[reg] = m_registers[reg] + Evaluate(inst.operand[1]);
-}
+    private:
+        std::array<int64_t, 26> m_register = {};
+    };
 
-void Program::Mul(const Instruction& inst)
-{
-    const auto reg = static_cast<int>(inst.operand[0].Value());
-    m_registers[reg] = m_registers[reg] * Evaluate(inst.operand[1]);
-}
-
-void Program::Mod(const Instruction& inst)
-{
-    const auto reg = static_cast<int>(inst.operand[0].Value());
-    m_registers[reg] = m_registers[reg] % Evaluate(inst.operand[1]);
-}
-
-void Program::Jgz(const Instruction& inst)
-{
-    if (Evaluate(inst.operand[0]) > 0) {
-        // We've already incremented the PC by one, so don't double count that space
-        m_programCounter += (Evaluate(inst.operand[1]) - 1);
-    }
-}
-
-void Program::Snd(const Instruction& inst)
-{
-    if (m_sndHandler) {
-        m_sndHandler(Evaluate(inst.operand[0]));
-    }
-}
-
-bool Program::Rcv(const Instruction& inst)
-{
-    if (m_rcvHandler) {
-        m_rcvHandler(Evaluate(inst.operand[0]));
-    }
-    return false;
-}
-
-class ParallelProgram : public Program {
-public:
-    ParallelProgram(std::vector<Instruction>& instructions, int64_t programId);
-    void PostMessage(int64_t value);
-protected:
-    virtual bool Rcv(const Instruction& inst) override;
-
-    std::queue<int64_t> m_received;
-    std::mutex m_receivedLock;  // Access to the received queue across threads
-};
-
-ParallelProgram::ParallelProgram(std::vector<Instruction>& instructions, int64_t programId)
-    : Program(instructions)
-{
-    m_registers[RegisterIndex('p')] = programId;
-}
-
-bool ParallelProgram::Rcv(const Instruction& inst)
-{
-    // If we have no input, wait until we do
-    std::lock_guard<std::mutex> lock(m_receivedLock);
-    if (m_received.empty()) return true;
-    m_registers[static_cast<int>(inst.operand[0].Value())] = m_received.front();
-    m_received.pop();
-    return false;
-}
-
-void ParallelProgram::PostMessage(int64_t value)
-{
-    std::lock_guard<std::mutex> lock(m_receivedLock);
-    m_received.push(value);
-}
-
-int64_t RecoverFrequency(const std::vector<std::string>& input)
-{
-    std::vector<Instruction> instructions;
-    for (auto &line : input) {
-        instructions.emplace_back(line);
+    int64_t RegisterBank::Evaluate(const Operand &op) const
+    {
+        if (op.IsRegister())
+        {
+            return m_register.at(static_cast<int>(op.Value()));
+        }
+        else
+        {
+            return op.Value();
+        }
     }
 
-    int64_t mostRecentFrequency = -1;
-    bool recovered = false;
-    Program program(instructions);
-    program.SetSndHandler([&mostRecentFrequency](int64_t frequency){ mostRecentFrequency = frequency; });
-    program.SetRcvHandler([&recovered](int64_t condition) { recovered = (condition != 0); });
+    enum class OpCode
+    {
+        Invalid,
+        Sound,
+        Set,
+        Add,
+        Multiply,
+        Modulo,
+        Recover,
+        JumpIfGreaterThanZero
+    };
 
-    while (!program.Complete() && !recovered) {
-        program.RunInstruction();
+    struct Instruction
+    {
+        Instruction(const std::string &inst);
+        OpCode type;
+        std::array<Operand, 2> operand;
+    };
+
+    Instruction::Instruction(const std::string &inst)
+    {
+        auto tokens = Helpers::Tokenize(inst);
+
+        // Parse the type
+        static const struct
+        {
+            std::string token;
+            OpCode opcode;
+        } typeLookup[] = {
+            {"snd", OpCode::Sound},
+            {"set", OpCode::Set},
+            {"add", OpCode::Add},
+            {"mul", OpCode::Multiply},
+            {"mod", OpCode::Modulo},
+            {"rcv", OpCode::Recover},
+            {"jgz", OpCode::JumpIfGreaterThanZero},
+        };
+        type = OpCode::Invalid;
+        for (const auto &t : typeLookup)
+        {
+            if (tokens[0] == t.token)
+                type = t.opcode;
+        }
+        if (type == OpCode::Invalid)
+            std::cerr << "Unexpected Instruction: " << tokens[0] << std::endl;
+
+        // Parse the opcodes
+        operand[0] = Operand(tokens[1]);
+        if (tokens.size() > 2)
+        {
+            operand[1] = Operand(tokens[2]);
+        }
     }
-    return mostRecentFrequency;
-}
 
-int64_t ParallelExecution(const std::vector<std::string>& input)
-{
-    std::vector<Instruction> instructions;
-    for (auto &line : input) {
-        instructions.emplace_back(line);
+    class Program
+    {
+    public:
+        Program(std::vector<Instruction> &instructions) : m_instructions(instructions) {}
+        bool Complete() const;
+        bool Blocked() const { return m_blocked; }
+        int64_t Evaluate(const Operand &op) const { return m_registers.Evaluate(op); }
+        void RunInstruction();
+        void SetSndHandler(std::function<void(int64_t)> handler) { m_sndHandler = handler; }
+        void SetRcvHandler(std::function<void(int64_t)> handler) { m_rcvHandler = handler; }
+
+    protected:
+        void Snd(const Instruction &inst);
+        virtual bool Rcv(const Instruction &inst); // Returns whether the program is now blocked waiting for a receive
+        void Set(const Instruction &inst);
+        void Add(const Instruction &inst);
+        void Mul(const Instruction &inst);
+        void Mod(const Instruction &inst);
+        void Jgz(const Instruction &inst);
+
+        int64_t m_programCounter = 0;
+        bool m_blocked = false;
+        std::vector<Instruction> m_instructions;
+        RegisterBank m_registers;
+        std::function<void(int64_t)> m_sndHandler;
+        std::function<void(int64_t)> m_rcvHandler;
+    };
+
+    bool Program::Complete() const
+    {
+        return (m_programCounter < 0) || (m_programCounter >= static_cast<int>(m_instructions.size()));
     }
 
-    ParallelProgram program0(instructions, 0);
-    ParallelProgram program1(instructions, 1);
-    int64_t program1SndCount = 0;
-    program0.SetSndHandler([&program1](int64_t value) {
-        program1.PostMessage(value);
-    });
-    program1.SetSndHandler([&program0, &program1SndCount](int64_t value) {
-        program0.PostMessage(value);
-        ++program1SndCount;
-    });
-
-    while ((!program0.Blocked() || !program1.Blocked()) &&      // Stop if we get to deadlock
-            (!program0.Complete() || !program1.Complete())) {    // Stop if both programs have finished
-        program0.RunInstruction();
-        program1.RunInstruction();
+    void Program::RunInstruction()
+    {
+        if (!Complete())
+        {
+            m_blocked = false;
+            auto &current = m_instructions[static_cast<int>(m_programCounter++)];
+            switch (current.type)
+            {
+            case OpCode::Sound:
+                Snd(current);
+                break;
+            case OpCode::Set:
+                Set(current);
+                break;
+            case OpCode::Add:
+                Add(current);
+                break;
+            case OpCode::Multiply:
+                Mul(current);
+                break;
+            case OpCode::Modulo:
+                Mod(current);
+                break;
+            case OpCode::Recover:
+                m_blocked = Rcv(current);
+                // If we're now blocked, we should stay on this instruction until we're unblocked
+                if (m_blocked)
+                    --m_programCounter;
+                break;
+            case OpCode::JumpIfGreaterThanZero:
+                Jgz(current);
+                break;
+            }
+        }
     }
-        
-    return program1SndCount;
-}
+
+    void Program::Set(const Instruction &inst)
+    {
+        m_registers[static_cast<int>(inst.operand[0].Value())] = Evaluate(inst.operand[1]);
+    }
+
+    void Program::Add(const Instruction &inst)
+    {
+        const auto reg = static_cast<int>(inst.operand[0].Value());
+        m_registers[reg] = m_registers[reg] + Evaluate(inst.operand[1]);
+    }
+
+    void Program::Mul(const Instruction &inst)
+    {
+        const auto reg = static_cast<int>(inst.operand[0].Value());
+        m_registers[reg] = m_registers[reg] * Evaluate(inst.operand[1]);
+    }
+
+    void Program::Mod(const Instruction &inst)
+    {
+        const auto reg = static_cast<int>(inst.operand[0].Value());
+        m_registers[reg] = m_registers[reg] % Evaluate(inst.operand[1]);
+    }
+
+    void Program::Jgz(const Instruction &inst)
+    {
+        if (Evaluate(inst.operand[0]) > 0)
+        {
+            // We've already incremented the PC by one, so don't double count that space
+            m_programCounter += (Evaluate(inst.operand[1]) - 1);
+        }
+    }
+
+    void Program::Snd(const Instruction &inst)
+    {
+        if (m_sndHandler)
+        {
+            m_sndHandler(Evaluate(inst.operand[0]));
+        }
+    }
+
+    bool Program::Rcv(const Instruction &inst)
+    {
+        if (m_rcvHandler)
+        {
+            m_rcvHandler(Evaluate(inst.operand[0]));
+        }
+        return false;
+    }
+
+    class ParallelProgram : public Program
+    {
+    public:
+        ParallelProgram(std::vector<Instruction> &instructions, int64_t programId);
+        void PostMessage(int64_t value);
+
+    protected:
+        virtual bool Rcv(const Instruction &inst) override;
+
+        std::queue<int64_t> m_received;
+        std::mutex m_receivedLock; // Access to the received queue across threads
+    };
+
+    ParallelProgram::ParallelProgram(std::vector<Instruction> &instructions, int64_t programId)
+        : Program(instructions)
+    {
+        m_registers[RegisterIndex('p')] = programId;
+    }
+
+    bool ParallelProgram::Rcv(const Instruction &inst)
+    {
+        // If we have no input, wait until we do
+        std::lock_guard<std::mutex> lock(m_receivedLock);
+        if (m_received.empty())
+            return true;
+        m_registers[static_cast<int>(inst.operand[0].Value())] = m_received.front();
+        m_received.pop();
+        return false;
+    }
+
+    void ParallelProgram::PostMessage(int64_t value)
+    {
+        std::lock_guard<std::mutex> lock(m_receivedLock);
+        m_received.push(value);
+    }
+
+    int64_t RecoverFrequency(const std::vector<std::string> &input)
+    {
+        std::vector<Instruction> instructions;
+        for (auto &line : input)
+        {
+            instructions.emplace_back(line);
+        }
+
+        int64_t mostRecentFrequency = -1;
+        bool recovered = false;
+        Program program(instructions);
+        program.SetSndHandler([&mostRecentFrequency](int64_t frequency)
+                              { mostRecentFrequency = frequency; });
+        program.SetRcvHandler([&recovered](int64_t condition)
+                              { recovered = (condition != 0); });
+
+        while (!program.Complete() && !recovered)
+        {
+            program.RunInstruction();
+        }
+        return mostRecentFrequency;
+    }
+
+    int64_t ParallelExecution(const std::vector<std::string> &input)
+    {
+        std::vector<Instruction> instructions;
+        for (auto &line : input)
+        {
+            instructions.emplace_back(line);
+        }
+
+        ParallelProgram program0(instructions, 0);
+        ParallelProgram program1(instructions, 1);
+        int64_t program1SndCount = 0;
+        program0.SetSndHandler([&program1](int64_t value)
+                               { program1.PostMessage(value); });
+        program1.SetSndHandler([&program0, &program1SndCount](int64_t value)
+                               {
+                                   program0.PostMessage(value);
+                                   ++program1SndCount;
+                               });
+
+        while ((!program0.Blocked() || !program1.Blocked()) && // Stop if we get to deadlock
+               (!program0.Complete() || !program1.Complete()))
+        { // Stop if both programs have finished
+            program0.RunInstruction();
+            program1.RunInstruction();
+        }
+
+        return program1SndCount;
+    }
 
 } // namespace Day18
 
@@ -394,11 +429,11 @@ void Day18Tests()
         "rcv a",
         "jgz a -1",
         "set a 1",
-        "jgz a -2"
-    };
+        "jgz a -2"};
     const int64_t expected = 4;
     const int64_t result = Day18::RecoverFrequency(input);
-    if (result != expected) std::cerr << "Test 18A Error: Got " << result << ", Expected " << expected << std::endl;
+    if (result != expected)
+        std::cerr << "Test 18A Error: Got " << result << ", Expected " << expected << std::endl;
 
     const std::vector<std::string> inputB = {
         "snd 1",
@@ -411,7 +446,8 @@ void Day18Tests()
     };
     const int64_t expectedB = 3;
     const int64_t resultB = Day18::ParallelExecution(inputB);
-    if (resultB != expectedB) std::cerr << "Test 18B Error: Got " << resultB << ", Expected " << expectedB << std::endl;
+    if (resultB != expectedB)
+        std::cerr << "Test 18B Error: Got " << resultB << ", Expected " << expectedB << std::endl;
 }
 
 void Day18Problems()
@@ -419,11 +455,18 @@ void Day18Problems()
     std::cout << "Day 18:\n";
     Day18Tests();
     const auto start = std::chrono::steady_clock::now();
-    auto input = Helpers::ReadFileLines("input_day18.txt");
+    auto input = Helpers::ReadFileLines("2017/18/input_day18.txt");
     const auto frequency = Day18::RecoverFrequency(input);
     const auto parallel = Day18::ParallelExecution(input);
     const auto end = std::chrono::steady_clock::now();
     std::cout << frequency << std::endl;
     std::cout << parallel << std::endl;
-    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl
+              << std::endl;
+}
+
+int main()
+{
+    Day18Problems();
+    return 0;
 }

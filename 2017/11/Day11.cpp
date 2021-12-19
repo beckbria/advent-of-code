@@ -1,4 +1,4 @@
-#include "Problems.h"
+#include "2017/lib/Helpers.h"
 /*
 --- Day 11: Hex Ed ---
 
@@ -34,121 +34,139 @@ For example:
 
 How many steps away is the furthest he ever got from his starting position?
 */
-namespace Day11 {
-std::map<std::string, int> Count(const std::vector<std::string>& directions)
+namespace Day11
 {
-    std::map<std::string, int> wordCount;
-    for (auto& dir : directions) {
-        if (wordCount.count(dir) == 0) {
-            wordCount[dir] = 1;
-        } else {
-            wordCount[dir]++;
-        }
-    }
-    return wordCount;
-}
-
-// Returns true if it changed anything
-bool NegateOpposites(int& North, int& South) {
-    if ((North > 0) && (South > 0)) {
-        const int min = std::min(North, South);
-        North -= min;
-        South -= min;
-        return true;
-    }
-    return false;
-}
-
-// Returns true if anything changed.  Pairs of the first two variables are removed and added to the third (thus, SW+SE becomes S)
-bool CombineDirections(int& SouthWest, int& SouthEast, int& South)
-{
-    if ((SouthWest > 0) && (SouthEast > 0))
+    std::map<std::string, int> Count(const std::vector<std::string> &directions)
     {
-        const int min = std::min(SouthWest, SouthEast);
-        SouthWest -= min;
-        SouthEast -= min;
-        South += min;
-        return true;
+        std::map<std::string, int> wordCount;
+        for (auto &dir : directions)
+        {
+            if (wordCount.count(dir) == 0)
+            {
+                wordCount[dir] = 1;
+            }
+            else
+            {
+                wordCount[dir]++;
+            }
+        }
+        return wordCount;
     }
-    return false;
-}
 
-// This function reduces a count of hex directions to their minimum
-void OptimizeHexDirections(int& N, int& NW, int& NE, int& S, int& SW, int& SE)
-{
-    bool performedOptimization;
-    do {
-        performedOptimization = false;
+    // Returns true if it changed anything
+    bool NegateOpposites(int &North, int &South)
+    {
+        if ((North > 0) && (South > 0))
+        {
+            const int min = std::min(North, South);
+            North -= min;
+            South -= min;
+            return true;
+        }
+        return false;
+    }
 
-        // First, negate opposite directions
-        performedOptimization |= NegateOpposites(NW, SE);
-        performedOptimization |= NegateOpposites(N, S);
-        performedOptimization |= NegateOpposites(NE, SW);
+    // Returns true if anything changed.  Pairs of the first two variables are removed and added to the third (thus, SW+SE becomes S)
+    bool CombineDirections(int &SouthWest, int &SouthEast, int &South)
+    {
+        if ((SouthWest > 0) && (SouthEast > 0))
+        {
+            const int min = std::min(SouthWest, SouthEast);
+            SouthWest -= min;
+            SouthEast -= min;
+            South += min;
+            return true;
+        }
+        return false;
+    }
 
-        // Next, combine west/east into a single direction
-        performedOptimization |= CombineDirections(SW, SE, S);
-        performedOptimization |= CombineDirections(S, NE, SE);
-        performedOptimization |= CombineDirections(SE, N, NE);
-        performedOptimization |= CombineDirections(NE, NW, N);
-        performedOptimization |= CombineDirections(N, SW, NW);
-        performedOptimization |= CombineDirections(NW, S, SW);
-    } while (performedOptimization);
-}
+    // This function reduces a count of hex directions to their minimum
+    void OptimizeHexDirections(int &N, int &NW, int &NE, int &S, int &SW, int &SE)
+    {
+        bool performedOptimization;
+        do
+        {
+            performedOptimization = false;
 
-int StepsAway(const std::vector<std::string>& directions)
-{
-    auto stepCount = Count(directions);
-    int NW = stepCount["nw"];
-    int NE = stepCount["ne"];
-    int N = stepCount["n"];
-    int SW = stepCount["sw"];
-    int SE = stepCount["se"];
-    int S = stepCount["s"];
+            // First, negate opposite directions
+            performedOptimization |= NegateOpposites(NW, SE);
+            performedOptimization |= NegateOpposites(N, S);
+            performedOptimization |= NegateOpposites(NE, SW);
 
-    OptimizeHexDirections(N, NW, NE, S, SW, SE);
-    return N + NW + NE + S + SW + SE;
-}
+            // Next, combine west/east into a single direction
+            performedOptimization |= CombineDirections(SW, SE, S);
+            performedOptimization |= CombineDirections(S, NE, SE);
+            performedOptimization |= CombineDirections(SE, N, NE);
+            performedOptimization |= CombineDirections(NE, NW, N);
+            performedOptimization |= CombineDirections(N, SW, NW);
+            performedOptimization |= CombineDirections(NW, S, SW);
+        } while (performedOptimization);
+    }
 
-int MaxStepsEverAway(const std::vector<std::string>& directions)
-{
-    int N = 0, NW = 0, NE = 0, S = 0, SW = 0, SE = 0;
-    int furthestAway = 0;
-    for (auto &dir : directions) {
-        if (dir == "s") ++S;
-        else if (dir == "sw") ++SW;
-        else if (dir == "se") ++SE;
-        else if (dir == "n") ++N;
-        else if (dir == "nw") ++NW;
-        else if (dir == "ne") ++NE;
+    int StepsAway(const std::vector<std::string> &directions)
+    {
+        auto stepCount = Count(directions);
+        int NW = stepCount["nw"];
+        int NE = stepCount["ne"];
+        int N = stepCount["n"];
+        int SW = stepCount["sw"];
+        int SE = stepCount["se"];
+        int S = stepCount["s"];
 
         OptimizeHexDirections(N, NW, NE, S, SW, SE);
-        const int currentDistance = N + NW + NE + S + SW + SE;
-        furthestAway = std::max(furthestAway, currentDistance);
+        return N + NW + NE + S + SW + SE;
     }
-    return furthestAway;
-}
+
+    int MaxStepsEverAway(const std::vector<std::string> &directions)
+    {
+        int N = 0, NW = 0, NE = 0, S = 0, SW = 0, SE = 0;
+        int furthestAway = 0;
+        for (auto &dir : directions)
+        {
+            if (dir == "s")
+                ++S;
+            else if (dir == "sw")
+                ++SW;
+            else if (dir == "se")
+                ++SE;
+            else if (dir == "n")
+                ++N;
+            else if (dir == "nw")
+                ++NW;
+            else if (dir == "ne")
+                ++NE;
+
+            OptimizeHexDirections(N, NW, NE, S, SW, SE);
+            const int currentDistance = N + NW + NE + S + SW + SE;
+            furthestAway = std::max(furthestAway, currentDistance);
+        }
+        return furthestAway;
+    }
 } // namespace Day11
 
 void Day11Tests()
 {
-    const struct {
+    const struct
+    {
         std::vector<std::string> input;
         int answer;
     } testCasesA[] = {
-        { {"ne","ne","ne"}, 3 },
-        { { "ne","ne","sw","sw" }, 0 },
-        { { "ne","ne","s","s" }, 2 },
-        { { "se","sw","se","sw","sw" }, 3 },
+        {{"ne", "ne", "ne"}, 3},
+        {{"ne", "ne", "sw", "sw"}, 0},
+        {{"ne", "ne", "s", "s"}, 2},
+        {{"se", "sw", "se", "sw", "sw"}, 3},
     };
-    for (auto &test : testCasesA) {
+    for (auto &test : testCasesA)
+    {
         int result = Day11::StepsAway(test.input);
-        if (result != test.answer) std::cerr << "Test 11A Failed: Got " << result << ", Expected " << test.answer << std::endl;
+        if (result != test.answer)
+            std::cerr << "Test 11A Failed: Got " << result << ", Expected " << test.answer << std::endl;
     }
 }
 
 void Day11Problems()
 {
-    auto source = Helpers::ReadFileLines("input_day11.txt");
+    auto source = Helpers::ReadFileLines("2017/11/input_day11.txt");
     auto input = Helpers::Tokenize(source[0], ',');
     std::cout << "Day 11:\n";
     Day11Tests();
@@ -156,6 +174,14 @@ void Day11Problems()
     const auto stepsAway = Day11::StepsAway(input);
     const auto maxSteps = Day11::MaxStepsEverAway(input);
     const auto end = std::chrono::steady_clock::now();
-    std::cout << stepsAway << std::endl << maxSteps << std::endl;
-    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
+    std::cout << stepsAway << std::endl
+              << maxSteps << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl
+              << std::endl;
+}
+
+int main()
+{
+    Day11Problems();
+    return 0;
 }

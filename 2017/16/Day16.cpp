@@ -1,4 +1,4 @@
-#include "Problems.h"
+#include "2017/lib/Helpers.h"
 /*
 -- Day 16: Permutation Promenade ---
 
@@ -36,96 +36,114 @@ pe/b, swapping programs e and b: ceadb.
 
 In what order are the programs standing after their billion dances?
 */
-namespace Day16 {
-
-// Spin, written sX, makes X programs move from the end to the front, but maintain their order otherwise. (For example, s3 on abcde produces cdeab).
-void Spin(std::string& programs, std::string& action) {
-    const int shift = std::stoi(action) % programs.size();
-    std::rotate(programs.begin(), programs.end() - shift, programs.end());
-}
-
-// Exchange, written xA/B, makes the programs at positions A and B swap places.
-void Exchange(std::string& programs, std::string& action) {
-    const auto positions = Helpers::Tokenize(action, '/');
-    const int first = std::stoi(positions[0]);
-    const int second = std::stoi(positions[1]);
-    std::swap(programs[first], programs[second]);
-}
-
-// Partner, written pA/B, makes the programs named A and B swap places.
-void Partner(std::string& programs, std::string& action) {
-    const auto toSwap = Helpers::Tokenize(action, '/');
-    const char first = toSwap[0][0];
-    const char second = toSwap[1][0];
-        
-    // Swap the two characters
-    for (char& c : programs) {
-        if (c == first) {
-            c = second;
-        } else if (c == second) {
-            c = first;
-        }
-    }
-}
-
-void RunCommands(std::string& programs, const std::vector<std::string>& commands, unsigned int iterations = 1)
+namespace Day16
 {
-    // An entry stored in this table means that we saw a certain state at the end of iteration X.  The initial state give to us is iteration -1.
-    std::unordered_map<std::string, int> knownProgramStates;
-    knownProgramStates[programs] = -1;
-    bool shortcutApplied = false;   // Have we detected a cycle and jumped ahead?  If so, stop looking for cycles
 
-    for (unsigned int i = 0; i < iterations; ++i) {
-        // Run the program
-        for (const auto& command : commands) {
-            // Split the command into the type and the actual instructions
-            char commandType = command[0];
-            std::string actions = command.substr(1);
+    // Spin, written sX, makes X programs move from the end to the front, but maintain their order otherwise. (For example, s3 on abcde produces cdeab).
+    void Spin(std::string &programs, std::string &action)
+    {
+        const int shift = std::stoi(action) % programs.size();
+        std::rotate(programs.begin(), programs.end() - shift, programs.end());
+    }
 
-            switch (command[0]) {
-            case 's':
-                Spin(programs, actions);
-                break;
+    // Exchange, written xA/B, makes the programs at positions A and B swap places.
+    void Exchange(std::string &programs, std::string &action)
+    {
+        const auto positions = Helpers::Tokenize(action, '/');
+        const int first = std::stoi(positions[0]);
+        const int second = std::stoi(positions[1]);
+        std::swap(programs[first], programs[second]);
+    }
 
-            case 'x':
-                Exchange(programs, actions);
-                break;
+    // Partner, written pA/B, makes the programs named A and B swap places.
+    void Partner(std::string &programs, std::string &action)
+    {
+        const auto toSwap = Helpers::Tokenize(action, '/');
+        const char first = toSwap[0][0];
+        const char second = toSwap[1][0];
 
-            case 'p':
-                Partner(programs, actions);
-                break;
+        // Swap the two characters
+        for (char &c : programs)
+        {
+            if (c == first)
+            {
+                c = second;
             }
-        }
-
-        // Store our output.  If we've ever seen it before, we have a cycle and can shortcut
-        if (!shortcutApplied) {
-            if (knownProgramStates.count(programs) > 0) {
-                int cycleLength = i - knownProgramStates[programs];
-                while (i < iterations) i += cycleLength;
-                // We've gone too far, so backtrack one cycle.
-                i -= cycleLength;
-                shortcutApplied = true;
-            } else {
-                knownProgramStates[programs] = i;
+            else if (c == second)
+            {
+                c = first;
             }
         }
     }
-}
+
+    void RunCommands(std::string &programs, const std::vector<std::string> &commands, unsigned int iterations = 1)
+    {
+        // An entry stored in this table means that we saw a certain state at the end of iteration X.  The initial state give to us is iteration -1.
+        std::unordered_map<std::string, int> knownProgramStates;
+        knownProgramStates[programs] = -1;
+        bool shortcutApplied = false; // Have we detected a cycle and jumped ahead?  If so, stop looking for cycles
+
+        for (unsigned int i = 0; i < iterations; ++i)
+        {
+            // Run the program
+            for (const auto &command : commands)
+            {
+                // Split the command into the type and the actual instructions
+                char commandType = command[0];
+                std::string actions = command.substr(1);
+
+                switch (commandType)
+                {
+                case 's':
+                    Spin(programs, actions);
+                    break;
+
+                case 'x':
+                    Exchange(programs, actions);
+                    break;
+
+                case 'p':
+                    Partner(programs, actions);
+                    break;
+                }
+            }
+
+            // Store our output.  If we've ever seen it before, we have a cycle and can shortcut
+            if (!shortcutApplied)
+            {
+                if (knownProgramStates.count(programs) > 0)
+                {
+                    int cycleLength = i - knownProgramStates[programs];
+                    while (i < iterations)
+                        i += cycleLength;
+                    // We've gone too far, so backtrack one cycle.
+                    i -= cycleLength;
+                    shortcutApplied = true;
+                }
+                else
+                {
+                    knownProgramStates[programs] = i;
+                }
+            }
+        }
+    }
 
 } // namespace Day16
 
 void Day16Tests()
 {
     std::string dance = "abcde";
-    std::vector<std::string> commands = { "s1", "x3/4", "pe/b" };
+    std::vector<std::string> commands = {"s1", "x3/4", "pe/b"};
     Day16::RunCommands(dance, commands);
     const std::string expected = "baedc";
-    if (dance != expected) std::cerr << "Test 16A Error: Got " << dance << ", expected " << expected << std::endl;
+    if (dance != expected)
+        std::cerr << "Test 16A Error: Got " << dance << ", expected " << expected << std::endl;
 
     std::string doubleDance = "abcde";
     Day16::RunCommands(doubleDance, commands, 2);
     const std::string expectedTwoTimes = "ceadb";
-    if (doubleDance != expectedTwoTimes) std::cerr << "Test 16B Error: Got " << doubleDance << ", expected " << expectedTwoTimes << std::endl;
+    if (doubleDance != expectedTwoTimes)
+        std::cerr << "Test 16B Error: Got " << doubleDance << ", expected " << expectedTwoTimes << std::endl;
 }
 
 void Day16Problems()
@@ -133,7 +151,7 @@ void Day16Problems()
     std::cout << "Day 16:\n";
     Day16Tests();
     const auto start = std::chrono::steady_clock::now();
-    auto input = Helpers::ReadFile<std::string>("input_day16.txt");
+    auto input = Helpers::ReadFile<std::string>("2017/16/input_day16.txt");
     auto commands = Helpers::Tokenize(input[0], ',', false);
     std::string programs = "abcdefghijklmnop";
     std::string billionRuns = programs;
@@ -142,5 +160,12 @@ void Day16Problems()
     const auto end = std::chrono::steady_clock::now();
     std::cout << programs << std::endl;
     std::cout << billionRuns << std::endl;
-    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl
+              << std::endl;
+}
+
+int main()
+{
+    Day16Problems();
+    return 0;
 }

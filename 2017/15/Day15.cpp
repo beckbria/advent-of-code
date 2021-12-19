@@ -1,4 +1,4 @@
-#include "Problems.h"
+#include "2017/lib/Helpers.h"
 /*
 --- Day 15: Dueling Generators ---
 
@@ -107,53 +107,58 @@ in their lowest 16 bits.)
 
 After 5 million pairs, but using this new generator logic, what is the judge's final count?
 */
-namespace Day15 {
-
-class Generator {
-public:
-    Generator(uint64_t seed, std::function<uint64_t(uint64_t)> advanceFunction)
-        : m_advanceFunction(advanceFunction)
-    {
-        m_value = seed;
-        Advance();  // The first value is computed but using the provided seed as the "previous Value"
-    }
-
-    uint64_t Advance() // Returns the new value
-    {
-        m_value = m_advanceFunction(m_value);
-        return m_value;
-    }
-
-    uint64_t CurrentValue() { return m_value; }
-
-private:
-    uint64_t m_value;
-    std::function<uint64_t(uint64_t)> m_advanceFunction;
-};
-
-uint64_t MatchedPairs(Generator& A, Generator& B, unsigned int rounds)
+namespace Day15
 {
-    constexpr uint64_t bitMask = 0xffff;
-    uint64_t first = A.CurrentValue() & bitMask;
-    uint64_t second = B.CurrentValue() & bitMask;
-    uint64_t matches = 0;
-    for (unsigned int i = 0; i < rounds; ++i) {
-        if (first == second) ++matches;
-        first = A.Advance() & bitMask;
-        second = B.Advance() & bitMask;
+
+    class Generator
+    {
+    public:
+        Generator(uint64_t seed, std::function<uint64_t(uint64_t)> advanceFunction)
+            : m_advanceFunction(advanceFunction)
+        {
+            m_value = seed;
+            Advance(); // The first value is computed but using the provided seed as the "previous Value"
+        }
+
+        uint64_t Advance() // Returns the new value
+        {
+            m_value = m_advanceFunction(m_value);
+            return m_value;
+        }
+
+        uint64_t CurrentValue() { return m_value; }
+
+    private:
+        uint64_t m_value;
+        std::function<uint64_t(uint64_t)> m_advanceFunction;
+    };
+
+    uint64_t MatchedPairs(Generator &A, Generator &B, unsigned int rounds)
+    {
+        constexpr uint64_t bitMask = 0xffff;
+        uint64_t first = A.CurrentValue() & bitMask;
+        uint64_t second = B.CurrentValue() & bitMask;
+        uint64_t matches = 0;
+        for (unsigned int i = 0; i < rounds; ++i)
+        {
+            if (first == second)
+                ++matches;
+            first = A.Advance() & bitMask;
+            second = B.Advance() & bitMask;
+        }
+        return matches;
     }
-    return matches;
-}
 
 } // namespace Day15
 
-template<uint64_t multiplier, uint64_t divisor = 1>
+template <uint64_t multiplier, uint64_t divisor = 1>
 uint64_t MultiplyGenerator(uint64_t previous)
 {
     static_assert(Helpers::IsSingleBitSet(divisor), "Divisor should be a power of 2");
 
     uint64_t current = previous;
-    do {
+    do
+    {
         // 2147483647 == 2^31-1 is a Mersenne prime.  The following computes the same as (current * multiplier) % 2147483647
         const uint64_t product = (current * multiplier);
         current = (product & 0x7fffffff) + (product >> 31);
@@ -167,12 +172,14 @@ void Day15Tests()
     Day15::Generator A(65, MultiplyGenerator<16807>);
     Day15::Generator B(8921, MultiplyGenerator<48271>);
     const auto matched = MatchedPairs(A, B, 5);
-    if (matched != 1) std::cerr << "Test 15A Error: Got " << matched << ", expected 1\n";
+    if (matched != 1)
+        std::cerr << "Test 15A Error: Got " << matched << ", expected 1\n";
 
     Day15::Generator C(65, MultiplyGenerator<16807, 4>);
     Day15::Generator D(8921, MultiplyGenerator<48271, 8>);
     const auto matched2 = MatchedPairs(C, D, 5000000);
-    if (matched2 != 309) std::cerr << "Test 15B Error: Got " << matched2 << ", expected 309\n";
+    if (matched2 != 309)
+        std::cerr << "Test 15B Error: Got " << matched2 << ", expected 309\n";
 }
 
 void Day15Problems()
@@ -187,6 +194,14 @@ void Day15Problems()
     Day15::Generator D(354, MultiplyGenerator<48271, 8>);
     const auto matched2 = MatchedPairs(C, D, 5000000);
     const auto end = std::chrono::steady_clock::now();
-    std::cout << matched1 << std::endl << matched2 << std::endl;
-    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
+    std::cout << matched1 << std::endl
+              << matched2 << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl
+              << std::endl;
+}
+
+int main()
+{
+    Day15Problems();
+    return 0;
 }

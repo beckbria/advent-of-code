@@ -1,4 +1,4 @@
-#include "Problems.h"
+#include "2017/lib/Helpers.h"
 /*
 A new system policy has been put in place that requires all accounts to use a passphrase instead of simply 
 a password. A passphrase consists of a series of words (lowercase letters) separated by spaces.
@@ -27,45 +27,52 @@ oiii ioii iioi iiio is not valid - any of these words can be rearranged to form 
 
 Under this new system policy, how many passphrases are valid?
 */
-namespace Day4 {
-bool AllWordsUnique(const std::vector<std::string>& words)
+namespace Day4
 {
-    std::set<std::string> seen;
-    for (auto &word : words) {
-        if (seen.count(word) == 1) return false;
-        seen.emplace(word);
+    bool AllWordsUnique(const std::vector<std::string> &words)
+    {
+        std::set<std::string> seen;
+        for (auto &word : words)
+        {
+            if (seen.count(word) == 1)
+                return false;
+            seen.emplace(word);
+        }
+        return true;
     }
-    return true;
-}
 
-bool IsValidPassphrase(const std::string& line)
-{
-    // This is where C++ starts to fall apart.  Oh for a language with a standard string.split function.......
-    auto words = Helpers::Tokenize(line);
-    return AllWordsUnique(words);
-}
-
-bool IsValidAnagramPassphrase(const std::string& line)
-{
-    auto words = Helpers::Tokenize(line);
-    // Sort the characters in each word to detect anagrams
-    for (auto& word : words) {
-        std::sort(word.begin(), word.end());
+    bool IsValidPassphrase(const std::string &line)
+    {
+        // This is where C++ starts to fall apart.  Oh for a language with a standard string.split function.......
+        auto words = Helpers::Tokenize(line);
+        return AllWordsUnique(words);
     }
-    return AllWordsUnique(words);
-}
+
+    bool IsValidAnagramPassphrase(const std::string &line)
+    {
+        auto words = Helpers::Tokenize(line);
+        // Sort the characters in each word to detect anagrams
+        for (auto &word : words)
+        {
+            std::sort(word.begin(), word.end());
+        }
+        return AllWordsUnique(words);
+    }
 } // namespace Day4
 
 void Day4Tests()
 {
-    const struct test {
+    const struct test
+    {
         std::string input;
         bool answer;
-    } testCaseA[] = { {"aa bb cc dd ee", true}, { "aa bb cc dd aa", false }, { "aa bb cc dd aaa", true } };
+    } testCaseA[] = {{"aa bb cc dd ee", true}, {"aa bb cc dd aa", false}, {"aa bb cc dd aaa", true}};
 
-    for (auto &t : testCaseA) {
+    for (auto &t : testCaseA)
+    {
         bool result = Day4::IsValidPassphrase(t.input);
-        if (result != t.answer) {
+        if (result != t.answer)
+        {
             std::cerr << "Test 4A failed: " << t.input << " => " << result << " (expected " << t.answer << ")" << std::endl;
         }
     }
@@ -76,15 +83,26 @@ void Day4Problems()
     std::cout << "Day 4:\n";
     Day4Tests();
     const auto start = std::chrono::steady_clock::now();
-    const auto input = Helpers::ReadFileLines("input_day4.txt");
+    const auto input = Helpers::ReadFileLines("2017/04/input_day4.txt");
     int validPassphrases = 0;
     int anagramPassphrases = 0;
-    for (auto &line : input) {
-        if (Day4::IsValidPassphrase(line)) ++validPassphrases;
-        if (Day4::IsValidAnagramPassphrase(line)) ++anagramPassphrases;
+    for (auto &line : input)
+    {
+        if (Day4::IsValidPassphrase(line))
+            ++validPassphrases;
+        if (Day4::IsValidAnagramPassphrase(line))
+            ++anagramPassphrases;
     }
     const auto end = std::chrono::steady_clock::now();
     std::cout << validPassphrases << std::endl;
-    std::cout << anagramPassphrases << std::endl << std::endl;
-    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
+    std::cout << anagramPassphrases << std::endl
+              << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl
+              << std::endl;
+}
+
+int main()
+{
+    Day4Problems();
+    return 0;
 }

@@ -1,4 +1,5 @@
-#include "Problems.h"
+#include "2017/lib/Helpers.h"
+#include "HashInternal.h"
 /*
 --- Day 10: Knot Hash ---
 
@@ -99,103 +100,42 @@ AoC 2017 becomes 33efeb34ea91902bb2f59c9920caa6cd.
 
 Treating your puzzle input as a string of ASCII characters, what is the Knot Hash of your puzzle input? Ignore any leading or trailing whitespace you might encounter.
 */
-namespace Day10 {
-void ReverseSegment(std::vector<unsigned int>& hash, int startPosition, int length)
-{
-    int start = startPosition % hash.size();
-    int end = startPosition + (length - 1);
-    while (end > start) {
-        std::swap(hash[start % hash.size()], hash[end % hash.size()]);
-        ++start;
-        --end;
-    }
-}
-
-std::vector<unsigned int> InitializeHash(unsigned int listSize)
-{
-    std::vector<unsigned int> hash;
-    hash.resize(listSize);
-    // Initialize the list to 0....listSize-1
-    for (unsigned int i = 0; i < listSize; ++i) {
-        hash[i] = i;
-    }
-    return hash;
-}
-
-void ComputeHash(const std::vector<unsigned int>& lengths, std::vector<unsigned int>& hash, int& skip, int& currentPosition)
-{
-    for (auto len : lengths) {
-        ReverseSegment(hash, currentPosition, len);
-        currentPosition = (currentPosition + len + skip) % hash.size();
-        ++skip;
-    }
-}
-
-std::vector<unsigned int> KnotHash(std::string plainText)
-{
-    // For readability, we're going to explicitly convert the input string to a vector of integers.  Yes, it's true 
-    // that a std::string is array-like behind the scenes, and if we were dealing with megabyte-scale input avoiding
-    // the copy would be nice, but here's it's a trivial amount of work/memory, so just copy rather than genericizing
-    // the function further
-    std::vector<unsigned int> lengths(plainText.begin(), plainText.end());
-
-    // Per problem instructions, append a few values to the end
-    for (auto i : { 17, 31, 73, 47, 23 }) lengths.push_back(i);
-    auto sparseHash = InitializeHash(256);
-
-    // Do 64 rounds of the hash function to obtain a permutation of the initial list
-    int skip = 0, currentPosition = 0;
-    for (unsigned int i = 0; i < 64; ++i) {
-        ComputeHash(lengths, sparseHash, skip, currentPosition);
-    }
-
-    // Compute the Dense Hash by XORing each 16 characters together
-    std::vector<unsigned int> denseHash;
-    unsigned int current = sparseHash[0];
-    for (size_t i = 1; i < sparseHash.size(); ++i) {
-        if (i % 16 == 0) {
-            // We've filled in a block
-            denseHash.push_back(current);
-            current = sparseHash[i];
-        } else {
-            current ^= sparseHash[i];
-        }
-    }
-    // Add the last element
-    denseHash.push_back(current);
-    return denseHash;
-}
-} // namespace Day10
 
 void Day10Tests()
 {
     auto hashA = Day10::InitializeHash(5);
     int skip = 0, currentPosition = 0;
-    Day10::ComputeHash({ 3,4,1,5 }, hashA, skip, currentPosition);
-    std::array<unsigned int, 5> answerA = { 3, 4, 2, 1, 0 };
-    for (size_t i = 0; i < answerA.size(); ++i) {
-        if (hashA[i] != answerA[i]) {
+    Day10::ComputeHash({3, 4, 1, 5}, hashA, skip, currentPosition);
+    std::array<unsigned int, 5> answerA = {3, 4, 2, 1, 0};
+    for (size_t i = 0; i < answerA.size(); ++i)
+    {
+        if (hashA[i] != answerA[i])
+        {
             std::cerr << "Test 10A Error: Got {";
-            for (auto h : hashA) std::cerr << h << ", ";
+            for (auto h : hashA)
+                std::cerr << h << ", ";
             std::cerr << "}, Expected {";
-            for (auto a : answerA) std::cerr << a << ", ";
+            for (auto a : answerA)
+                std::cerr << a << ", ";
             std::cerr << "}\n";
             break;
         }
     }
 
-    const struct {
+    const struct
+    {
         std::string plainText;
         std::string hash;
     } testCases[] = {
-        { "", "a2582a3a0e66e6e86e3812dcb672a272" },
-        { "AoC 2017", "33efeb34ea91902bb2f59c9920caa6cd" },
-        { "1,2,3", "3efbe78a8d82f29979031a4aa0b16a9d" },
-        { "1,2,4", "63960835bcdc130f0b66d7ff4f6a5a8e" }
-    };
-    for (auto &test : testCases) {
+        {"", "a2582a3a0e66e6e86e3812dcb672a272"},
+        {"AoC 2017", "33efeb34ea91902bb2f59c9920caa6cd"},
+        {"1,2,3", "3efbe78a8d82f29979031a4aa0b16a9d"},
+        {"1,2,4", "63960835bcdc130f0b66d7ff4f6a5a8e"}};
+    for (auto &test : testCases)
+    {
         auto hash = Helpers::ByteArrayToHex(Day10::KnotHash(test.plainText));
-        if (hash != test.hash) std::cerr << "Test 10B Error: Got " << hash << ", expected " << test.hash << std::endl;
+        if (hash != test.hash)
+            std::cerr << "Test 10B Error: Got " << hash << ", expected " << test.hash << std::endl;
     }
 }
 
@@ -204,7 +144,8 @@ void Day10Problems()
     const std::string input = "31,2,85,1,80,109,35,63,98,255,0,13,105,254,128,33";
     const auto tokens = Helpers::Tokenize(input, ',');
     std::vector<unsigned> lengths;
-    for (auto &t : tokens) {
+    for (auto &t : tokens)
+    {
         lengths.push_back(std::stoi(t));
     }
 
@@ -217,6 +158,14 @@ void Day10Problems()
     const auto parityCheck = hash[0] * hash[1];
     const auto hexString = Helpers::ByteArrayToHex(Day10::KnotHash(input));
     const auto end = std::chrono::steady_clock::now();
-    std::cout << parityCheck << std::endl << hexString << std::endl;
-    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
+    std::cout << parityCheck << std::endl
+              << hexString << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl
+              << std::endl;
+}
+
+int main()
+{
+    Day10Problems();
+    return 0;
 }

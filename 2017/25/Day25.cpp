@@ -1,4 +1,4 @@
-#include "Problems.h"
+#include "2017/lib/Helpers.h"
 /*
 --- Day 25: The Halting Problem ---
 
@@ -90,31 +90,39 @@ You must deposit 49 stars to increase your priority to the required level.
 The garbage collector winks at you, then continues sweeping.
 
 */
-namespace Day25 {
-    struct Action {
+namespace Day25
+{
+    struct Action
+    {
         bool valueToWrite = false;
         int move = 0;
         char nextState = '?';
     };
 
-    class State {
+    class State
+    {
     public:
-        State(const std::vector<std::string>& instructions, unsigned int beginParseIndex = 0);
+        State(const std::vector<std::string> &instructions, unsigned int beginParseIndex = 0);
         State() = default;
 
         char Name() const { return m_name; };
-        const Action& Instruction(bool state) const;
+        const Action &Instruction(bool state) const;
 
     protected:
         char m_name = '?';
         Action m_action[2];
     };
 
-    class TuringMachine {
+    class TuringMachine
+    {
     public:
-        TuringMachine(const std::vector<std::string>& instructions);
-        uint64_t StepsToDiagnostic() { return m_stepsToDiagnostic;  }
-        void RunToStep(uint64_t step) { while (m_step < step) StepForward(); }
+        TuringMachine(const std::vector<std::string> &instructions);
+        uint64_t StepsToDiagnostic() { return m_stepsToDiagnostic; }
+        void RunToStep(uint64_t step)
+        {
+            while (m_step < step)
+                StepForward();
+        }
         uint64_t SetBits() { return m_setPositions.size(); }
         uint64_t CurrentStep() { return m_step; }
 
@@ -130,10 +138,10 @@ namespace Day25 {
 
     constexpr bool g_validateInput = false;
 
-    State::State(const std::vector<std::string>& instructions, unsigned int beginParseIndex)
+    State::State(const std::vector<std::string> &instructions, unsigned int beginParseIndex)
     {
-        if (g_validateInput && ((instructions[beginParseIndex + 1] != "  If the current value is 0:") 
-            || (instructions[beginParseIndex + 5] != "  If the current value is 1:"))) {
+        if (g_validateInput && ((instructions[beginParseIndex + 1] != "  If the current value is 0:") || (instructions[beginParseIndex + 5] != "  If the current value is 1:")))
+        {
             throw std::invalid_argument("Parse Error");
         }
 
@@ -146,18 +154,21 @@ namespace Day25 {
         m_action[1].nextState = Helpers::Tokenize(instructions[beginParseIndex + 8])[4][0];
     }
 
-    const Action& State::Instruction(bool state) const
+    const Action &State::Instruction(bool state) const
     {
         return m_action[static_cast<unsigned int>(state)];
     }
 
-    TuringMachine::TuringMachine(const std::vector<std::string>& instructions)
+    TuringMachine::TuringMachine(const std::vector<std::string> &instructions)
     {
-        for (unsigned int i = 0; i < instructions.size(); ++i) {
-            const auto& currentInstruction = instructions[i];
-            if (currentInstruction.size() < 1) continue;
+        for (unsigned int i = 0; i < instructions.size(); ++i)
+        {
+            const auto &currentInstruction = instructions[i];
+            if (currentInstruction.size() < 1)
+                continue;
 
-            switch (currentInstruction[0]) {
+            switch (currentInstruction[0])
+            {
             case 'B':
                 // Begin in state <name>
                 m_currentState = Helpers::Tokenize(currentInstruction)[3][0];
@@ -180,15 +191,18 @@ namespace Day25 {
         const auto &instruction = m_states[m_currentState].Instruction(m_setPositions.count(m_currentPosition) > 0);
 
         // Write the new value
-        if (instruction.valueToWrite) {
+        if (instruction.valueToWrite)
+        {
             m_setPositions.insert(m_currentPosition);
-        } else {
+        }
+        else
+        {
             m_setPositions.erase(m_currentPosition);
         }
 
         m_currentPosition += instruction.move;
         m_currentState = instruction.nextState;
-        
+
         ++m_step;
     }
 
@@ -196,12 +210,13 @@ namespace Day25 {
 
 void Day25Tests()
 {
-    const auto input = Helpers::ReadFileLines("input_day25_test.txt");
+    const auto input = Helpers::ReadFileLines("2017/25/input_day25_test.txt");
     Day25::TuringMachine machine(input);
     machine.RunToStep(machine.StepsToDiagnostic());
     const auto setBits = machine.SetBits();
     const auto expectedSetBits = 3;
-    if (setBits != expectedSetBits) std::cerr << "Test 25A Error: Got " << setBits << ", Expected " << expectedSetBits << std::endl;
+    if (setBits != expectedSetBits)
+        std::cerr << "Test 25A Error: Got " << setBits << ", Expected " << expectedSetBits << std::endl;
 }
 
 void Day25Problems()
@@ -209,11 +224,18 @@ void Day25Problems()
     std::cout << "Day 25:\n";
     Day25Tests();
     const auto start = std::chrono::steady_clock::now();
-    const auto input = Helpers::ReadFileLines("input_day25.txt");
+    const auto input = Helpers::ReadFileLines("2017/25/input_day25.txt");
     Day25::TuringMachine machine(input);
     machine.RunToStep(machine.StepsToDiagnostic());
     const auto setBits = machine.SetBits();
     const auto end = std::chrono::steady_clock::now();
     std::cout << setBits << std::endl;
-    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl
+              << std::endl;
+}
+
+int main()
+{
+    Day25Problems();
+    return 0;
 }

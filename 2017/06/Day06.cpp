@@ -1,4 +1,4 @@
-#include "Problems.h"
+#include "2017/lib/Helpers.h"
 /*
 --- Day 6: Memory Reallocation ---
 
@@ -45,71 +45,92 @@ In the example above, 2 4 1 2 is seen again after four cycles, and so the answer
 
 How many cycles are in the infinite loop that arises from the configuration in your puzzle input?
 */
-namespace Day6 {
-std::pair<int, int> IterationsUntilInfiniteLoop(std::vector<int> bankSizes)
+namespace Day6
 {
-    if (bankSizes.size() < 1) return std::make_pair(0, 0);
+    std::pair<int, int> IterationsUntilInfiniteLoop(std::vector<int> bankSizes)
+    {
+        if (bankSizes.size() < 1)
+            return std::make_pair(0, 0);
 
-    std::map<std::string, int> seenArrangements;
-    int iteration = 0;
+        std::map<std::string, int> seenArrangements;
+        int iteration = 0;
 
-    while (true) {
-        // Find the largest bank
-        int largest = bankSizes[0];
-        int largestIndex = 0;
-        for (size_t i = 0; i < bankSizes.size(); ++i) {
-            if (bankSizes[i] > largest) {
-                largest = bankSizes[i];
-                largestIndex = i;
+        while (true)
+        {
+            // Find the largest bank
+            int largest = bankSizes[0];
+            int largestIndex = 0;
+            for (size_t i = 0; i < bankSizes.size(); ++i)
+            {
+                if (bankSizes[i] > largest)
+                {
+                    largest = bankSizes[i];
+                    largestIndex = i;
+                }
+            }
+
+            // Redistribute the contents of that bank
+            int remaining = bankSizes[largestIndex];
+            bankSizes[largestIndex] = 0;
+            int current = largestIndex;
+            while (remaining > 0)
+            {
+                current = (current + 1) % bankSizes.size();
+                bankSizes[current]++;
+                remaining--;
+            }
+
+            // We've completed an iteration
+            iteration++;
+
+            // Record a hash of the bank sizes
+            std::stringstream concatenation;
+            for (auto i : bankSizes)
+                concatenation << i;
+            std::string hash = concatenation.str();
+
+            auto it = seenArrangements.find(hash);
+            if (it == seenArrangements.end())
+            {
+                seenArrangements[hash] = iteration;
+            }
+            else
+            {
+                // This is a duplicate
+                return std::make_pair(iteration, iteration - it->second);
             }
         }
 
-        // Redistribute the contents of that bank
-        int remaining = bankSizes[largestIndex];
-        bankSizes[largestIndex] = 0;
-        int current = largestIndex;
-        while (remaining > 0) {
-            current = (current + 1) % bankSizes.size();
-            bankSizes[current]++;
-            remaining--;
-        }
-
-        // We've completed an iteration
-        iteration++;
-
-        // Record a hash of the bank sizes
-        std::stringstream concatenation;
-        for (auto i : bankSizes) concatenation << i;
-        std::string hash = concatenation.str();
-
-        auto it = seenArrangements.find(hash);
-        if (it == seenArrangements.end()) {
-            seenArrangements[hash] = iteration;
-        } else {
-            // This is a duplicate
-            return std::make_pair(iteration, iteration - it->second);
-        }
+        return std::make_pair(-1, -1);
     }
-
-    return std::make_pair(-1, -1);
-}
 } // namespace Day6
 
 void Day6Tests()
 {
-    std::vector<int> bankSizes = { 0,2,7,0 };
+    std::vector<int> bankSizes = {0, 2, 7, 0};
     auto answer = Day6::IterationsUntilInfiniteLoop(bankSizes);
-    if (answer.first != 5) std::cerr << "Test 6A Error: Got " << answer.first << " expected 5" << std::endl;
-    if (answer.second != 4) std::cerr << "Test 6B Error: Got " << answer.second << " expected 4" << std::endl;
+    if (answer.first != 5)
+        std::cerr << "Test 6A Error: Got " << answer.first << " expected 5" << std::endl;
+    if (answer.second != 4)
+        std::cerr << "Test 6B Error: Got " << answer.second << " expected 4" << std::endl;
 }
 
-void Day6Problems() {
+void Day6Problems()
+{
     std::cout << "Day 6:\n";
     Day6Tests();
     const auto start = std::chrono::steady_clock::now();
-    std::vector<int> bankSizes = { 2,8,8,5,4,2,3,1,5,5,1,2,15,13,5,14 };
+    std::vector<int> bankSizes = {2, 8, 8, 5, 4, 2, 3, 1, 5, 5, 1, 2, 15, 13, 5, 14};
     const auto answer = Day6::IterationsUntilInfiniteLoop(bankSizes);
     const auto end = std::chrono::steady_clock::now();
-    std::cout << answer.first << std::endl << answer.second << std::endl;
-    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
+    std::cout << answer.first << std::endl
+              << answer.second << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl
+              << std::endl;
+}
+
+int main()
+{
+    Day6Problems();
+    return 0;
 }

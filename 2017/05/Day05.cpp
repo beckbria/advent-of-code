@@ -1,4 +1,4 @@
-#include "Problems.h"
+#include "2017/lib/Helpers.h"
 /*
 -- - Day 5: A Maze of Twisty Trampolines, All Alike-- -
 
@@ -45,34 +45,41 @@ offset values after finding the exit are left as 2 3 2 3 -1.
 
 How many steps does it now take to reach the exit?
 */
-namespace Day5 {
-long MoveCount(std::vector<int> maze, bool partTwoHeuristic)
+namespace Day5
 {
-    long moves = 0;
-    int currentPosition = 0;
-    while ((currentPosition >= 0) && (currentPosition < static_cast<int>(maze.size()))) {
-        int oldPosition = currentPosition;
-        currentPosition += maze[currentPosition];
-        
-        if (partTwoHeuristic && (maze[oldPosition] >= 3)) {
-            maze[oldPosition]--;
-        } else {
-            maze[oldPosition]++;
-        }        
-        moves++;
-    }
+    long MoveCount(std::vector<int> maze, bool partTwoHeuristic)
+    {
+        long moves = 0;
+        int currentPosition = 0;
+        while ((currentPosition >= 0) && (currentPosition < static_cast<int>(maze.size())))
+        {
+            int oldPosition = currentPosition;
+            currentPosition += maze[currentPosition];
 
-    return moves;
-}
+            if (partTwoHeuristic && (maze[oldPosition] >= 3))
+            {
+                maze[oldPosition]--;
+            }
+            else
+            {
+                maze[oldPosition]++;
+            }
+            moves++;
+        }
+
+        return moves;
+    }
 } // namespace Day5
 
 void Day5Tests()
 {
-    std::vector<int> maze = { 0, 3, 0, 1, -3 };
+    std::vector<int> maze = {0, 3, 0, 1, -3};
     int countA = Day5::MoveCount(maze, false);
-    if (countA != 5) std::cerr << "Test 5A error: Got " << countA << std::endl;
+    if (countA != 5)
+        std::cerr << "Test 5A error: Got " << countA << std::endl;
     int countB = Day5::MoveCount(maze, true);
-    if (countB != 10) std::cerr << "Test 5B error: Got " << countB << std::endl;
+    if (countB != 10)
+        std::cerr << "Test 5B error: Got " << countB << std::endl;
 }
 
 void Day5Problems()
@@ -80,9 +87,16 @@ void Day5Problems()
     std::cout << "Day 5:\n";
     Day5Tests();
     const auto start = std::chrono::steady_clock::now();
-    auto maze = Helpers::ReadFile<int>("input_day5.txt");
+    auto maze = Helpers::ReadFile<int>("2017/05/input_day5.txt");
     std::cout << Day5::MoveCount(maze, false) << std::endl;
     std::cout << Day5::MoveCount(maze, true) << std::endl;
     const auto end = std::chrono::steady_clock::now();
-    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl
+              << std::endl;
+}
+
+int main()
+{
+    Day5Problems();
+    return 0;
 }

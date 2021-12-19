@@ -1,4 +1,4 @@
-#include "Problems.h"
+#include "2017/lib/Helpers.h"
 /*
 --- Day 23: Coprocessor Conflagration ---
 
@@ -42,204 +42,229 @@ After setting register a to 1, if the program were to run to completion, what va
 left in register h?
 
 */
-namespace Day23 {
-
-// The registers are represented by single letters in instructions, but stored as 0-26 internally
-inline constexpr unsigned int RegisterIndex(char c) { return (c - 'a'); }
-
-enum class OperandType {
-    Invalid,
-    Integer,
-    Register
-};
-
-class Operand {
-public:
-    Operand(OperandType op, int64_t val) : type(op), value(val) {}
-    Operand(const std::string& s);
-    Operand() {}
-    int64_t Value() const { return value; }
-    bool IsRegister() const { return type == OperandType::Register; }
-protected:
-    OperandType type = OperandType::Invalid;
-    int64_t value = 0;
-};
-
-Operand::Operand(const std::string& s)
+namespace Day23
 {
-    // Registers must be a single character
-    if ((s.size() == 1) && (s[0] >= 'a') && (s[0] <= 'z')) {
-        type = OperandType::Register;
-        value = RegisterIndex(s[0]);
-    } else {
-        type = OperandType::Integer;
-        value = std::stoi(s);
-    }
-}
 
-class RegisterBank {
-public:
-    int64_t Evaluate(const Operand& op) const;
-    int64_t& operator[] (int x) { return m_register.at(x); }
+    // The registers are represented by single letters in instructions, but stored as 0-26 internally
+    inline constexpr unsigned int RegisterIndex(char c) { return (c - 'a'); }
 
-private:
-    std::array<int64_t, 26> m_register = {};
-};
-
-int64_t RegisterBank::Evaluate(const Operand& op) const
-{
-    if (op.IsRegister()) {
-        return m_register.at(static_cast<int>(op.Value()));
-    } else {
-        return op.Value();
-    }
-}
-
-enum class OpCode {
-    Invalid,
-    Set,
-    Subtract,
-    Multiply,
-    JumpIfNotZero
-};
-
-struct Instruction {
-    Instruction(const std::string& inst);
-    OpCode type;
-    std::array<Operand, 2> operand;
-};
-
-Instruction::Instruction(const std::string& inst)
-{
-    auto tokens = Helpers::Tokenize(inst);
-
-    // Parse the type
-    static const struct {
-        std::string token;
-        OpCode opcode;
-    } typeLookup[] = {
-        { "set", OpCode::Set },
-        { "sub", OpCode::Subtract },
-        { "mul", OpCode::Multiply },
-        { "jnz", OpCode::JumpIfNotZero }
+    enum class OperandType
+    {
+        Invalid,
+        Integer,
+        Register
     };
-    type = OpCode::Invalid;
-    for (const auto& t : typeLookup) {
-        if (tokens[0] == t.token) type = t.opcode;
-    }
-    if (type == OpCode::Invalid) std::cerr << "Unexpected Instruction: " << tokens[0] << std::endl;
 
-    // Parse the opcodes
-    operand[0] = Operand(tokens[1]);
-    if (tokens.size() > 2) {
-        operand[1] = Operand(tokens[2]);
-    }
-}
+    class Operand
+    {
+    public:
+        Operand(OperandType op, int64_t val) : type(op), value(val) {}
+        Operand(const std::string &s);
+        Operand() {}
+        int64_t Value() const { return value; }
+        bool IsRegister() const { return type == OperandType::Register; }
 
-class Program {
-public:
-    Program(std::vector<Instruction>& instructions) : m_instructions(instructions) {}
-    bool Complete() const;
-    int64_t Evaluate(const Operand& op) const { return m_registers.Evaluate(op); }
-    void RunInstruction();
-    int64_t MulInstructionCount() const { return m_mulCount; }
-    void SetRegister(char reg, int64_t value) { m_registers[RegisterIndex(reg)] = value; }
-    int64_t GetRegister(char reg) { return m_registers[RegisterIndex(reg)]; }
+    protected:
+        OperandType type = OperandType::Invalid;
+        int64_t value = 0;
+    };
 
-protected:
-    void Set(const Instruction& inst);
-    void Sub(const Instruction& inst);
-    void Mul(const Instruction& inst);
-    void Jnz(const Instruction& inst);
-
-    int64_t m_programCounter = 0;
-    int64_t m_mulCount = 0;
-    std::vector<Instruction> m_instructions;
-    RegisterBank m_registers;
-};
-
-bool Program::Complete() const
-{
-    return (m_programCounter < 0) || (m_programCounter >= static_cast<int>(m_instructions.size()));
-}
-
-void Program::RunInstruction()
-{
-    if (!Complete()) {
-        auto& current = m_instructions[static_cast<int>(m_programCounter++)];
-        switch (current.type) {
-        case OpCode::Set:
-            Set(current);
-            break;
-        case OpCode::Subtract:
-            Sub(current);
-            break;
-        case OpCode::Multiply:
-            Mul(current);
-            break;
-        case OpCode::JumpIfNotZero:
-            Jnz(current);
-            break;
+    Operand::Operand(const std::string &s)
+    {
+        // Registers must be a single character
+        if ((s.size() == 1) && (s[0] >= 'a') && (s[0] <= 'z'))
+        {
+            type = OperandType::Register;
+            value = RegisterIndex(s[0]);
+        }
+        else
+        {
+            type = OperandType::Integer;
+            value = std::stoi(s);
         }
     }
-}
 
-void Program::Set(const Instruction& inst)
-{
-    m_registers[static_cast<int>(inst.operand[0].Value())] = Evaluate(inst.operand[1]);
-}
+    class RegisterBank
+    {
+    public:
+        int64_t Evaluate(const Operand &op) const;
+        int64_t &operator[](int x) { return m_register.at(x); }
 
-void Program::Sub(const Instruction& inst) {
-    const auto reg = static_cast<int>(inst.operand[0].Value());
-    m_registers[reg] = m_registers[reg] - Evaluate(inst.operand[1]);
-}
+    private:
+        std::array<int64_t, 26> m_register = {};
+    };
 
-void Program::Mul(const Instruction& inst)
-{
-    const auto reg = static_cast<int>(inst.operand[0].Value());
-    m_registers[reg] = m_registers[reg] * Evaluate(inst.operand[1]);
-    m_mulCount++;
-}
-
-void Program::Jnz(const Instruction& inst)
-{
-    if (Evaluate(inst.operand[0]) != 0) {
-        // We've already incremented the PC by one, so don't double count that space
-        m_programCounter += (Evaluate(inst.operand[1]) - 1);
-    }
-}
-
-int64_t MultiplyCount(const std::vector<std::string>& input)
-{
-    std::vector<Instruction> instructions;
-    for (auto &line : input) {
-        instructions.emplace_back(line);
+    int64_t RegisterBank::Evaluate(const Operand &op) const
+    {
+        if (op.IsRegister())
+        {
+            return m_register.at(static_cast<int>(op.Value()));
+        }
+        else
+        {
+            return op.Value();
+        }
     }
 
-    int64_t mostRecentFrequency = -1;
-    bool recovered = false;
-    Program program(instructions);
+    enum class OpCode
+    {
+        Invalid,
+        Set,
+        Subtract,
+        Multiply,
+        JumpIfNotZero
+    };
 
-    while (!program.Complete()) {
-        program.RunInstruction();
+    struct Instruction
+    {
+        Instruction(const std::string &inst);
+        OpCode type;
+        std::array<Operand, 2> operand;
+    };
+
+    Instruction::Instruction(const std::string &inst)
+    {
+        auto tokens = Helpers::Tokenize(inst);
+
+        // Parse the type
+        static const struct
+        {
+            std::string token;
+            OpCode opcode;
+        } typeLookup[] = {
+            {"set", OpCode::Set},
+            {"sub", OpCode::Subtract},
+            {"mul", OpCode::Multiply},
+            {"jnz", OpCode::JumpIfNotZero}};
+        type = OpCode::Invalid;
+        for (const auto &t : typeLookup)
+        {
+            if (tokens[0] == t.token)
+                type = t.opcode;
+        }
+        if (type == OpCode::Invalid)
+            std::cerr << "Unexpected Instruction: " << tokens[0] << std::endl;
+
+        // Parse the opcodes
+        operand[0] = Operand(tokens[1]);
+        if (tokens.size() > 2)
+        {
+            operand[1] = Operand(tokens[2]);
+        }
     }
-    return program.MulInstructionCount();
-}
 
-int64_t PrimesInRange()
-{
-    // The program was counting non-prime numbers in a very inefficient way.  To see disassembly/processing, see Day23.asm
-    int64_t h = 0;
-    for (unsigned int b = 105700; b <= 122700; b += 17) {
-        for (unsigned int d = 2; d < b; d++) {
-            if (b % d == 0) {
-                h++;
+    class Program
+    {
+    public:
+        Program(std::vector<Instruction> &instructions) : m_instructions(instructions) {}
+        bool Complete() const;
+        int64_t Evaluate(const Operand &op) const { return m_registers.Evaluate(op); }
+        void RunInstruction();
+        int64_t MulInstructionCount() const { return m_mulCount; }
+        void SetRegister(char reg, int64_t value) { m_registers[RegisterIndex(reg)] = value; }
+        int64_t GetRegister(char reg) { return m_registers[RegisterIndex(reg)]; }
+
+    protected:
+        void Set(const Instruction &inst);
+        void Sub(const Instruction &inst);
+        void Mul(const Instruction &inst);
+        void Jnz(const Instruction &inst);
+
+        int64_t m_programCounter = 0;
+        int64_t m_mulCount = 0;
+        std::vector<Instruction> m_instructions;
+        RegisterBank m_registers;
+    };
+
+    bool Program::Complete() const
+    {
+        return (m_programCounter < 0) || (m_programCounter >= static_cast<int>(m_instructions.size()));
+    }
+
+    void Program::RunInstruction()
+    {
+        if (!Complete())
+        {
+            auto &current = m_instructions[static_cast<int>(m_programCounter++)];
+            switch (current.type)
+            {
+            case OpCode::Set:
+                Set(current);
+                break;
+            case OpCode::Subtract:
+                Sub(current);
+                break;
+            case OpCode::Multiply:
+                Mul(current);
+                break;
+            case OpCode::JumpIfNotZero:
+                Jnz(current);
                 break;
             }
         }
     }
-    return h;
-}
+
+    void Program::Set(const Instruction &inst)
+    {
+        m_registers[static_cast<int>(inst.operand[0].Value())] = Evaluate(inst.operand[1]);
+    }
+
+    void Program::Sub(const Instruction &inst)
+    {
+        const auto reg = static_cast<int>(inst.operand[0].Value());
+        m_registers[reg] = m_registers[reg] - Evaluate(inst.operand[1]);
+    }
+
+    void Program::Mul(const Instruction &inst)
+    {
+        const auto reg = static_cast<int>(inst.operand[0].Value());
+        m_registers[reg] = m_registers[reg] * Evaluate(inst.operand[1]);
+        m_mulCount++;
+    }
+
+    void Program::Jnz(const Instruction &inst)
+    {
+        if (Evaluate(inst.operand[0]) != 0)
+        {
+            // We've already incremented the PC by one, so don't double count that space
+            m_programCounter += (Evaluate(inst.operand[1]) - 1);
+        }
+    }
+
+    int64_t MultiplyCount(const std::vector<std::string> &input)
+    {
+        std::vector<Instruction> instructions;
+        for (auto &line : input)
+        {
+            instructions.emplace_back(line);
+        }
+
+        Program program(instructions);
+
+        while (!program.Complete())
+        {
+            program.RunInstruction();
+        }
+        return program.MulInstructionCount();
+    }
+
+    int64_t PrimesInRange()
+    {
+        // The program was counting non-prime numbers in a very inefficient way.  To see disassembly/processing, see Day23.asm
+        int64_t h = 0;
+        for (unsigned int b = 105700; b <= 122700; b += 17)
+        {
+            for (unsigned int d = 2; d < b; d++)
+            {
+                if (b % d == 0)
+                {
+                    h++;
+                    break;
+                }
+            }
+        }
+        return h;
+    }
 
 } // namespace Day23
 
@@ -247,10 +272,18 @@ void Day23Problems()
 {
     std::cout << "Day 23:\n";
     const auto start = std::chrono::steady_clock::now();
-    const auto input = Helpers::ReadFileLines("input_day23.txt");
+    const auto input = Helpers::ReadFileLines("2017/23/input_day23.txt");
     const auto mulCount = Day23::MultiplyCount(input);
     const auto finalValue = Day23::PrimesInRange();
     const auto end = std::chrono::steady_clock::now();
-    std::cout << mulCount << std::endl << finalValue << std::endl;
-    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
+    std::cout << mulCount << std::endl
+              << finalValue << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl
+              << std::endl;
+}
+
+int main()
+{
+    Day23Problems();
+    return 0;
 }

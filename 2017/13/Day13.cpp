@@ -1,4 +1,4 @@
-#include "Problems.h"
+#include "2017/lib/Helpers.h"
 /*
 You need to cross a vast firewall. The firewall consists of several layers, each with a security scanner 
 that moves back and forth across the layer. To succeed, you must not be detected by a scanner.
@@ -299,60 +299,69 @@ Because all smaller delays would get you caught, the fewest number of picosecond
 
 What is the fewest number of picoseconds that you need to delay the packet to pass through the firewall without being caught?
 */
-namespace Day13 {
-
-struct FirewallLayer {
-    FirewallLayer(int depth, int range) : Depth(depth), Range(range) {}
-    int Depth;
-    int Range;
-    int Severity() const { return Depth * Range; }
-    bool Caught(int time) const;
-};
-
-bool FirewallLayer::Caught(int time) const
+namespace Day13
 {
-    // The scanner takes (Range - 1) turns to get to the bottom and then (Range - 1) steps to get back to the top
-    const int fullTrip = 2 * (Range - 1);
-    return (time % fullTrip) == 0;
-}
 
-typedef std::vector<FirewallLayer> Firewall;
+    struct FirewallLayer
+    {
+        FirewallLayer(int depth, int range) : Depth(depth), Range(range) {}
+        int Depth;
+        int Range;
+        int Severity() const { return Depth * Range; }
+        bool Caught(int time) const;
+    };
 
-Firewall ReadFirewall(const std::vector<std::string>& input)
-{
-    Firewall firewall;
-    for (auto &line : input) {
-        auto tokens = Helpers::Tokenize(line);
-        Helpers::RemoveTrailingCharacter(tokens[0], ':');
-        firewall.emplace_back(std::stoi(tokens[0]), std::stoi(tokens[1]));
+    bool FirewallLayer::Caught(int time) const
+    {
+        // The scanner takes (Range - 1) turns to get to the bottom and then (Range - 1) steps to get back to the top
+        const int fullTrip = 2 * (Range - 1);
+        return (time % fullTrip) == 0;
     }
-    return firewall;
-}
 
-int FirewallSeverity(const Firewall& firewall)
-{
-    int severity = 0;
-    for (auto &level : firewall) {
-        if (level.Caught(level.Depth)) severity += level.Severity();
+    typedef std::vector<FirewallLayer> Firewall;
+
+    Firewall ReadFirewall(const std::vector<std::string> &input)
+    {
+        Firewall firewall;
+        for (auto &line : input)
+        {
+            auto tokens = Helpers::Tokenize(line);
+            Helpers::RemoveTrailingCharacter(tokens[0], ':');
+            firewall.emplace_back(std::stoi(tokens[0]), std::stoi(tokens[1]));
+        }
+        return firewall;
     }
-    return severity;
-}
 
-int SmallestDelayToAvoidBeingCaught(const Firewall& firewall) {
-    int delay = -1;
-    bool caught = true;
-    while (caught) {
-        ++delay;
-        caught = false;
-        for (auto &level : firewall) {
-            if (level.Caught(level.Depth + delay)) {
-                caught = true;
-                break;
+    int FirewallSeverity(const Firewall &firewall)
+    {
+        int severity = 0;
+        for (auto &level : firewall)
+        {
+            if (level.Caught(level.Depth))
+                severity += level.Severity();
+        }
+        return severity;
+    }
+
+    int SmallestDelayToAvoidBeingCaught(const Firewall &firewall)
+    {
+        int delay = -1;
+        bool caught = true;
+        while (caught)
+        {
+            ++delay;
+            caught = false;
+            for (auto &level : firewall)
+            {
+                if (level.Caught(level.Depth + delay))
+                {
+                    caught = true;
+                    break;
+                }
             }
         }
+        return delay;
     }
-    return delay;
-}
 } // namespace Day13
 
 void Day13Tests()
@@ -365,9 +374,11 @@ void Day13Tests()
     };
     const auto firewall = Day13::ReadFirewall(input);
     auto severity = Day13::FirewallSeverity(firewall);
-    if (severity != 24) std::cerr << "Test 13A error: Got " << severity << ", Expected 24\n";
+    if (severity != 24)
+        std::cerr << "Test 13A error: Got " << severity << ", Expected 24\n";
     auto delay = Day13::SmallestDelayToAvoidBeingCaught(firewall);
-    if (delay != 10) std::cerr << "Test 13B error: Got " << delay << ", Expected 10\n";
+    if (delay != 10)
+        std::cerr << "Test 13B error: Got " << delay << ", Expected 10\n";
 }
 
 void Day13Problems()
@@ -375,11 +386,19 @@ void Day13Problems()
     std::cout << "Day 13:\n";
     Day13Tests();
     const auto start = std::chrono::steady_clock::now();
-    const auto input = Helpers::ReadFileLines("input_day13.txt");
+    const auto input = Helpers::ReadFileLines("2017/13/input_day13.txt");
     const auto firewall = Day13::ReadFirewall(input);
     const auto severity = Day13::FirewallSeverity(firewall);
     const auto smallestDelay = Day13::SmallestDelayToAvoidBeingCaught(firewall);
     const auto end = std::chrono::steady_clock::now();
-    std::cout << severity << std::endl << smallestDelay << std::endl;
-    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
+    std::cout << severity << std::endl
+              << smallestDelay << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl
+              << std::endl;
+}
+
+int main()
+{
+    Day13Problems();
+    return 0;
 }

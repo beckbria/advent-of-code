@@ -1,4 +1,4 @@
-#include "Problems.h"
+#include "2017/lib/Helpers.h"
 /*
 You come across an experimental new kind of memory stored on an infinite two-dimensional grid.
 
@@ -45,167 +45,195 @@ Once a square is written, its value does not change. Therefore, the first few sq
 
 What is the first value written that is larger than your puzzle input?
 */
-namespace Day3 {
-int SpiralDistance(int target)
+namespace Day3
 {
-    if (target < 1) return -1;
+    int SpiralDistance(int target)
+    {
+        if (target < 1)
+            return -1;
 
-    // Notes: Let's call the space containing 1 (0,0).  Thus, every positive space (n,n) contains (2*n+1)^2.
-    // At the least, we could find the nearest odd square and count from there
+        // Notes: Let's call the space containing 1 (0,0).  Thus, every positive space (n,n) contains (2*n+1)^2.
+        // At the least, we could find the nearest odd square and count from there
 
-    int targetRoot = static_cast<int>(ceil(sqrt(target)));
-    // We want to start from an odd square
-    if (targetRoot % 2 == 0) {
-        ++targetRoot;
-    }
+        int targetRoot = static_cast<int>(ceil(sqrt(target)));
+        // We want to start from an odd square
+        if (targetRoot % 2 == 0)
+        {
+            ++targetRoot;
+        }
 
-    int const cornerCoordinate = (targetRoot - 1) / 2;
-    int const distanceBetweenCorners = 2 * cornerCoordinate;
-    int currentX = cornerCoordinate;    // Start in the lower right corner
-    int currentY = cornerCoordinate;
+        int const cornerCoordinate = (targetRoot - 1) / 2;
+        int const distanceBetweenCorners = 2 * cornerCoordinate;
+        int currentX = cornerCoordinate; // Start in the lower right corner
+        int currentY = cornerCoordinate;
 
-    int currentValue = targetRoot * targetRoot;
-    int delta = currentValue - target;
+        int currentValue = targetRoot * targetRoot;
+        int delta = currentValue - target;
 
-    // If we're honest, a simple brute force countback SHOULD be fast enough here.
-    // We can do better, though
+        // If we're honest, a simple brute force countback SHOULD be fast enough here.
+        // We can do better, though
 
-    // First, we move left along the bottom edge
-    if (delta > distanceBetweenCorners) {
-        // Skip the entire bottom row
-        currentX = -cornerCoordinate;
-        currentValue -= distanceBetweenCorners;
-        delta -= distanceBetweenCorners;
-
-        // First, we move left along the left edge
-        if (delta > distanceBetweenCorners) {
+        // First, we move left along the bottom edge
+        if (delta > distanceBetweenCorners)
+        {
             // Skip the entire bottom row
-            currentY = -cornerCoordinate;
+            currentX = -cornerCoordinate;
             currentValue -= distanceBetweenCorners;
             delta -= distanceBetweenCorners;
 
-            // Then the top edge
-            if (delta > distanceBetweenCorners) {
+            // First, we move left along the left edge
+            if (delta > distanceBetweenCorners)
+            {
                 // Skip the entire bottom row
-                currentX = cornerCoordinate;
+                currentY = -cornerCoordinate;
                 currentValue -= distanceBetweenCorners;
                 delta -= distanceBetweenCorners;
 
-                // Finally the right edge
-                if (delta > distanceBetweenCorners) {
-                    std::cerr << "SpiralDistance Error, test case " << target << std::endl;
+                // Then the top edge
+                if (delta > distanceBetweenCorners)
+                {
+                    // Skip the entire bottom row
+                    currentX = cornerCoordinate;
+                    currentValue -= distanceBetweenCorners;
+                    delta -= distanceBetweenCorners;
+
+                    // Finally the right edge
+                    if (delta > distanceBetweenCorners)
+                    {
+                        std::cerr << "SpiralDistance Error, test case " << target << std::endl;
+                    }
+                    else
+                    {
+                        // Step down the right edge
+                        currentY += delta;
+                    }
                 }
-                else {
-                    // Step down the right edge
-                    currentY += delta;
+                else
+                {
+                    // Step right along the top edge
+                    currentX += delta;
                 }
             }
-            else {
-                // Step right along the top edge
-                currentX += delta;
+            else
+            {
+                // Step up the left edge
+                currentY -= delta;
             }
         }
-        else {
-            // Step up the left edge
-            currentY -= delta;
+        else
+        {
+            // Step left along the bottom edge
+            currentX -= delta;
         }
-    } else {
-        // Step left along the bottom edge
-        currentX -= delta;
+
+        return abs(currentX) + abs(currentY);
     }
 
-    return abs(currentX) + abs(currentY);
-}
+    enum class Direction
+    {
+        Up,
+        Left,
+        Right,
+        Down
+    };
 
-enum class Direction {
-    Up, Left, Right, Down
-};
+    int FirstHigherSpiral(int target)
+    {
+        // We use a grid where the "center" is at 126,126 to give us a range from (-125,-125) through (125,125).
+        // To truly scale, we could keep around only the preceding outer rectangle and the one we're currently computing,
+        // but for this test input we've got more than enough memory to just use a grid
+        int constexpr centerOffset = 126;
+        int grid[(2 * centerOffset) - 1][(2 * centerOffset - 1)] = {};
+        grid[centerOffset][centerOffset] = 1;
 
-int FirstHigherSpiral(int target)
-{
-    // We use a grid where the "center" is at 126,126 to give us a range from (-125,-125) through (125,125).
-    // To truly scale, we could keep around only the preceding outer rectangle and the one we're currently computing,
-    // but for this test input we've got more than enough memory to just use a grid
-    int constexpr centerOffset = 126;
-    int grid[(2 * centerOffset) - 1][(2 * centerOffset - 1)] = {};
-    grid[centerOffset][centerOffset] = 1;
+        int currentX = 1;
+        int currentY = 0;
+        int squareCoordinate = 1;
+        Direction currentDirection = Direction::Up;
+        int lastValueWritten = 1;
 
-    int currentX = 1;
-    int currentY = 0;
-    int squareCoordinate = 1;
-    Direction currentDirection = Direction::Up;
-    int lastValueWritten = 1;
+        while (lastValueWritten <= target)
+        {
+            // Fill in the current grid cell
+            int X = currentX + centerOffset;
+            int Y = currentY + centerOffset;
+            grid[X][Y] = grid[X - 1][Y - 1] + grid[X][Y - 1] + grid[X + 1][Y - 1] +
+                         grid[X - 1][Y] + grid[X + 1][Y] +
+                         grid[X - 1][Y + 1] + grid[X][Y + 1] + grid[X + 1][Y + 1];
+            lastValueWritten = grid[X][Y];
 
-    while (lastValueWritten <= target) {
-        // Fill in the current grid cell
-        int X = currentX + centerOffset;
-        int Y = currentY + centerOffset;
-        grid[X][Y] = grid[X-1][Y-1] + grid[X][Y-1] + grid[X+1][Y-1] +
-                     grid[X-1][Y]   +                grid[X+1][Y] +
-                     grid[X-1][Y+1] + grid[X][Y+1] + grid[X+1][Y+1];
-        lastValueWritten = grid[X][Y];
+            // Move to the next grid cell
+            switch (currentDirection)
+            {
+            case Direction::Up:
+                currentY--;
+                if (abs(currentY) == squareCoordinate)
+                {
+                    currentDirection = Direction::Left;
+                }
+                break;
 
-        // Move to the next grid cell
-        switch (currentDirection) {
-        case Direction::Up:
-            currentY--;
-            if (abs(currentY) == squareCoordinate) {
-                currentDirection = Direction::Left;
+            case Direction::Left:
+                currentX--;
+                if (abs(currentX) == squareCoordinate)
+                {
+                    currentDirection = Direction::Down;
+                }
+                break;
+
+            case Direction::Down:
+                currentY++;
+                if (currentY == squareCoordinate)
+                {
+                    currentDirection = Direction::Right;
+                }
+                break;
+
+            case Direction::Right:
+                currentX++;
+                // When we reach the end of our square, we don't change direction - we go right for an additional space
+                // to start the next square
+                if (currentX == (squareCoordinate + 1))
+                {
+                    squareCoordinate++;
+                    currentDirection = Direction::Up;
+                }
+                break;
             }
-            break;
-
-        case Direction::Left:
-            currentX--;
-            if (abs(currentX) == squareCoordinate) {
-                currentDirection = Direction::Down;
-            }
-            break;
-
-        case Direction::Down:
-            currentY++;
-            if (currentY == squareCoordinate) {
-                currentDirection = Direction::Right;
-            }
-            break;
-
-        case Direction::Right:
-            currentX++;
-            // When we reach the end of our square, we don't change direction - we go right for an additional space
-            // to start the next square
-            if (currentX == (squareCoordinate + 1)) {
-                squareCoordinate++;
-                currentDirection = Direction::Up;
-            }
-            break;
         }
-    }
 
-    return lastValueWritten;
-}
+        return lastValueWritten;
+    }
 } // namespace Day3
 
 void Day3Tests()
 {
-    const struct {
+    const struct
+    {
         int input;
         int answer;
-    } testCaseA[] = { {1,0}, {12,3}, {23,2}, {1024,31} };
+    } testCaseA[] = {{1, 0}, {12, 3}, {23, 2}, {1024, 31}};
 
-    for (auto &t : testCaseA) {
+    for (auto &t : testCaseA)
+    {
         int result = Day3::SpiralDistance(t.input);
-        if (result != t.answer) {
+        if (result != t.answer)
+        {
             std::cerr << "Test 3A failed: " << t.input << " => " << result << " (expected " << t.answer << ")" << std::endl;
         }
     }
 
-    const struct {
+    const struct
+    {
         int input;
         int answer;
-    } testCaseB[] = { { 4,5 },{ 20,23 },{ 100,122 },{ 200,304 },{500,747} };
+    } testCaseB[] = {{4, 5}, {20, 23}, {100, 122}, {200, 304}, {500, 747}};
 
-    for (auto &t : testCaseB) {
+    for (auto &t : testCaseB)
+    {
         int result = Day3::FirstHigherSpiral(t.input);
-        if (result != t.answer) {
+        if (result != t.answer)
+        {
             std::cerr << "Test 3B failed: " << t.input << " => " << result << " (expected " << t.answer << ")" << std::endl;
         }
     }
@@ -222,5 +250,12 @@ void Day3Problems()
     const auto end = std::chrono::steady_clock::now();
     std::cout << spiralDistance << std::endl;
     std::cout << higherSpiral << std::endl;
-    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl
+              << std::endl;
+}
+
+int main()
+{
+    Day3Problems();
+    return 0;
 }

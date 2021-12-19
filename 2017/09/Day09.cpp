@@ -1,4 +1,4 @@
-#include "Problems.h"
+#include "2017/lib/Helpers.h"
 /*
 --- Day 9: Stream Processing ---
 
@@ -62,145 +62,164 @@ To prove you've removed it, you need to count all of the characters within the g
 
 How many non-canceled characters are within the garbage in your puzzle input?
 */
-namespace Day9 {
-struct Group
+namespace Day9
 {
-    Group(int start) : beginPosition(start) {}
-    int beginPosition;
-    int endPosition = -1;
-    int garbageCharacters = 0;
+    struct Group
+    {
+        Group(int start) : beginPosition(start) {}
+        int beginPosition;
+        int endPosition = -1;
+        int garbageCharacters = 0;
 
-    int Score(int parentScore = 0) const {
-        int currentScore = parentScore + 1;
-        int totalScore = currentScore;
-        for (auto &c : children) totalScore += c->Score(currentScore);
-        return totalScore;
+        int Score(int parentScore = 0) const
+        {
+            int currentScore = parentScore + 1;
+            int totalScore = currentScore;
+            for (auto &c : children)
+                totalScore += c->Score(currentScore);
+            return totalScore;
+        }
+
+        int TotalGarbageCharacters() const
+        {
+            int totalGarbage = garbageCharacters;
+            for (auto &c : children)
+                totalGarbage += c->TotalGarbageCharacters();
+            return totalGarbage;
+        }
+
+        std::vector<std::shared_ptr<Group>> children;
+    };
+
+    // Understand the groups in a source text.  This assumes a well-formatted input since that's guaranteed in the problem description
+    std::shared_ptr<Group> Parse(const std::string &input)
+    {
+        static constexpr char GroupBegin = '{';
+        static constexpr char GroupEnd = '}';
+        static constexpr char GarbageBegin = '<';
+        static constexpr char GarbageEnd = '>';
+        static constexpr char NegateNext = '!';
+
+        std::stack<std::shared_ptr<Group>> groups;
+        std::shared_ptr<Group> firstGroup;
+
+        bool inGarbage = false;
+        bool negateNextInput = false;
+        for (size_t pos = 0; pos < input.size(); ++pos)
+        {
+            // If the previous character was ! we should ignore the next one regardless of what it is
+            if (negateNextInput)
+            {
+                negateNextInput = false;
+                continue;
+            }
+
+            const char current = input[pos];
+
+            if (current == NegateNext)
+            {
+                negateNextInput = true;
+                continue;
+            }
+
+            // If we're processing garbage, then we ignore any other characters except the end of garbage
+            if (inGarbage)
+            {
+                if (current == GarbageEnd)
+                {
+                    inGarbage = false;
+                }
+                else
+                {
+                    groups.top()->garbageCharacters++;
+                }
+                continue;
+            }
+
+            // Otherwise, we're processing groups normally
+            switch (current)
+            {
+            case GarbageBegin:
+                inGarbage = true;
+                break;
+
+            case GroupEnd:
+                groups.top()->endPosition = pos;
+                groups.pop();
+                break;
+
+            case GroupBegin:
+                auto newGroup = std::make_shared<Group>(pos);
+                if (!groups.empty())
+                {
+                    // This group is a child of the group preceding it on the stack, unless it's the very first one
+                    groups.top()->children.push_back(newGroup);
+                }
+                else
+                {
+                    // We should keep a reference to the very first group around, or else we risk losing it when we parse
+                    // its GroupEnd token and pop it off the stack
+                    firstGroup = newGroup;
+                }
+                groups.push(newGroup);
+                break;
+            }
+        }
+
+        return firstGroup;
     }
 
-    int TotalGarbageCharacters() const {
-        int totalGarbage = garbageCharacters;
-        for (auto &c : children) totalGarbage += c->TotalGarbageCharacters();
-        return totalGarbage;
+    std::pair<int, int> Score(const std::string &input)
+    {
+        auto group = Parse(input);
+        return std::make_pair(group->Score(), group->TotalGarbageCharacters());
     }
-
-    std::vector<std::shared_ptr<Group>> children;
-};
-
-// Understand the groups in a source text.  This assumes a well-formatted input since that's guaranteed in the problem description
-std::shared_ptr<Group> Parse(const std::string& input)
-{
-    static constexpr char GroupBegin = '{';
-    static constexpr char GroupEnd = '}';
-    static constexpr char GarbageBegin = '<';
-    static constexpr char GarbageEnd = '>';
-    static constexpr char NegateNext = '!';
-
-    std::stack<std::shared_ptr<Group>> groups;
-    std::shared_ptr<Group> firstGroup;
-    
-    bool inGarbage = false;
-    bool negateNextInput = false;
-    for (size_t pos = 0; pos < input.size(); ++pos) {
-        // If the previous character was ! we should ignore the next one regardless of what it is
-        if (negateNextInput) {
-            negateNextInput = false;
-            continue;
-        }
-
-        const char current = input[pos];
-
-        if (current == NegateNext) {
-            negateNextInput = true;
-            continue;
-        }
-
-        // If we're processing garbage, then we ignore any other characters except the end of garbage
-        if (inGarbage) {
-            if (current == GarbageEnd) {
-                inGarbage = false;
-            }
-            else {
-                groups.top()->garbageCharacters++;
-            }
-            continue;
-        }
-
-        // Otherwise, we're processing groups normally
-        switch (current) {
-        case GarbageBegin:
-            inGarbage = true;
-            break;
-
-        case GroupEnd:
-            groups.top()->endPosition = pos;
-            groups.pop();
-            break;
-
-        case GroupBegin:
-            auto newGroup = std::make_shared<Group>(pos);
-            if (!groups.empty()) {
-                // This group is a child of the group preceding it on the stack, unless it's the very first one
-                groups.top()->children.push_back(newGroup);
-            }
-            else {
-                // We should keep a reference to the very first group around, or else we risk losing it when we parse
-                // its GroupEnd token and pop it off the stack
-                firstGroup = newGroup;
-            }
-            groups.push(newGroup);
-            break;
-        }
-    }
-
-    return firstGroup;
-}
-
-std::pair<int, int> Score(const std::string& input) 
-{
-    auto group = Parse(input);
-    return std::make_pair(group->Score(), group->TotalGarbageCharacters());
-}
 } // namespace Day9
 
-void Day9Tests() 
+void Day9Tests()
 {
-    const struct {
+    const struct
+    {
         std::string input;
         int score;
     } testCases[] = {
-        { "{}", 1 },
-        { "{{{}}}", 6 },
-        { "{{},{}}", 5 },
-        { "{{{},{},{{}}}}", 16 },
-        { "{<a>,<a>,<a>,<a>}", 1 },
-        { "{{<ab>},{<ab>},{<ab>},{<ab>}}", 9 },
-        { "{{<!!>},{<!!>},{<!!>},{<!!>}}", 9 },
-        { "{{<a!>},{<a!>},{<a!>},{<ab>}}", 3 }
-    };
+        {"{}", 1},
+        {"{{{}}}", 6},
+        {"{{},{}}", 5},
+        {"{{{},{},{{}}}}", 16},
+        {"{<a>,<a>,<a>,<a>}", 1},
+        {"{{<ab>},{<ab>},{<ab>},{<ab>}}", 9},
+        {"{{<!!>},{<!!>},{<!!>},{<!!>}}", 9},
+        {"{{<a!>},{<a!>},{<a!>},{<ab>}}", 3}};
 
-    for (auto& test : testCases) {
+    for (auto &test : testCases)
+    {
         auto result = Day9::Score(test.input);
-        if (result.first != test.score) {
+        if (result.first != test.score)
+        {
             std::cerr << "Test 9A Failed: Got " << result.first << ", expected " << test.score << std::endl;
         }
     }
 
-    const struct {
+    const struct
+    {
         std::string input;
         int score;
     } testCasesB[] = {
-        { "{<>}", 0 },
-        { "{<random characters>}", 17 },
-        { "{<<<<>}", 3 },
-        { "{<{!>}>}", 2 },
-        { "{<!!>}", 0 },
-        { "{<!!!>>}", 0 },
-        { "{<{o\"i!a,<{i<a>}", 10},
+        {"{<>}", 0},
+        {"{<random characters>}", 17},
+        {"{<<<<>}", 3},
+        {"{<{!>}>}", 2},
+        {"{<!!>}", 0},
+        {"{<!!!>>}", 0},
+        {"{<{o\"i!a,<{i<a>}", 10},
     };
 
-    for (auto& test : testCasesB) {
+    for (auto &test : testCasesB)
+    {
         auto result = Day9::Score(test.input);
-        if (result.second != test.score) {
+        if (result.second != test.score)
+        {
             std::cerr << "Test 9B Failed: Got " << result.second << ", expected " << test.score << std::endl;
         }
     }
@@ -211,10 +230,19 @@ void Day9Problems()
     std::cout << "Day 9:\n";
     Day9Tests();
     const auto start = std::chrono::steady_clock::now();
-    auto input = Helpers::ReadFileLines("input_day9.txt");
-    if (input.size() != 1) std::cerr << "Day 9: Malformed input" << std::endl;
+    auto input = Helpers::ReadFileLines("2017/09/input_day9.txt");
+    if (input.size() != 1)
+        std::cerr << "Day 9: Malformed input" << std::endl;
     const auto score = Day9::Score(input[0]);
     const auto end = std::chrono::steady_clock::now();
-    std::cout << score.first << std::endl << score.second << std::endl;
-    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
+    std::cout << score.first << std::endl
+              << score.second << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl
+              << std::endl;
+}
+
+int main()
+{
+    Day9Problems();
+    return 0;
 }

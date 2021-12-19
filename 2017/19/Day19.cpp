@@ -1,4 +1,4 @@
-#include "Problems.h"
+#include "2017/lib/Helpers.h"
 /*
 --- Day 19: A Series of Tubes ---
 
@@ -60,158 +60,174 @@ This would result in a total of 38 steps.
 
 How many steps does the packet need to go?
 */
-namespace Day19 {
-
-class Maze
+namespace Day19
 {
-public:
-    Maze(std::vector<std::string> input);
-    void SetDataHandler(std::function<void(char)> handler) { m_dataHandler = handler; } 
-    int Solve();   // Tries to walk a solution to the maze, calling the data handler as nodes are visited
 
-protected:
-    // Each character in the input represents either a path, a line, or a letter that we should record (data).
-    enum class Block {
-        Empty,
-        Line,
-        Data
-    };
+    class Maze
+    {
+    public:
+        Maze(std::vector<std::string> input);
+        void SetDataHandler(std::function<void(char)> handler) { m_dataHandler = handler; }
+        int Solve(); // Tries to walk a solution to the maze, calling the data handler as nodes are visited
 
-    enum class Direction {
-        Up = 0,
-        Right = 1,
-        Down = 2,
-        Left = 3
-    };
-    Direction TurnLeft(Direction now) const { return static_cast<Direction>((static_cast<int>(now) + 3) % 4); }
-    Direction TurnRight(Direction now) const { return static_cast<Direction>((static_cast<int>(now) + 1) % 4); }
-    Direction ReverseDirection(Direction now) const { return static_cast<Direction>((static_cast<int>(now) + 2) % 4); }
+    protected:
+        // Each character in the input represents either a path, a line, or a letter that we should record (data).
+        enum class Block
+        {
+            Empty,
+            Line,
+            Data
+        };
 
-    struct Cell {
-        Cell(int r = 0, int c = 0) : row(r), col(c) {}
-        int row;
-        int col;
+        enum class Direction
+        {
+            Up = 0,
+            Right = 1,
+            Down = 2,
+            Left = 3
+        };
+        Direction TurnLeft(Direction now) const { return static_cast<Direction>((static_cast<int>(now) + 3) % 4); }
+        Direction TurnRight(Direction now) const { return static_cast<Direction>((static_cast<int>(now) + 1) % 4); }
+        Direction ReverseDirection(Direction now) const { return static_cast<Direction>((static_cast<int>(now) + 2) % 4); }
 
-        void Move(Direction dir) {
-            switch (dir) {
-            case Direction::Left:
-                --col;
-                break;
-            case Direction::Right:
-                ++col;
-                break;
-            case Direction::Up:
-                --row;
-                break;
-            case Direction::Down:
-                ++row;
-                break;
-            }
-        }
-    };
+        struct Cell
+        {
+            Cell(int r = 0, int c = 0) : row(r), col(c) {}
+            int row;
+            int col;
 
-    Cell FindStart() const;
-    inline constexpr Maze::Block Classify(char c) const;
-    bool OutOfBounds(const Cell& cell) const;
-    inline char ReadCell(const Cell& cell) const;
-
-    std::vector<std::string> m_maze;
-    std::function<void(char)> m_dataHandler;
-    Cell m_position;
-    Direction m_direction;
-};
-
-Maze::Maze(std::vector<std::string> input) {
-    m_maze = std::move(input);
-    m_direction = Direction::Down;
-    m_position = FindStart();
-}
-
-inline constexpr Maze::Block Maze::Classify(char c) const {
-    switch (c) {
-    case ' ':
-        return Block::Empty;
-    case '|':
-    case '-':
-    case '+':
-        return Block::Line;
-    default:
-        return Block::Data;
-    }
-}
-
-Maze::Cell Maze::FindStart() const
-{
-    if (m_maze.size() >= 1) {
-        // The starting point is guaranteed to be in the first row
-        for (unsigned int column = 0; column < m_maze[0].size(); ++column) {
-            if (Classify(m_maze[0][column]) != Block::Empty) return Cell(0, column);
-        }
-    }
-    std::cerr << "Invalid Maze\n";
-    return Cell();
-}
-
-bool Maze::OutOfBounds(const Cell& cell) const
-{
-    return (cell.col < 0) || (cell.row < 0) || (cell.row >= (int)m_maze.size()) || (cell.col >= (int)m_maze[0].size());
-}
-
-inline char Maze::ReadCell(const Maze::Cell& cell) const
-{
-    return m_maze[cell.row][cell.col];
-}
-
-int Maze::Solve()
-{
-    int totalDistance = 0;
-    bool solved = false;
-    while (!solved) {
-        ++totalDistance;
-
-        // If our current cell has data, we should read it
-        char current = ReadCell(m_position);
-        if (m_dataHandler && (Classify(current) == Block::Data)) {
-            m_dataHandler(current);
-        }
-
-        // First, try to continue in the current direction
-        auto newPosition = m_position;
-        auto newDirection = m_direction;
-        newPosition.Move(m_direction);
-        if (OutOfBounds(newPosition) || (Classify(ReadCell(newPosition)) == Block::Empty)) {
-            // Next, try to the left
-            newPosition = m_position;
-            newDirection = TurnLeft(m_direction);
-            newPosition.Move(newDirection);
-            if (OutOfBounds(newPosition) || (Classify(ReadCell(newPosition)) == Block::Empty)) {
-                // Finally, try to the right
-                newPosition = m_position;
-                newDirection = TurnRight(m_direction);
-                newPosition.Move(newDirection);
-                if (OutOfBounds(newPosition) || (Classify(ReadCell(newPosition)) == Block::Empty)) {
-                    // We have nowhere else to go.  We must be at the end.
-                    solved = true;
+            void Move(Direction dir)
+            {
+                switch (dir)
+                {
+                case Direction::Left:
+                    --col;
+                    break;
+                case Direction::Right:
+                    ++col;
+                    break;
+                case Direction::Up:
+                    --row;
+                    break;
+                case Direction::Down:
+                    ++row;
+                    break;
                 }
             }
-        }
-        m_position = newPosition;
-        m_direction = newDirection;
+        };
+
+        Cell FindStart() const;
+        inline constexpr Maze::Block Classify(char c) const;
+        bool OutOfBounds(const Cell &cell) const;
+        inline char ReadCell(const Cell &cell) const;
+
+        std::vector<std::string> m_maze;
+        std::function<void(char)> m_dataHandler;
+        Cell m_position;
+        Direction m_direction;
+    };
+
+    Maze::Maze(std::vector<std::string> input)
+    {
+        m_maze = std::move(input);
+        m_direction = Direction::Down;
+        m_position = FindStart();
     }
 
-    return totalDistance;
-}
+    Maze::Block Maze::Classify(char c) const
+    {
+        switch (c)
+        {
+        case ' ':
+            return Block::Empty;
+        case '|':
+        case '-':
+        case '+':
+            return Block::Line;
+        default:
+            return Block::Data;
+        }
+    }
 
-std::pair<std::string, int> PathText(const std::vector<std::string>& input)
-{
-    std::stringstream path;
-    Maze maze(input);
-    maze.SetDataHandler([&path](char c) {
-        path << c;
-    });
-    auto distance = maze.Solve();
-    return std::make_pair(path.str(), distance);
-}
+    Maze::Cell Maze::FindStart() const
+    {
+        if (m_maze.size() >= 1)
+        {
+            // The starting point is guaranteed to be in the first row
+            for (unsigned int column = 0; column < m_maze[0].size(); ++column)
+            {
+                if (Classify(m_maze[0][column]) != Block::Empty)
+                    return Cell(0, column);
+            }
+        }
+        std::cerr << "Invalid Maze\n";
+        return Cell();
+    }
+
+    bool Maze::OutOfBounds(const Cell &cell) const
+    {
+        return (cell.col < 0) || (cell.row < 0) || (cell.row >= (int)m_maze.size()) || (cell.col >= (int)m_maze[0].size());
+    }
+
+    inline char Maze::ReadCell(const Maze::Cell &cell) const
+    {
+        return m_maze[cell.row][cell.col];
+    }
+
+    int Maze::Solve()
+    {
+        int totalDistance = 0;
+        bool solved = false;
+        while (!solved)
+        {
+            ++totalDistance;
+
+            // If our current cell has data, we should read it
+            char current = ReadCell(m_position);
+            if (m_dataHandler && (Classify(current) == Block::Data))
+            {
+                m_dataHandler(current);
+            }
+
+            // First, try to continue in the current direction
+            auto newPosition = m_position;
+            auto newDirection = m_direction;
+            newPosition.Move(m_direction);
+            if (OutOfBounds(newPosition) || (Classify(ReadCell(newPosition)) == Block::Empty))
+            {
+                // Next, try to the left
+                newPosition = m_position;
+                newDirection = TurnLeft(m_direction);
+                newPosition.Move(newDirection);
+                if (OutOfBounds(newPosition) || (Classify(ReadCell(newPosition)) == Block::Empty))
+                {
+                    // Finally, try to the right
+                    newPosition = m_position;
+                    newDirection = TurnRight(m_direction);
+                    newPosition.Move(newDirection);
+                    if (OutOfBounds(newPosition) || (Classify(ReadCell(newPosition)) == Block::Empty))
+                    {
+                        // We have nowhere else to go.  We must be at the end.
+                        solved = true;
+                    }
+                }
+            }
+            m_position = newPosition;
+            m_direction = newDirection;
+        }
+
+        return totalDistance;
+    }
+
+    std::pair<std::string, int> PathText(const std::vector<std::string> &input)
+    {
+        std::stringstream path;
+        Maze maze(input);
+        maze.SetDataHandler([&path](char c)
+                            { path << c; });
+        auto distance = maze.Solve();
+        return std::make_pair(path.str(), distance);
+    }
 
 } // namespace Day19
 
@@ -224,13 +240,14 @@ void Day19Tests()
         " F---|----E|--+ ",
         "     |  |  |  D ",
         "     +B-+  +--+ ",
-        "                "
-    };
+        "                "};
     const auto pathText = Day19::PathText(input);
     const std::string text = "ABCDEF";
     const int distance = 38;
-    if (pathText.first != text) std::cerr << "Test 19A Error: Got " << pathText.first << ", expected " << text << std::endl;
-    if (pathText.second != distance) std::cerr << "Test 19B Error: Got " << pathText.second << ", expected " << distance << std::endl;
+    if (pathText.first != text)
+        std::cerr << "Test 19A Error: Got " << pathText.first << ", expected " << text << std::endl;
+    if (pathText.second != distance)
+        std::cerr << "Test 19B Error: Got " << pathText.second << ", expected " << distance << std::endl;
 }
 
 void Day19Problems()
@@ -238,9 +255,17 @@ void Day19Problems()
     std::cout << "Day 19:\n";
     Day19Tests();
     const auto start = std::chrono::steady_clock::now();
-    const auto input = Helpers::ReadFileLines("input_day19.txt");
+    const auto input = Helpers::ReadFileLines("2017/19/input_day19.txt");
     const auto pathText = Day19::PathText(input);
     const auto end = std::chrono::steady_clock::now();
-    std::cout << pathText.first << std::endl << pathText.second << std::endl;
-    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
+    std::cout << pathText.first << std::endl
+              << pathText.second << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl
+              << std::endl;
+}
+
+int main()
+{
+    Day19Problems();
+    return 0;
 }

@@ -1,4 +1,4 @@
-#include "Problems.h"
+#include "2017/lib/Helpers.h"
 /*
 --- Day 22: Sporifica Virus ---
 
@@ -207,213 +207,243 @@ of the first 10000000 bursts, 2511944 will result in infection.
 Given your actual map, after 10000000 bursts of activity, how many bursts cause a node to become infected? 
 (Do not count nodes that begin infected.)
 */
-namespace Day22 {
+namespace Day22
+{
 
-struct Point {
-    Point(int64_t X = 0, int64_t Y = 0) : x(X), y(Y) {}
-    int64_t x;
-    int64_t y;
-};
-
-bool operator==(const Point& left, const Point& right);
-
-class PointHash {
-public:
-    std::size_t operator() (const Point& p) const
+    struct Point
     {
-        // This isn't a particularly good hash.  A much better choice would be something like boost::hash_combine.
-        // I'm avoiding doing that here because I don't want to pull in a massive set of dependencies and licensing
-        // constraints.
-        return std::hash<uint64_t>()(p.x) + std::hash<uint64_t>()(p.y);
-    }
-};
-
-class VirusCarrier {
-public:
-    Point Position() const { return m_position; }
-    void RotateLeft() { m_direction = static_cast<Direction>((static_cast<int>(m_direction) + 3) % 4); }
-    void RotateRight() { m_direction = static_cast<Direction>((static_cast<int>(m_direction) + 1) % 4); }
-    void ReverseDirection() { m_direction = static_cast<Direction>((static_cast<int>(m_direction) + 2) % 4); }
-    void MoveForward();
-
-private:
-    enum class Direction {
-        Up = 0,
-        Right = 1,
-        Down = 2,
-        Left = 3
+        Point(int64_t X = 0, int64_t Y = 0) : x(X), y(Y) {}
+        int64_t x;
+        int64_t y;
     };
 
-    Point m_position;   // The carrier always starts at (0,0)
-    Direction m_direction = Direction::Up;
-};
+    bool operator==(const Point &left, const Point &right);
 
-class VirusGrid {
-public:
-    VirusGrid(const std::vector<std::string>& input);
-    void AdvanceToTurn(unsigned int turn);
-    uint64_t TurnsThatInfectedNode() { return m_infectedTurns; }
-    friend std::ostream& operator<<(std::ostream& out, const VirusGrid& grid);
-
-protected:
-    enum class NodeState : char {
-        Clean = '.',
-        Weakened = 'W',
-        Infected = '#',
-        Flagged = 'F'
+    class PointHash
+    {
+    public:
+        std::size_t operator()(const Point &p) const
+        {
+            // This isn't a particularly good hash.  A much better choice would be something like boost::hash_combine.
+            // I'm avoiding doing that here because I don't want to pull in a massive set of dependencies and licensing
+            // constraints.
+            return std::hash<uint64_t>()(p.x) + std::hash<uint64_t>()(p.y);
+        }
     };
-    NodeState ClassifyPoint(const Point& pt) const;
-    virtual void AdvanceTurn();
 
-    // There's an infinite grid of clean nodes.  We don't need to store them - only keep track of the unclean ones.
-    std::unordered_map<Point, NodeState, PointHash> m_unclean;
-    VirusCarrier m_carrier;
-    uint64_t m_infectedTurns = 0;
-    uint64_t m_currentTurn = 0;
-};
+    class VirusCarrier
+    {
+    public:
+        Point Position() const { return m_position; }
+        void RotateLeft() { m_direction = static_cast<Direction>((static_cast<int>(m_direction) + 3) % 4); }
+        void RotateRight() { m_direction = static_cast<Direction>((static_cast<int>(m_direction) + 1) % 4); }
+        void ReverseDirection() { m_direction = static_cast<Direction>((static_cast<int>(m_direction) + 2) % 4); }
+        void MoveForward();
 
-class EvolvedVirusGrid : public VirusGrid {
-public:
-    EvolvedVirusGrid(const std::vector<std::string>& input) : VirusGrid(input) {}
+    private:
+        enum class Direction
+        {
+            Up = 0,
+            Right = 1,
+            Down = 2,
+            Left = 3
+        };
 
-protected:
-    virtual void AdvanceTurn() override;
-};
+        Point m_position; // The carrier always starts at (0,0)
+        Direction m_direction = Direction::Up;
+    };
 
-bool operator==(const Point& left, const Point& right)
-{
-    return (left.x == right.x) && (left.y == right.y);
-}
+    class VirusGrid
+    {
+    public:
+        VirusGrid(const std::vector<std::string> &input);
+        void AdvanceToTurn(unsigned int turn);
+        uint64_t TurnsThatInfectedNode() { return m_infectedTurns; }
+        friend std::ostream &operator<<(std::ostream &out, const VirusGrid &grid);
 
-VirusGrid::NodeState VirusGrid::ClassifyPoint(const Point& pt) const
-{
-    if (m_unclean.count(pt) > 0) {
-        return m_unclean.at(pt);
-    } else {
-        return NodeState::Clean;
+    protected:
+        enum class NodeState : char
+        {
+            Clean = '.',
+            Weakened = 'W',
+            Infected = '#',
+            Flagged = 'F'
+        };
+        NodeState ClassifyPoint(const Point &pt) const;
+        virtual void AdvanceTurn();
+
+        // There's an infinite grid of clean nodes.  We don't need to store them - only keep track of the unclean ones.
+        std::unordered_map<Point, NodeState, PointHash> m_unclean;
+        VirusCarrier m_carrier;
+        uint64_t m_infectedTurns = 0;
+        uint64_t m_currentTurn = 0;
+    };
+
+    class EvolvedVirusGrid : public VirusGrid
+    {
+    public:
+        EvolvedVirusGrid(const std::vector<std::string> &input) : VirusGrid(input) {}
+
+    protected:
+        virtual void AdvanceTurn() override;
+    };
+
+    bool operator==(const Point &left, const Point &right)
+    {
+        return (left.x == right.x) && (left.y == right.y);
     }
-}
 
-void VirusCarrier::MoveForward()
-{
-    switch (m_direction) {
-    case Direction::Up:
-        m_position.y--;
-        break;
-    case Direction::Down:
-        m_position.y++;
-        break;
-    case Direction::Left:
-        m_position.x--;
-        break;
-    case Direction::Right:
-        m_position.x++;
+    VirusGrid::NodeState VirusGrid::ClassifyPoint(const Point &pt) const
+    {
+        if (m_unclean.count(pt) > 0)
+        {
+            return m_unclean.at(pt);
+        }
+        else
+        {
+            return NodeState::Clean;
+        }
     }
-}
 
-VirusGrid::VirusGrid(const std::vector<std::string>& input)
-{
-    if (input.size() > 0) {
-        Point middle((input[0].size() / 2), (input.size() / 2));    // The +1 to get to the center of odd shapes is implied by 0 indexing
-        for (int y = 0; y < (int)input.size(); ++y) {
-            for (int x = 0; x < (int)input[0].size(); ++x) {
-                const NodeState state = static_cast<NodeState>(input[y][x]);
-                if (state != NodeState::Clean) {
-                    m_unclean[Point(x - middle.x, y - middle.y)] = state;
+    void VirusCarrier::MoveForward()
+    {
+        switch (m_direction)
+        {
+        case Direction::Up:
+            m_position.y--;
+            break;
+        case Direction::Down:
+            m_position.y++;
+            break;
+        case Direction::Left:
+            m_position.x--;
+            break;
+        case Direction::Right:
+            m_position.x++;
+        }
+    }
+
+    VirusGrid::VirusGrid(const std::vector<std::string> &input)
+    {
+        if (input.size() > 0)
+        {
+            Point middle((input[0].size() / 2), (input.size() / 2)); // The +1 to get to the center of odd shapes is implied by 0 indexing
+            for (int y = 0; y < (int)input.size(); ++y)
+            {
+                for (int x = 0; x < (int)input[0].size(); ++x)
+                {
+                    const NodeState state = static_cast<NodeState>(input[y][x]);
+                    if (state != NodeState::Clean)
+                    {
+                        m_unclean[Point(x - middle.x, y - middle.y)] = state;
+                    }
                 }
             }
         }
     }
-}
 
-void VirusGrid::AdvanceToTurn(unsigned int turn)
-{
-    while (m_currentTurn < static_cast<uint64_t>(turn)) {
-        AdvanceTurn();
-    }
-}
-
-void VirusGrid::AdvanceTurn()
-{
-    const auto currentPosition = m_carrier.Position();
-    if (ClassifyPoint(currentPosition) == NodeState::Infected) {
-        m_unclean.erase(currentPosition);  // Clean the current node
-        m_carrier.RotateRight();
-    } else {
-        m_unclean[currentPosition] = NodeState::Infected;
-        ++m_infectedTurns;
-        m_carrier.RotateLeft();
-    }
-    m_carrier.MoveForward();
-    ++m_currentTurn;
-}
-
-void EvolvedVirusGrid::AdvanceTurn()
-{
-    const auto currentPosition = m_carrier.Position();
-    switch (ClassifyPoint(currentPosition)) {
-    case NodeState::Clean:
-        m_unclean[currentPosition] = NodeState::Weakened;
-        m_carrier.RotateLeft();
-        break;
-    case NodeState::Weakened:
-        m_unclean[currentPosition] = NodeState::Infected;
-        ++m_infectedTurns;
-        // Do not turn - keep moving in the same direction
-        break;
-    case NodeState::Infected:
-        m_unclean[currentPosition] = NodeState::Flagged;
-        m_carrier.RotateRight();
-        break;
-    case NodeState::Flagged:
-        m_unclean.erase(currentPosition);  // Clean the current node
-        m_carrier.ReverseDirection();
-        break;
-    }
-    m_carrier.MoveForward();
-    ++m_currentTurn;
-}
-
-std::ostream& operator<<(std::ostream& out, const VirusGrid& grid)
-{
-    if (grid.m_unclean.size() > 0) {
-        // Find the corners
-        int64_t minX = INT64_MAX, minY = INT64_MAX, maxX = INT64_MIN, maxY = INT64_MIN;
-        for (const auto &point : grid.m_unclean) {
-            minX = std::min(minX, point.first.x);
-            minY = std::min(minY, point.first.y);
-            maxX = std::max(maxX, point.first.x);
-            maxY = std::max(maxY, point.first.y);
+    void VirusGrid::AdvanceToTurn(unsigned int turn)
+    {
+        while (m_currentTurn < static_cast<uint64_t>(turn))
+        {
+            AdvanceTurn();
         }
-        // inflate the grid
-        --minX;
-        --minY;
-        ++maxX;
-        ++maxY;
+    }
 
-        // Print the Grid
-        Point carrierPos = grid.m_carrier.Position();
-        Point leftOfCarrier = carrierPos;
-        leftOfCarrier.x--;
-        Point pt;
-        for (int64_t y = minY; y <= maxY; ++y) {
-            pt.y = y;
-            for (int64_t x = minX; x <= maxX; ++x) {
-                pt.x = x;
-                out << static_cast<char>(grid.ClassifyPoint(pt));
-                if (pt == carrierPos) {
-                    out << ']';
-                } else if (pt == leftOfCarrier) {
-                    out << '[';
-                } else {
-                    out << ' ';
-                }
+    void VirusGrid::AdvanceTurn()
+    {
+        const auto currentPosition = m_carrier.Position();
+        if (ClassifyPoint(currentPosition) == NodeState::Infected)
+        {
+            m_unclean.erase(currentPosition); // Clean the current node
+            m_carrier.RotateRight();
+        }
+        else
+        {
+            m_unclean[currentPosition] = NodeState::Infected;
+            ++m_infectedTurns;
+            m_carrier.RotateLeft();
+        }
+        m_carrier.MoveForward();
+        ++m_currentTurn;
+    }
+
+    void EvolvedVirusGrid::AdvanceTurn()
+    {
+        const auto currentPosition = m_carrier.Position();
+        switch (ClassifyPoint(currentPosition))
+        {
+        case NodeState::Clean:
+            m_unclean[currentPosition] = NodeState::Weakened;
+            m_carrier.RotateLeft();
+            break;
+        case NodeState::Weakened:
+            m_unclean[currentPosition] = NodeState::Infected;
+            ++m_infectedTurns;
+            // Do not turn - keep moving in the same direction
+            break;
+        case NodeState::Infected:
+            m_unclean[currentPosition] = NodeState::Flagged;
+            m_carrier.RotateRight();
+            break;
+        case NodeState::Flagged:
+            m_unclean.erase(currentPosition); // Clean the current node
+            m_carrier.ReverseDirection();
+            break;
+        }
+        m_carrier.MoveForward();
+        ++m_currentTurn;
+    }
+
+    std::ostream &operator<<(std::ostream &out, const VirusGrid &grid)
+    {
+        if (grid.m_unclean.size() > 0)
+        {
+            // Find the corners
+            int64_t minX = INT64_MAX, minY = INT64_MAX, maxX = INT64_MIN, maxY = INT64_MIN;
+            for (const auto &point : grid.m_unclean)
+            {
+                minX = std::min(minX, point.first.x);
+                minY = std::min(minY, point.first.y);
+                maxX = std::max(maxX, point.first.x);
+                maxY = std::max(maxY, point.first.y);
             }
-            out << std::endl;
+            // inflate the grid
+            --minX;
+            --minY;
+            ++maxX;
+            ++maxY;
+
+            // Print the Grid
+            Point carrierPos = grid.m_carrier.Position();
+            Point leftOfCarrier = carrierPos;
+            leftOfCarrier.x--;
+            Point pt;
+            for (int64_t y = minY; y <= maxY; ++y)
+            {
+                pt.y = y;
+                for (int64_t x = minX; x <= maxX; ++x)
+                {
+                    pt.x = x;
+                    out << static_cast<char>(grid.ClassifyPoint(pt));
+                    if (pt == carrierPos)
+                    {
+                        out << ']';
+                    }
+                    else if (pt == leftOfCarrier)
+                    {
+                        out << '[';
+                    }
+                    else
+                    {
+                        out << ' ';
+                    }
+                }
+                out << std::endl;
+            }
         }
+        return out;
     }
-    return out;
-}
 
 } // namespace Day22
 
@@ -421,9 +451,10 @@ constexpr bool g_PrintGrid = false;
 
 void Day22Tests()
 {
-    const std::vector<std::string> input = { "..#", "#..", "..." };
+    const std::vector<std::string> input = {"..#", "#..", "..."};
     Day22::VirusGrid grid(input);
-    if (g_PrintGrid) {
+    if (g_PrintGrid)
+    {
         std::cout << grid << std::endl;
         grid.AdvanceToTurn(1);
         std::cout << grid << std::endl;
@@ -435,28 +466,33 @@ void Day22Tests()
         std::cout << grid << std::endl;
     }
     grid.AdvanceToTurn(70);
-    if (g_PrintGrid) {
+    if (g_PrintGrid)
+    {
         std::cout << grid << std::endl;
     }
     const auto infections70 = grid.TurnsThatInfectedNode();
     const uint64_t expected70 = 41;
-    if (infections70 != expected70) std::cerr << "Test 22A1 Error: Got " << infections70 << ", Expected " << expected70 << std::endl;
+    if (infections70 != expected70)
+        std::cerr << "Test 22A1 Error: Got " << infections70 << ", Expected " << expected70 << std::endl;
 
     grid.AdvanceToTurn(10000);
     const auto infections10000 = grid.TurnsThatInfectedNode();
     const uint64_t expected10000 = 5587;
-    if (infections10000 != expected10000) std::cerr << "Test 22A2 Error: Got " << infections10000 << ", Expected " << expected10000 << std::endl;
+    if (infections10000 != expected10000)
+        std::cerr << "Test 22A2 Error: Got " << infections10000 << ", Expected " << expected10000 << std::endl;
 
     Day22::EvolvedVirusGrid evolvedGrid(input);
     evolvedGrid.AdvanceToTurn(100);
     const auto infections100 = evolvedGrid.TurnsThatInfectedNode();
     const uint64_t expected100 = 26;
-    if (infections100 != expected100) std::cerr << "Test 22B1 Error: Got " << infections100 << ", Expected " << expected100 << std::endl;
+    if (infections100 != expected100)
+        std::cerr << "Test 22B1 Error: Got " << infections100 << ", Expected " << expected100 << std::endl;
 
     evolvedGrid.AdvanceToTurn(10000000);
     const auto infections10000000 = evolvedGrid.TurnsThatInfectedNode();
     const auto expected10000000 = 2511944;
-    if (infections10000000 != expected10000000) std::cerr << "Test 22B2 Error: Got " << infections10000000 << ", Expected " << expected10000000 << std::endl;
+    if (infections10000000 != expected10000000)
+        std::cerr << "Test 22B2 Error: Got " << infections10000000 << ", Expected " << expected10000000 << std::endl;
 }
 
 void Day22Problems()
@@ -464,8 +500,8 @@ void Day22Problems()
     std::cout << "Day 22:\n";
     Day22Tests();
     const auto start = std::chrono::steady_clock::now();
-    const auto input = Helpers::ReadFileLines("input_day22.txt");
-    
+    const auto input = Helpers::ReadFileLines("2017/22/input_day22.txt");
+
     Day22::VirusGrid grid(input);
     grid.AdvanceToTurn(10000);
     const auto infections10000 = grid.TurnsThatInfectedNode();
@@ -475,6 +511,14 @@ void Day22Problems()
     const auto infections10000000 = evolvedGrid.TurnsThatInfectedNode();
 
     const auto end = std::chrono::steady_clock::now();
-    std::cout << infections10000 << std::endl << infections10000000 << std::endl;
-    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl << std::endl;
+    std::cout << infections10000 << std::endl
+              << infections10000000 << std::endl;
+    std::cout << "Took " << std::chrono::duration<double, std::milli>(end - start).count() << " ms" << std::endl
+              << std::endl;
+}
+
+int main()
+{
+    Day22Problems();
+    return 0;
 }
