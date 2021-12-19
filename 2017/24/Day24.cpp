@@ -169,7 +169,7 @@ namespace Day24
     }
 
     template <typename T>
-    std::list<Component> BestBridge(std::vector<Component> &components, T &comparator)
+    std::list<Component> BestBridge(std::vector<Component> &components, T &&comparator)
     {
         auto portLookup = BuildPortLookup(components);
         std::list<Component> bridge;
