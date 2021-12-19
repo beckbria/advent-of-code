@@ -136,7 +136,7 @@ func normalize(proj []Projectile, minX, minY int) []Projectile {
 }
 
 func main() {
-	file, err := os.Open("input.txt")
+	file, err := os.Open("2018/10/input.txt")
 	check(err)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)

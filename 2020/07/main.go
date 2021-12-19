@@ -15,7 +15,7 @@ import (
 // and count them.
 
 func main() {
-	lines := lib.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("2020/07/input.txt")
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	contains, containedBy := bagMaps(lines)

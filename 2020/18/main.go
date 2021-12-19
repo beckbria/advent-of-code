@@ -13,7 +13,7 @@ import (
 // It's Math, Jim, but not as we know it
 
 func main() {
-	lines := lib.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("2020/18/input.txt")
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	fmt.Println(step1(lines))

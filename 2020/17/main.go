@@ -10,7 +10,7 @@ import (
 // Hey, look, it's another Game of Life.  I forget how this was even themed.
 
 func main() {
-	lines := lib.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("2020/17/input.txt")
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	fmt.Println(step1(lines))

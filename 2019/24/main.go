@@ -14,7 +14,7 @@ const (
 )
 
 func main() {
-	input := lib.ReadFileLines("input.txt")
+	input := lib.ReadFileLines("2019/24/input.txt")
 	sw := lib.NewStopwatch()
 	// Part 1
 	b := readBugs(input)

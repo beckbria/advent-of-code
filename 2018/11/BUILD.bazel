@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
+
+go_library(
+    name = "11_lib",
+    srcs = ["main.go"],
+    importpath = "github.com/beckbria/advent-of-code/2018/11",
+    visibility = ["//visibility:private"],
+)
+
+go_binary(
+    name = "11",
+    embed = [":11_lib"],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "11_test",
+    srcs = ["main_test.go"],
+    embed = [":11_lib"],
+    deps = ["@com_github_stretchr_testify//assert:go_default_library"],
+)

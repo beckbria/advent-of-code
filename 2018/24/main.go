@@ -395,7 +395,7 @@ func readBody(input []string) body {
 }
 
 func main() {
-	file, err := os.Open("input.txt")
+	file, err := os.Open("2018/24/input.txt")
 	check(err)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)

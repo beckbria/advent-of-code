@@ -10,7 +10,7 @@ import (
 // Find numbers that sum to other numbers
 
 func main() {
-	nums := lib.ReadFileNumbers("input.txt")
+	nums := lib.ReadFileNumbers("2020/09/input.txt")
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	step1Answer := step1(nums, 25)

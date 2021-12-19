@@ -12,7 +12,7 @@ import (
 // Validate passwords against a schema
 
 func main() {
-	lines := lib.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("2020/02/input.txt")
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	fmt.Println(part1(lines))

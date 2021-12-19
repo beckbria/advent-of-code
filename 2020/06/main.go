@@ -10,7 +10,7 @@ import (
 // Parse survey inputs
 
 func main() {
-	lines := lib.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("2020/06/input.txt")
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	fmt.Println(step1(lines))

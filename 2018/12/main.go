@@ -239,7 +239,7 @@ func finalScore(generation int64) int64 {
 }
 
 func main() {
-	file, err := os.Open("input.txt")
+	file, err := os.Open("2018/12/input.txt")
 	check(err)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)

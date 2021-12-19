@@ -13,7 +13,7 @@ import (
 // RegEx engine
 
 func main() {
-	lines := lib.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("2020/19/input.txt")
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	rules, values := parseInput(lines)

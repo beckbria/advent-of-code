@@ -12,7 +12,7 @@ import (
 // Bus schedules
 
 func main() {
-	lines := lib.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("2020/13/input.txt")
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	start, departures := parseSchedule(lines)

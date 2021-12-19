@@ -320,7 +320,7 @@ func advance(rails *RailMap, originalCarts *CartMap) CartMap {
 }
 
 func main() {
-	file, err := os.Open("input.txt")
+	file, err := os.Open("2018/13/input.txt")
 	check(err)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)

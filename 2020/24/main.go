@@ -11,7 +11,7 @@ import (
 // Hex-grid pathfinding that becomes the game of life again, plus parsing without delimiters
 
 func main() {
-	lines := lib.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("2020/24/input.txt")
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	inst := parseInstructions(lines)

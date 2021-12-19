@@ -173,7 +173,7 @@ func MostReliablyAsleep(sleep SleepMap) (int64, int) {
 }
 
 func main() {
-	file, err := os.Open("input.txt")
+	file, err := os.Open("2018/04/input.txt")
 	check(err)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)

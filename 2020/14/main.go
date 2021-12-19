@@ -13,7 +13,7 @@ import (
 // Obfuscated memory management
 
 func main() {
-	lines := lib.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("2020/14/input.txt")
 	sw := lib.NewStopwatch()
 	inst := readInstructions(lines)
 	fmt.Println("Step 1:")

@@ -1,0 +1,26 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "lib",
+    srcs = [
+        "direction.go",
+        "error.go",
+        "file-io.go",
+        "graph.go",
+        "math.go",
+        "path.go",
+        "permutation.go",
+        "sorting.go",
+        "strings.go",
+        "time.go",
+    ],
+    importpath = "github.com/beckbria/advent-of-code/2021/lib",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "lib_test",
+    srcs = ["aoc_test.go"],
+    embed = [":lib"],
+    deps = ["@com_github_stretchr_testify//assert:go_default_library"],
+)

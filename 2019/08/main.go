@@ -43,7 +43,7 @@ func newLayer(height, width int) *layer {
 }
 
 func main() {
-	input := lib.ReadFileLines("input.txt")[0]
+	input := lib.ReadFileLines("2019/08/input.txt")[0]
 	sw := lib.NewStopwatch()
 	layers := readLayers(input, 6, 25)
 	fmt.Println(bestLayerScore(layers))

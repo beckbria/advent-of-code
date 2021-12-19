@@ -17,7 +17,7 @@ const terminate = int64(99)
 const debug = false
 
 func main() {
-	program := intcode.ReadIntCode("input.txt")
+	program := intcode.ReadIntCode("2019/02/input.txt")
 	sw := lib.NewStopwatch()
 
 	// Step 1 but with an IntCode computer

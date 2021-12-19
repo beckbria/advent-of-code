@@ -12,7 +12,7 @@ import (
 // Parse seats on an airplane
 
 func main() {
-	lines := lib.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("2020/05/input.txt")
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	seats := parseSeats(lines)

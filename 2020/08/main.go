@@ -14,7 +14,7 @@ import (
 func main() {
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
-	instructions := ReadProgram("input.txt")
+	instructions := ReadProgram("2020/08/input.txt")
 	fmt.Println(step1(instructions))
 	fmt.Println(sw.Elapsed())
 

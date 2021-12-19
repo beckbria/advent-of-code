@@ -19,7 +19,7 @@ const (
 // of where it goes and what it does
 
 func main() {
-	program := intcode.ReadIntCode("input.txt")
+	program := intcode.ReadIntCode("2019/11/input.txt")
 	sw := lib.NewStopwatch()
 
 	// Part 1

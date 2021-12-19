@@ -15,7 +15,7 @@ import (
 const ampCount = 5
 
 func main() {
-	program := intcode.ReadIntCode("input.txt")
+	program := intcode.ReadIntCode("2019/07/input.txt")
 	sw := lib.NewStopwatch()
 	// Part 1
 	maxSignal, _ := maxThrusterSignal(program)

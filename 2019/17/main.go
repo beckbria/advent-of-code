@@ -10,7 +10,7 @@ import (
 const debug = false
 
 func main() {
-	p := intcode.ReadIntCode("input.txt")
+	p := intcode.ReadIntCode("2019/17/input.txt")
 
 	sw := lib.NewStopwatch()
 	// Part 1

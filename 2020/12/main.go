@@ -13,7 +13,7 @@ import (
 // A ship driving around the ocean
 
 func main() {
-	moves := readMoves(lib.ReadFileLines("input.txt"))
+	moves := readMoves(lib.ReadFileLines("2020/12/input.txt"))
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	fmt.Println(step1(moves))

@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "intcode",
+    srcs = [
+        "computer.go",
+        "fileIo.go",
+        "instructionSet.go",
+        "ioComponent.go",
+    ],
+    importpath = "github.com/beckbria/advent-of-code/2019/intcode",
+    visibility = ["//visibility:public"],
+    deps = ["//2019/lib"],
+)
+
+go_test(
+    name = "intcode_test",
+    srcs = ["computer_test.go"],
+    embed = [":intcode"],
+    deps = ["@com_github_stretchr_testify//assert:go_default_library"],
+)

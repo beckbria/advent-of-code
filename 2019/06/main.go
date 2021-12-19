@@ -37,7 +37,7 @@ func newBody(name string) *body {
 type bodySet map[string]*body
 
 func main() {
-	lines := lib.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("2019/06/input.txt")
 	sw := lib.NewStopwatch()
 	bodies := parseBodies(lines)
 	// Part 1

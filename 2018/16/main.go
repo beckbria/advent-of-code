@@ -408,7 +408,7 @@ func runProgram(opcodes map[int]string, inst []Instruction) Registers {
 }
 
 func main() {
-	file, err := os.Open("input.txt")
+	file, err := os.Open("2018/16/input.txt")
 	check(err)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)

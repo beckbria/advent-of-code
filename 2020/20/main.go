@@ -17,7 +17,7 @@ import (
 const debug = false
 
 func main() {
-	lines := lib.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("2020/20/input.txt")
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	tiles := parseTiles(lines)

@@ -204,7 +204,7 @@ func ExecutionTime(dep, isDep CharacterMap, workers int, baseTime int) int {
 
 func main() {
 	var input []string
-	file, err := os.Open("input.txt")
+	file, err := os.Open("2018/07/input.txt")
 	check(err)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)

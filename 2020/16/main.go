@@ -13,7 +13,7 @@ import (
 // Reverse-engineer the format of a ticket
 
 func main() {
-	lines := lib.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("2020/16/input.txt")
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	rules, yours, others := parseInput(lines)

@@ -11,7 +11,7 @@ import (
 const debug = false
 
 func main() {
-	input := lib.ReadFileLines("input.txt")
+	input := lib.ReadFileLines("2019/20/input.txt")
 	sw := lib.NewStopwatch()
 	// Part 1
 	m := readMaze(input)

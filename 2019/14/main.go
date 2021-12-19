@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	input := lib.ReadFileLines("input.txt")
+	input := lib.ReadFileLines("2019/14/input.txt")
 	sw := lib.NewStopwatch()
 	// Part 1
 	f := readFormulas(input)

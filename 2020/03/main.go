@@ -15,7 +15,7 @@ const (
 )
 
 func main() {
-	lines := lib.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("2020/03/input.txt")
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	fmt.Println(findTrees(lines, 3, 1))

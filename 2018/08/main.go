@@ -124,7 +124,7 @@ func printTree(n Node, depth int) {
 }
 
 func main() {
-	file, err := os.Open("input.txt")
+	file, err := os.Open("2018/08/input.txt")
 	check(err)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)

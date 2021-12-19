@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "21_lib",
+    srcs = ["main.go"],
+    data = ["input.txt"],
+    importpath = "github.com/beckbria/advent-of-code/2019/21",
+    visibility = ["//visibility:private"],
+    deps = ["//2019/intcode"],
+)
+
+go_binary(
+    name = "21",
+    embed = [":21_lib"],
+    visibility = ["//visibility:public"],
+)

@@ -13,7 +13,7 @@ import (
 // Scan a list of passport data and check for valid passports
 
 func main() {
-	lines := lib.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("2020/04/input.txt")
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	pps := readPassports(lines)

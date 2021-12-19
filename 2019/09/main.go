@@ -11,7 +11,7 @@ import (
 // Add a new parameter mode to the intcode computer.  Run a new program.
 
 func main() {
-	program := intcode.ReadIntCode("input.txt")
+	program := intcode.ReadIntCode("2019/09/input.txt")
 	sw := lib.NewStopwatch()
 	// Part 1
 	io := intcode.NewConstantInputOutput(int64(1))

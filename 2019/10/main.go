@@ -49,7 +49,7 @@ func (a asteroidSet) canSee(from, to *lib.Point) bool {
 }
 
 func main() {
-	input := lib.ReadFileLines("input.txt")
+	input := lib.ReadFileLines("2019/10/input.txt")
 	m := newMap(input)
 	sw := lib.NewStopwatch()
 	pt, count, _ := bestMonitoringStation(m)

@@ -12,7 +12,7 @@ import (
 // return the diagnostic code it emits immediately prior to terminating
 
 func main() {
-	program := intcode.ReadIntCode("input.txt")
+	program := intcode.ReadIntCode("2019/05/input.txt")
 	sw := lib.NewStopwatch()
 	io1 := intcode.NewConstantInputOutput(1)
 	c := intcode.NewComputer(program)

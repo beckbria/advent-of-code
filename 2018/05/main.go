@@ -95,7 +95,7 @@ func ShortestRemoveOne(input string) string {
 }
 
 func main() {
-	file, err := os.Open("input.txt")
+	file, err := os.Open("2018/05/input.txt")
 	check(err)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)

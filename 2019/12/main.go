@@ -120,7 +120,7 @@ func (ms moons) step() {
 }
 
 func main() {
-	input := lib.ReadFileLines("input.txt")
+	input := lib.ReadFileLines("2019/12/input.txt")
 	sw := lib.NewStopwatch()
 	// Part 1
 	m := readMoons(input)

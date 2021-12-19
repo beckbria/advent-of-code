@@ -11,7 +11,7 @@ import (
 // Daisy chaining power adapters
 
 func main() {
-	nums := lib.ReadFileNumbers("input.txt")
+	nums := lib.ReadFileNumbers("2020/10/input.txt")
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	fmt.Println(step1(nums))

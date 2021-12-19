@@ -29,7 +29,7 @@ type path struct {
 type wire map[lib.Point]int
 
 func main() {
-	lines := lib.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("2019/03/input.txt")
 
 	sw := lib.NewStopwatch()
 	optimalManhattan, optimalCost := bestValues(lines[0], lines[1])

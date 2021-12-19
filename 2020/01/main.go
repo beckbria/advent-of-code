@@ -13,7 +13,7 @@ import (
 const notFound = int64(-1)
 
 func main() {
-	nums := lib.ReadFileNumbers("input.txt")
+	nums := lib.ReadFileNumbers("2020/01/input.txt")
 	sw := lib.NewStopwatch()
 	_, a, b := lib.FindSum2(nums, int64(2020))
 	fmt.Println("Step 1:")

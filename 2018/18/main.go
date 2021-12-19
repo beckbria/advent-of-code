@@ -227,7 +227,7 @@ func YardString(yard *Yard) string {
 }
 
 func main() {
-	file, err := os.Open("input.txt")
+	file, err := os.Open("2018/18/input.txt")
 	check(err)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)

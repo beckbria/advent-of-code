@@ -11,7 +11,7 @@ import (
 const debug = false
 
 func main() {
-	program := intcode.ReadIntCode("input.txt")
+	program := intcode.ReadIntCode("2019/15/input.txt")
 
 	sw := lib.NewStopwatch()
 	// Part 1

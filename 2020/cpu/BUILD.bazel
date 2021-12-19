@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "cpu",
+    srcs = [
+        "computer.go",
+        "fileIo.go",
+        "instructionSet.go",
+    ],
+    importpath = "github.com/beckbria/advent-of-code/2020/cpu",
+    visibility = ["//visibility:public"],
+    deps = ["//2020/lib"],
+)

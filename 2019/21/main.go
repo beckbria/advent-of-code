@@ -12,7 +12,7 @@ import (
 const debug = false
 
 func main() {
-	p := intcode.ReadIntCode("input.txt")
+	p := intcode.ReadIntCode("2019/21/input.txt")
 	c := intcode.NewComputer(p)
 	io := intcode.NewASCIIIo()
 	c.Io = io

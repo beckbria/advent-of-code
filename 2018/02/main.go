@@ -90,7 +90,7 @@ func check(e error) {
 }
 
 func main() {
-	file, err := os.Open("input.txt")
+	file, err := os.Open("2018/02/input.txt")
 	check(err)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)

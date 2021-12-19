@@ -96,7 +96,7 @@ func DistinctFabric(input []Fabric) (int64, error) {
 }
 
 func main() {
-	file, err := os.Open("input.txt")
+	file, err := os.Open("2018/03/input.txt")
 	check(err)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)

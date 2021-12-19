@@ -225,7 +225,7 @@ func PrintReservoir(r *Reservoir) {
 }
 
 func main() {
-	file, err := os.Open("input.txt")
+	file, err := os.Open("2018/17/input.txt")
 	check(err)
 	defer file.Close()
 	scanner := bufio.NewScanner(file)

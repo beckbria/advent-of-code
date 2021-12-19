@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	input := lib.ReadFileLines("input.txt")
+	input := lib.ReadFileLines("2019/22/input.txt")
 	sw := lib.NewStopwatch()
 	// Part 1
 	d := newDeck(10007)

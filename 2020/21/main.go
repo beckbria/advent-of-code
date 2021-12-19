@@ -28,7 +28,7 @@ func newRecipe() *recipe {
 }
 
 func main() {
-	lines := lib.ReadFileLines("input.txt")
+	lines := lib.ReadFileLines("2020/21/input.txt")
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	r := parseRecipes(lines)

@@ -11,7 +11,7 @@ import (
 // TODO: Description
 
 func main() {
-	lines := lib.ReadFileNumbers("input.txt")
+	lines := lib.ReadFileNumbers("2021/01/input.txt")
 	sw := lib.NewStopwatch()
 	fmt.Println("Step 1:")
 	fmt.Println(step1(lines))
