@@ -55,3 +55,15 @@ func StringSetIntersection(a, b StringSet) StringSet {
 	}
 	return seen
 }
+
+func FrequencyCount(s string) map[rune]int64 {
+	f := make(map[rune]int64)
+	for _, r := range []rune(s) {
+		if val, found := f[r]; found {
+			f[r] = val + 1
+		} else {
+			f[r] = 1
+		}
+	}
+	return f
+}
