@@ -292,3 +292,5 @@ bazel-advent-of-code
 bazel-bin
 bazel-out
 bazel-testlogs
+
+*.vscode/
