@@ -24,22 +24,6 @@ func main() {
 	fmt.Println(sw.Elapsed())
 }
 
-func parseLines(lines []string) [][]int64 {
-	elves := [][]int64{}
-	elf := []int64{}
-
-	for _, line := range lines {
-		if len(line) == 0 {
-			elves = append(elves, elf)
-			elf = []int64{}
-		} else {
-			n, _ := strconv.ParseInt(line, 10, 64)
-			elf = append(elf, n)
-		}
-	}
-	return elves
-}
-
 func score(r rune) int64 {
 	if r >= 'a' && r <= 'z' {
 		return int64(r - 'a') + 1
