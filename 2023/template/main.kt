@@ -1,18 +1,17 @@
-package brianbeck.aoc2023.day{{DAYPLACEHOLDER}}
+package beckbria.aoc2023.day{{DAYPLACEHOLDER}}
 
-import brianbeck.aoc2023.util.readInput
+import beckbria.aoc2023.util.readInput
+
+fun part1(input: List<String>): Int {
+    return input.size
+}
+
+fun part2(input: List<String>): Int {
+    return input.size
+}
 
 fun main() {
-    fun part1(input: List<String>): Int {
-        return input.size
-    }
-
-    fun part2(input: List<String>): Int {
-        return input.size
-    }
-
     val testInput = readInput("2023/{{DAYPLACEHOLDER}}/input.txt")
-    println(testInput)
     println("Part 1:")
     println(part1(testInput))
     println("\nPart 2:")
