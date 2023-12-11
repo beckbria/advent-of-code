@@ -294,3 +294,6 @@ bazel-out
 bazel-testlogs
 
 *.vscode/
+
+# Advent of Code standard input
+input.txt

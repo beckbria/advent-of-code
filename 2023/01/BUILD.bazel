@@ -2,9 +2,9 @@ load("@rules_kotlin//kotlin:jvm.bzl", "kt_jvm_binary")
 
 kt_jvm_binary(
     name = "01",
-    srcs = glob(["Main.kt"]),
+    srcs = glob(["*.kt"]),
     main_class = "beckbria.aoc2023.day01.MainKt",
-    data = ["input.txt"],
+    data = glob(["*.txt"]),
     deps = ["//2023/utils"],
     visibility = ["//visibility:public"],
 )
